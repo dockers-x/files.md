@@ -16,19 +16,19 @@ import (
 type Year map[int]bool
 
 const (
-    habitSkipped = "⚪️"
-	habitCompleted = "🟢"
-    habitCompletedAtWeekend = "🟡"
+	habitSkipped            = "⚪️"
+	habitCompleted          = "🟢"
+	habitCompletedAtWeekend = "🟡"
 )
 
 var (
-	errMalformedMonthLine   = errors.New("malformed month line")
+	errMalformedMonthLine = errors.New("malformed month line")
 )
 
 // getLastWeekHabits
 // getLastMonthHabits
 
-func Read(botFS *fs.FS, year int) (map[string]Year, error) {
+func ReadHabits(botFS *fs.FS, year int) (map[string]Year, error) {
 	filename := "%d Habits.md"
 	habitsStr, err := botFS.Content(fs.DirInsights, fmt.Sprintf(filename, year))
 	if err != nil {
@@ -38,7 +38,7 @@ func Read(botFS *fs.FS, year int) (map[string]Year, error) {
 	habits := make(map[string]Year)
 	month := time.January
 	lines := strings.Split(text.NormNewLines(habitsStr), "\n")
-	for _, line := range(lines) {
+	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if len(line) == 0 {
 			continue
@@ -49,12 +49,12 @@ func Read(botFS *fs.FS, year int) (map[string]Year, error) {
 		if isMonthLine {
 			parts := strings.Split(line, " ")
 			if len(parts) < 2 {
-				return nil, fmt.Errorf("can't parse '%s': %w", line, errMalformedMonthLine)
+				return nil, fmt.Errorf("read habits: can't parse month line '%s': %w", line, errMalformedMonthLine)
 			}
 
 			date, err := time.Parse("January", parts[1])
 			if err != nil {
-				return nil, fmt.Errorf("can't parse month %s: %w", line, err)
+				return nil, fmt.Errorf("read habits: can't parse month %s: %w", line, err)
 			}
 			month = date.Month()
 
@@ -62,7 +62,7 @@ func Read(botFS *fs.FS, year int) (map[string]Year, error) {
 		}
 
 		// At this point we are on habits line, which is
-		// [⚪️🟢... Habit name] i.e. completion status 
+		// [⚪️🟢... Habit name] i.e. completion status
 		// for every day of the above found month
 
 		daysAndHabit := strings.SplitN(line, " ", 2)
@@ -82,10 +82,10 @@ func Read(botFS *fs.FS, year int) (map[string]Year, error) {
 		// See README.md ADRs
 		gr := uniseg.NewGraphemes(days)
 		dayOffset := 0
-    	for gr.Next() {
-			habits[habitName][dayOfTheYear + dayOffset] = gr.Str() != habitSkipped
+		for gr.Next() {
+			habits[habitName][dayOfTheYear+dayOffset] = gr.Str() != habitSkipped
 			dayOfTheYear++
-    	}
+		}
 	}
 
 	return habits, nil

@@ -24,7 +24,7 @@ func TestRead(t *testing.T) {
 	r.NoError(err)
 	botFS.Put(fs.DirInsights,  "1970 Habits.md",  monthMD)
 
-	habits, err := Read(botFS, 1970)
+	habits, err := ReadHabits(botFS, 1970)
 	r.NoError(err)
 
 	r.Len(habits, 6)
@@ -49,7 +49,7 @@ func TestReadLastMonthHabits(t *testing.T) {
 	r.NoError(err)
 	botFS.Put(fs.DirInsights,  "1970 Habits.md",  lastMonthMD)
 
-	habits, err := Read(botFS, 1970)
+	habits, err := ReadHabits(botFS, 1970)
 	r.NoError(err)
 
 	r.Len(habits, 1)
