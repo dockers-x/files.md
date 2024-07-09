@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_AddRecord(t *testing.T) {
+func TestAddRecord(t *testing.T) {
 	r := require.New(t)
 	now = func() time.Time {
 		return time.Date(2023, 05, 30, 10, 04, 36, 0, time.UTC)

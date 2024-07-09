@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -290,12 +291,15 @@ func (fs FS) Dirs() ([]File, error) {
 // TODO after you cover everything with the tests, we may remove this method
 // because we build our own paths
 func (fs FS) isSafe(path string) bool {
+	path = filepath.Clean(path)
 	if !strings.HasPrefix(path, fs.rootPath) {
 		return false
 	}
 
-	// Path traversal attack
-	if strings.Contains(path, "../") {
+	// Path traversal attack (filepath.Clean only cleans absolute paths from ../)
+	// https://owasp.org/www-community/attacks/Path_Traversal
+	// A better way would be to convert the path to absolute path, but AeroFS doesn't support that
+	if strings.Contains(path, "../") || strings.Contains(path, "/..") {
 		return false
 	}
 
