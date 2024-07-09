@@ -23,7 +23,7 @@ const (
 	CmdShowToChecklist    = "to_checklist"
 	CmdMove               = "mv"
 	CmdMoveToNewDir       = "mv_to_new_dir"
-	CmdMoveToDoc          = "mv_to_doc"
+	CmdMoveToFile         = "mv_to_file"
 	CmdMoveToNewDoc       = "mv_to_new_doc"
 	CmdMoveToChecklist    = "mv_to_chk"
 	CmdMoveToNewChecklist = "mv_to_new_chk"

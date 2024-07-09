@@ -166,7 +166,7 @@ func (b *Bot) handlers() map[string]func([]string) error {
 		constants.CmdShowToChecklist:    b.showToChecklist,
 		constants.CmdMove:               b.move,
 		constants.CmdMoveToNewDir:       b.moveToNewDir,
-		constants.CmdMoveToDoc:          b.moveToDoc,
+		constants.CmdMoveToFile:         b.moveToFile,
 		constants.CmdMoveToNewDoc:       b.moveToNewDoc,
 		constants.CmdMoveToChecklist:    b.moveToChecklist,
 		constants.CmdMoveToNewChecklist: b.moveToNewChecklist,
@@ -861,42 +861,48 @@ func (b *Bot) moveToNewDir(params []string) error {
 	return b.move([]string{fs.DirInbox, filenameHash, dir})
 }
 
-func (b *Bot) moveToDoc(params []string) error {
+func (b *Bot) moveToFile(params []string) error {
 	// TODO Remove input expectations if dir is not list
 	filenameHash := params[0]
-	docHash := params[1]
+	existingFileHash := params[1]
 
-	filename, err := b.fs.Unhash(fs.DirToday, filenameHash)
+	filename, err := b.fs.Unhash("", filenameHash)
 	if err != nil {
-		return fmt.Errorf("move to doc: can't unhash new filename '%s': %w", filenameHash, err)
+		return fmt.Errorf("move to file: can't unhash new filename '%s': %w", filenameHash, err)
 	}
 
-	doc, err := b.fs.Unhash("", docHash)
+	// TODO when existing and new are the same files
+	existingFile, err := b.fs.Unhash("", existingFileHash)
 	if err != nil {
-		return fmt.Errorf("move to doc: can't unhash doc '%s' in today: %w", filenameHash, err)
+		return fmt.Errorf("move to file: can't unhash doc '%s' in today: %w", filenameHash, err)
 	}
 
-	fileContent, err := b.fs.Read(fs.DirToday, filename)
+	fileContent, err := b.fs.Read("", filename)
 	if err != nil {
-		return fmt.Errorf("move to dc: can't read content of '%s': %w", filename, err)
+		return fmt.Errorf("move to file: can't read content of '%s': %w", filename, err)
+	}
+	fileContent = strings.TrimSpace(fileContent)
+	if len(fileContent) == 0 {
+		fileContent = fs.Title(filename)
+	}
+
+	existingContent, err := b.fs.Read("", existingFile)
+	if err != nil {
+		return fmt.Errorf("move to file: can't get doc content of '%s': %w", existingFile, err)
 	}
 
 	// We can tolerate this
-	_ = b.fs.Del(fs.DirToday, filename)
+	_ = b.fs.Del("", filename)
 
-	docContent, err := b.fs.Read("", doc)
-	if err != nil {
-		return fmt.Errorf("move to doc: can't get doc content of '%s': %w", doc, err)
+	existingContent = strings.TrimSpace(existingContent)
+	if len(existingContent) > 0 {
+		existingContent += "\n"
 	}
-	docContent = strings.TrimSpace(docContent)
-	if len(docContent) > 0 {
-		docContent += "\n"
-	}
-	docContent += fileContent
+	existingContent += fileContent
 
-	err = b.fs.Write("", doc, docContent)
+	err = b.fs.Write("", existingFile, existingContent)
 	if err != nil {
-		return fmt.Errorf("move to doc: can't save file: %w", err)
+		return fmt.Errorf("move to file: can't save file: %w", err)
 	}
 
 	return b.showToday(nil)
@@ -957,7 +963,7 @@ func (b *Bot) moveToNewDoc(params []string) error {
 		return fmt.Errorf("move to doc: can't create empty doc: %w", err)
 	}
 
-	return b.moveToDoc([]string{filenameHash, fs.Hash(doc)})
+	return b.moveToFile([]string{filenameHash, fs.Hash(doc)})
 }
 
 func (b *Bot) moveToNewChecklist(params []string) error {
@@ -969,7 +975,7 @@ func (b *Bot) moveToNewChecklist(params []string) error {
 		return fmt.Errorf("move to doc: can't create empty doc: %w", err)
 	}
 
-	return b.moveToDoc([]string{filenameHash, fs.Hash(doc)})
+	return b.moveToFile([]string{filenameHash, fs.Hash(doc)})
 }
 
 func (b *Bot) moveToJournal(params []string) error {
@@ -1198,7 +1204,7 @@ func (b *Bot) toFileKeyboardButtons(filenameHash string) ([]tg.Btn, error) {
 
 	var buttons []tg.Btn
 	newBtn := func(title, docHash string) tg.Btn {
-		return tg.NewBtn(title, tg.NewCmd(constants.CmdMoveToDoc, []string{filenameHash, docHash}))
+		return tg.NewBtn(title, tg.NewCmd(constants.CmdMoveToFile, []string{filenameHash, docHash}))
 	}
 	for _, file := range files {
 		buttons = append(buttons, newBtn(file.Title, file.Hash))
