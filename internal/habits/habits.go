@@ -64,38 +64,45 @@ func Habits(userFS *fs.FS, year int) (map[string]Year, error) {
 
 		// Tolerant reader, if we encounter gibberish,
 		// we skip it. See ADRs in README.md for details for details
-		isHabbitLine := strings.ContainsAny(line, fmt.Sprintf("%s%s", habitSkipped, habitCompleted))
-		if !isHabbitLine {
+		// TODO preserve gibberish between parsing seesions
+		daysAndHabit := strings.SplitN(line, " ", 2)
+		if len(daysAndHabit) < 2 {
 			continue
 		}
 
-		// At this point we are on habits line, which is
-		// [⚪️🟢... Habit name] i.e. completion status
-		// for every day of the above found month
+		// Habits line
+		habitsMarker := fmt.Sprintf("%s%s%s", habitSkipped, habitCompletedAtWeekend, habitCompleted)
+		if strings.ContainsAny(line, habitsMarker) {
+			// At this point we are on habits line, which is
+			// [⚪️🟢... Habit name] i.e. completion status
+			// for every day of the above found month
 
-		daysAndHabit := strings.SplitN(line, " ", 2)
-		if len(daysAndHabit) < 2 {
-			return nil, nil
-			// return "bad month line: %s"
-		}
-		habitName := strings.TrimSpace(daysAndHabit[1])
-		if _, ok := habits[habitName]; !ok {
-			habits[habitName] = make(Year)
-		}
-
-		firstDayOfMonth := time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
-		dayOfTheYear := firstDayOfMonth.YearDay()
-
-		days := daysAndHabit[0]
-		// See README.md ADRs
-		gr := uniseg.NewGraphemes(days)
-		dayOffset := 0
-		for gr.Next() {
-			habits[habitName][dayOfTheYear+dayOffset] = 0
-			if gr.Str() != habitSkipped {
-				habits[habitName][dayOfTheYear+dayOffset] = 1
+			habitName := strings.TrimSpace(daysAndHabit[1])
+			if _, ok := habits[habitName]; !ok {
+				habits[habitName] = make(Year)
 			}
-			dayOfTheYear++
+
+			firstDayOfMonth := time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
+			dayOfTheYear := firstDayOfMonth.YearDay()
+
+			days := daysAndHabit[0]
+			// See README.md ADRs
+			gr := uniseg.NewGraphemes(days)
+			dayOffset := 0
+			for gr.Next() {
+				habits[habitName][dayOfTheYear+dayOffset] = 0
+				if gr.Str() != habitSkipped {
+					habits[habitName][dayOfTheYear+dayOffset] = 1
+				}
+				dayOfTheYear++
+			}
+			continue;
+		}
+
+		// Moods line
+		moodsMarker := strings.Join(moodEmojis, "")
+		if strings.ContainsAny(line, moodsMarker) {
+
 		}
 	}
 
