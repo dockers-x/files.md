@@ -148,7 +148,7 @@ func LastWeekHabits(userFS *fs.FS) (map[string]Year, error) {
 
 func Write(userFS *fs.FS, year int, habits map[string]Year) error {
 	habitKeys := make([]string, 0)
-	for k, _ := range habits {
+	for k := range habits {
 		if k == mood {
 			continue
 		}
@@ -180,7 +180,7 @@ func Write(userFS *fs.FS, year int, habits map[string]Year) error {
 					atLeastOneCompletion = true
 				}
 				statuses += emoji
-				
+
 				dayOfMonth = dayOfMonth.AddDate(0, 0, 1)
 			}
 			if atLeastOneCompletion {
@@ -223,7 +223,7 @@ func emojiForStatus(habitName string, day time.Time, status int) string {
 		} else {
 			return habitCompleted
 		}
-	} 
+	}
 
 	return habitSkipped
 }

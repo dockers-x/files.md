@@ -1,12 +1,11 @@
 package i18n
 
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"strings"
-	_ "embed"
 )
-
 
 //go:embed emojis.json
 var emojisJSON string

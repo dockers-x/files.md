@@ -222,12 +222,6 @@ func (b *Bot) extractCmd(u UpdInterface) (*tg.Cmd, error) {
 	return nil, nil
 }
 
-func (b *Bot) cmdsOnlyNotes() map[string]func([]string) error {
-	return map[string]func([]string) error{
-		constants.CmdShowStart: b.showStart,
-	}
-}
-
 func (b *Bot) allowedTextCmds() []string {
 	return []string{
 		constants.CmdShowStart,
@@ -712,15 +706,15 @@ func (b *Bot) showStats(params []string) error {
 }
 
 func (b *Bot) showRead(params []string) error {
-	return b.showChecklist([]string{fs.Hash("-read-")})
+	return b.showChecklist([]string{fs.Hash(fs.DirRead)})
 }
 
 func (b *Bot) showWatch(params []string) error {
-	return b.showChecklist([]string{fs.Hash("-watch-")})
+	return b.showChecklist([]string{fs.Hash(fs.DirWatch)})
 }
 
 func (b *Bot) showShop(params []string) error {
-	return b.showChecklist([]string{fs.Hash("-shop-")})
+	return b.showChecklist([]string{fs.Hash(fs.DirShop)})
 }
 
 func (b *Bot) showTask(params []string) error {
@@ -1379,7 +1373,9 @@ func (b *Bot) showConfigureQuickPanel(params []string) error {
 	for _, cmdDef := range quickPanelAvailableCmds {
 		cmd := cmdDef.cmd
 		if b.conf.HasQuickPanelCmd(cmd) {
-			kb.AddRow(tg.NewBtn(fmt.Sprintf("%s %s %s", cmdDef.emoji, cmdDef.desc, i18n.QuickPanelDelButton), tg.NewCmd(constants.CmdDelFromPonel, []string{cmd})))
+			name := fmt.Sprintf("%s %s %s", cmdDef.emoji, cmdDef.desc, i18n.QuickPanelDelButton)
+			enabledCmd := tg.NewCmd(constants.CmdDelFromPonel, []string{cmd})
+			kb.AddRow(tg.NewBtn(name, enabledCmd))
 			enabled = append(enabled, cmd)
 		}
 	}
@@ -1399,14 +1395,16 @@ func (b *Bot) showConfigureQuickPanel(params []string) error {
 		}
 		// Command is not enabled, so add it to disabled list
 		if !cmdEnabled {
-			kb.AddRow(
-				tg.NewBtn(fmt.Sprintf("%s %s %s", cmdDef.emoji, cmdDef.desc, i18n.QuickPanelAddButton), tg.NewCmd(constants.CmdAddToPanel, []string{cmd})))
+			name := fmt.Sprintf("%s %s %s", cmdDef.emoji, cmdDef.desc, i18n.QuickPanelAddButton)
+			disabledCmd := tg.NewCmd(constants.CmdAddToPanel, []string{cmd})
+			kb.AddRow(tg.NewBtn(name, disabledCmd))
 		}
 	}
 
 	kb.AddRow(tg.NewBtn(i18n.StrBtnBack, tg.NewCmd(constants.CmdShowSettings, nil)))
 
-	err := b.show(fmt.Sprintf("Configure quick panel (%s = add to panel, %s = to remove): ", i18n.QuickPanelAddButton, i18n.QuickPanelDelButton), &kb, tg.MarkupHTML)
+	text := fmt.Sprintf("Configure quick panel (%s = add to panel, %s = to remove): ", i18n.QuickPanelAddButton, i18n.QuickPanelDelButton)
+	err := b.show(text, &kb, tg.MarkupHTML)
 	if err != nil {
 		return fmt.Errorf("configureQuickPanel : %w", err)
 	}
