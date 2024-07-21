@@ -98,7 +98,7 @@ func main() {
 	// TODO graceful shutdown etc
 	go func() {
 		router := http.NewServeMux()
-		router.HandleFunc("GET /habits/{userID}", func(w http.ResponseWriter, r *http.Request) {
+		router.HandleFunc("GET /{userID}/habits", func(w http.ResponseWriter, r *http.Request) {
 			userID, err := strconv.ParseInt(r.PathValue("userID"), 10, 64)
 			if err != nil {
 				// TODO
@@ -112,12 +112,28 @@ func main() {
 				w.Write([]byte("can't init user fs"))
 			}
 
-			str, err := habits.Render(userFS)
+			str, err := habits.Render(userID, userFS)
 			if err != nil {
 				// TODO
 				w.Write([]byte(err.Error()))
 			}
 			w.Write(str)
+		})
+
+		router.HandleFunc("POST /{userID}/habits/{habitName}/{day}", func(w http.ResponseWriter, r *http.Request) {
+			// userID, err := strconv.ParseInt(r.PathValue("userID"), 10, 64)
+			// if err != nil {
+			// 	// TODO
+			// 	w.Write([]byte("err"))
+			// }
+
+			// userPath := path.Join(internal.Config.StoragePath, txt.I64(userID))
+			// userFS, err := fs.NewFS(userPath, afero.NewOsFs())
+			// if err != nil {
+			// 	// TODO
+			// 	w.Write([]byte("can't init user fs"))
+			// }
+
 		})
 
 		http.ListenAndServe(":80", router)
