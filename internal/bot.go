@@ -121,7 +121,20 @@ func (b *Bot) Answer(u UpdInterface) error {
 
 	// Currently used for showing files
 	if u.IsSentViaBot() {
-		// return b.showDoc()
+		dirAndFilename := strings.Split(u.MsgText(), "/")
+		var dir, filename string
+		if len(dirAndFilename) == 1 {
+			dir = fs.DirRoot
+			filename = dirAndFilename[0]
+		} else if len(dirAndFilename) == 2 {
+			dir = dirAndFilename[0]
+			filename = dirAndFilename[1]
+		} else {
+			// TODO err
+			return fmt.Errorf("answer: can't parse file path from sent via bot msg")
+		}
+
+		return b.showFile([]string{dir, filename})
 	}
 
 	if u.IsForwarded() {
@@ -140,7 +153,7 @@ func (b *Bot) handlers() map[string]func([]string) error {
 		constants.CmdShowToday:          b.showToday,
 		constants.CmdShowLater:          b.showLater,
 		constants.CmdShowNotes:          b.showNotes,
-		constants.CmdShowDocs:           b.showDocs,
+		constants.CmdShowFiles:          b.showDocs,
 		constants.CmdShowChecklists:     b.showChecklists,
 		constants.CmdShowPostpone:       b.showPostpone,
 		constants.CmdShowRename:         b.showRename,
@@ -151,7 +164,7 @@ func (b *Bot) handlers() map[string]func([]string) error {
 		// Button's commands (callbacks)
 		constants.CmdRenameFile:         b.showRenameFile,
 		constants.CmdShowMultilineTask:  b.showTask,
-		constants.CmdShowDoc:            b.showDoc,
+		constants.CmdShowFile:           b.showFile,
 		constants.CmdShowChecklist:      b.showChecklist,
 		constants.CmdShowChooseDay:      b.showChooseDay,
 		constants.CmdShowToFile:         b.showToFile,
@@ -219,7 +232,7 @@ func (b *Bot) allowedTextCmds() []string {
 		constants.CmdShowLater,
 		constants.CmdShowNotes,
 		constants.CmdShowPostpone,
-		constants.CmdShowDocs,
+		constants.CmdShowFiles,
 		constants.CmdShowRename,
 		constants.CmdShowChecklists,
 		constants.CmdShowStats,
@@ -298,7 +311,11 @@ func (b *Bot) search(u UpdInterface) error {
 
 	var results []interface{}
 	for id, note := range matchedNotes {
-		results = append(results, tgbotapi.NewInlineQueryResultArticle(strconv.Itoa(id), note.Title, note.Title))
+		path := fmt.Sprintf("%s/%s", note.ParentDir, note.Name)
+		if note.ParentDir == fs.DirRoot {
+			path = note.Name
+		}
+		results = append(results, tgbotapi.NewInlineQueryResultArticle(strconv.Itoa(id), note.Title, path))
 	}
 
 	queryID, _ := u.InlineQueryID()
@@ -530,7 +547,7 @@ func (b *Bot) showDocs(params []string) error {
 
 	var kb tg.Keyboard
 	for _, file := range files {
-		cmd := tg.NewCmd(constants.CmdShowDoc, []string{fs.Hash(file.Name)})
+		cmd := tg.NewCmd(constants.CmdShowFile, []string{fs.Hash(file.Name)})
 		btn := tg.NewBtn(file.Title, cmd)
 
 		kb.AddRow(btn)
@@ -753,7 +770,7 @@ func (b *Bot) showTask(params []string) error {
 	return nil
 }
 
-func (b *Bot) showDoc(params []string) error {
+func (b *Bot) showFile(params []string) error {
 	filenameHash := params[0]
 
 	filename, err := b.fs.Unhash(fs.DirRoot, filenameHash)
@@ -767,7 +784,7 @@ func (b *Bot) showDoc(params []string) error {
 	}
 
 	kb := tg.NewKeyboard([]tg.Row{
-		tg.NewRow(tg.NewBtn(i18n.StrBtnBack, tg.NewCmd(constants.CmdShowDocs, nil))),
+		tg.NewRow(tg.NewBtn(i18n.StrBtnBack, tg.NewCmd(constants.CmdShowFiles, nil))),
 	})
 
 	err = b.show(fmt.Sprintf("%s\n%s", fs.Title(filename), content), kb, tg.MarkupHTML)
@@ -795,7 +812,7 @@ func (b *Bot) showChecklist(params []string) error {
 	for _, item := range items {
 		kb.AddRow(tg.NewBtn(item.Title, tg.NewCmd(constants.CmdComplete, []string{})))
 	}
-	kb.AddRow(tg.NewRow(tg.NewBtn(i18n.StrBtnBack, tg.NewCmd(constants.CmdShowDocs, nil))))
+	kb.AddRow(tg.NewRow(tg.NewBtn(i18n.StrBtnBack, tg.NewCmd(constants.CmdShowFiles, nil))))
 
 	err = b.show(fs.Title(checklist), kb, tg.MarkupHTML)
 	if err != nil {
