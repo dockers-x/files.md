@@ -529,28 +529,25 @@ func TestBot_todayLabelIcons(t *testing.T) {
 
 	// Pomodoro is the only task in today
 	r.Nil(b.togglePomodoro(nil))
-	label, err := b.todayLabel()
-	r.NoError(err)
+	label := b.todayLabel()
 	r.Contains(label, "🌴")
 	r.Contains(label, "🍅")
 
 	// Pomodoro and another task in today
 	r.Nil(b.fs.Write(fs.DirToday, "Item.md", ""))
-	label, err = b.todayLabel()
-	r.NoError(err)
+	label = b.todayLabel()
 	r.NotContains(label, "🌴")
 	r.Contains(label, "🍅")
 
 	// No pomodoro, but there is another task in today
 	r.Nil(b.complete([]string{fs.DirToday, fs.FilePomodoro}))
-	label, err = b.todayLabel()
-	r.NoError(err)
+	label = b.todayLabel()
 	r.NotContains(label, "🌴")
 	r.NotContains(label, "🍅")
 
 	// No pomodoro, no other tasks in today
 	r.Nil(b.complete([]string{fs.DirToday, "Item.md"}))
-	label, err = b.todayLabel()
+	label = b.todayLabel()
 	r.NoError(err)
 	r.Contains(label, "🌴")
 	r.NotContains(label, "🍅")

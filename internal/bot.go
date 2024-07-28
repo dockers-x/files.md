@@ -460,7 +460,7 @@ func (b *Bot) quickPanelRow() []tg.Btn {
 }
 
 // TODO separate today and later list
-func (b *Bot) showList(params []string) error {
+func (b *Bot) showTasksList(params []string) error {
 	dir := fs.DirToday
 	if len(params) > 0 {
 		dir = params[0]
@@ -499,11 +499,7 @@ func (b *Bot) showList(params []string) error {
 
 	var msg string
 	if dir == fs.DirToday {
-		msg, err = b.todayLabel()
-		if err != nil {
-			msg = b.tr("🏠 Tasks for today:")
-			return err
-		}
+		msg = b.todayLabel()
 	} else {
 		msg = b.tr("⏳ Your tasks for later:")
 	}
@@ -514,6 +510,31 @@ func (b *Bot) showList(params []string) error {
 	}
 
 	return nil
+}
+
+func (b *Bot) todayLabel() string {
+	var statusBar string
+
+	hasPomodoroInToday, _ := b.fs.Exists(fs.DirToday, fs.FilePomodoro)
+	if hasPomodoroInToday {
+		statusBar = i18n.Emoji(fs.Title(fs.FilePomodoro))
+	}
+
+	filesAndDirs, _ := b.fs.FilesAndDirs(fs.DirToday)
+	todayTasks := fs.ExcludePomodoro(fs.OnlyFiles(filesAndDirs))
+	if len(todayTasks) == 0 {
+		statusBar += i18n.Emoji("palm")
+	}
+
+	if len(statusBar) != 0 {
+		statusBar += " "
+	}
+
+	if len(todayTasks) == 0 {
+		return statusBar + i18n.Tr("You don't have any tasks!")
+	}
+
+	return statusBar + fmt.Sprintf(i18n.Tr("<b>%d</b> left"), len(todayTasks))
 }
 
 func (b *Bot) showNotes(params []string) error {
@@ -681,14 +702,7 @@ func (b *Bot) showRename(params []string) error {
 
 	kb.AddRow(tg.NewBtn(otherDir, tg.NewCmd(otherDir, []string{otherDir})))
 
-	msg, err := b.todayLabel()
-	if err != nil {
-		// TODO fix
-		msg = b.tr("Tasks for today:")
-		return err
-	}
-
-	err = b.show(msg, &kb, tg.MarkupHTML)
+	err = b.show(b.todayLabel(), &kb, tg.MarkupHTML)
 	if err != nil {
 		return fmt.Errorf("show rename: %w", err)
 	}
@@ -853,11 +867,11 @@ func (b *Bot) showChecklist(params []string) error {
 }
 
 func (b *Bot) showToday(params []string) error {
-	return b.showList([]string{fs.DirToday})
+	return b.showTasksList([]string{fs.DirToday})
 }
 
 func (b *Bot) showLater(params []string) error {
-	return b.showList([]string{fs.DirLater})
+	return b.showTasksList([]string{fs.DirLater})
 }
 
 func (b *Bot) send(msg string) error {
@@ -904,7 +918,7 @@ func (b *Bot) move(params []string) error {
 		return fmt.Errorf("move: can't move: %w", err)
 	}
 
-	return b.showList(nil)
+	return b.showTasksList(nil)
 }
 
 func (b *Bot) moveToNewDir(params []string) error {
@@ -1052,7 +1066,7 @@ func (b *Bot) moveToJournal(params []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to move to journal: can't delete note: %w", err)
 	}
-	return b.showList(nil)
+	return b.showTasksList(nil)
 }
 
 func (b *Bot) complete(params []string) error {
@@ -1078,7 +1092,7 @@ func (b *Bot) complete(params []string) error {
 		b.conf.AddToSchedule(filename, time.Now().Unix()+int64(b.conf.PomodoroDuration().Seconds()), "")
 	}
 
-	err = b.showList(nil)
+	err = b.showTasksList(nil)
 	if err != nil {
 		return fmt.Errorf("copmlete: %w", err)
 	}
@@ -1108,7 +1122,7 @@ func (b *Bot) schedule(params []string) error {
 		return fmt.Errorf("schedule: can't rename file %s: %w", filename, err)
 	}
 
-	return b.showList(nil)
+	return b.showTasksList(nil)
 }
 
 func (b *Bot) delAllKeyboards() {
@@ -1308,38 +1322,6 @@ func (b *Bot) toChecklistKeyboard(filenameHash string) (*tg.Keyboard, error) {
 	}
 
 	return kb, nil
-}
-
-func (b *Bot) todayLabel() (string, error) {
-	tasks, err := b.fs.FilesAndDirs(constants.CmdShowToday)
-	if err != nil {
-		return "", fmt.Errorf("today label: %w", err)
-	}
-	tasks = fs.ExcludePomodoro(tasks)
-	todo := len(tasks)
-
-	hasPomodoro, err := b.fs.Exists("today", fs.FilePomodoro)
-	if err != nil {
-		return "", fmt.Errorf("today label: can't get pomodoro task's dir: %w", err)
-	}
-
-	// TODO add short labels
-	icons := []string{"🌴"}
-	label := "You don't have any tasks!"
-	if todo > 0 {
-		label = b.tr("<b>%d</b> left", todo)
-		icons = nil
-	}
-
-	if hasPomodoro {
-		icons = append([]string{"🍅"}, icons...)
-	}
-
-	if len(icons) > 0 {
-		icons = append(icons, " ")
-	}
-
-	return strings.Join(icons, "") + label, nil
 }
 
 func (b *Bot) togglePomodoro(_ []string) error {

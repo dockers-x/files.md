@@ -1215,8 +1215,7 @@
     "solong",
     "farewell",
     "hello",
-    "hi",
-    "palm"
+    "hi"
   ],
   "🤚": [
     "raised_back_of_hand",
@@ -1227,15 +1226,13 @@
   "🖐️": [
     "hand_with_fingers_splayed",
     "hand",
-    "fingers",
-    "palm"
+    "fingers"
   ],
   "✋": [
     "raised_hand",
     "fingers",
     "stop",
     "highfive",
-    "palm",
     "ban"
   ],
   "🖖": [
@@ -4191,6 +4188,7 @@
   ],
   "🌴": [
     "palm_tree",
+    "palm",
     "plant",
     "vegetable",
     "nature",
@@ -4353,8 +4351,7 @@
     "coconut",
     "fruit",
     "nature",
-    "food",
-    "palm"
+    "food"
   ],
   "🥑": [
     "avocado",
