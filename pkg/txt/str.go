@@ -52,6 +52,7 @@ func NormNewLines(text string) string {
 	return strings.Replace(text, "\\n\\r", "\n", -1)
 }
 
+// Spaces-like characters are trimmed out
 func SplitTextIntoChunks(text string, maxLen int) []string {
 	var chunks []string
 
@@ -74,10 +75,10 @@ func SplitTextIntoChunks(text string, maxLen int) []string {
 			splitIndex = utf8.RuneCountInString(subStr[:splitIndex])
 		}
 
-		chunks = append(chunks, string(runes[:splitIndex]))
+		chunks = append(chunks, strings.TrimSpace(string(runes[:splitIndex])))
 		text = string(runes[splitIndex:])
 	}
-	chunks = append(chunks, text)
+	chunks = append(chunks, strings.TrimSpace(text))
 
 	return chunks
 }

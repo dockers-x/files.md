@@ -61,7 +61,8 @@ func (m *Upd) IsSentViaBot() bool {
 }
 
 type TG struct {
-	SentText       string
+	SentTexts []string
+	LastSentText   string
 	EditedText     string
 	SentKeyboard   *tg.Keyboard
 	EditedKeyboard *tg.Keyboard
@@ -72,7 +73,8 @@ func NewTG() *TG {
 }
 
 func (f *TG) Send(userID int64, text string, kb *tg.Keyboard, markup string) (int, error) {
-	f.SentText = text
+	f.LastSentText = text
+	f.SentTexts = append(f.SentTexts, text)
 	f.SentKeyboard = kb
 
 	return -2, nil

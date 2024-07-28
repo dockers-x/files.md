@@ -2,6 +2,7 @@ package internal
 
 import (
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -182,7 +183,7 @@ func TestToday(t *testing.T) {
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("today", nil)))
 	r.NoError(err)
 
-	r.Equal("<b>2</b> left", tgram.SentText)
+	r.Equal("<b>2</b> left", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("First task", tg.NewCmd("comp", []string{"today", "0824149b387"})),
 		tg.NewBtn("Second task", tg.NewCmd("comp", []string{"today", "2940ad40402"})),
@@ -199,7 +200,7 @@ func TestToday_QuickMenuFilled(t *testing.T) {
 	bot, tgram, r := makeBot(t, cfg)
 	err := bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("today", nil)))
 	r.NoError(err)
-	r.Equal("<b>1</b> left", tgram.SentText)
+	r.Equal("<b>1</b> left", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("First task", tg.NewCmd("comp", []string{"today", "0824149b387"})),
 		tg.NewRow(tg.NewBtn("📄", tg.NewCmd("files", []string{})),
@@ -231,7 +232,7 @@ func TestLater(t *testing.T) {
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("later", nil)))
 	r.NoError(err)
 
-	r.Equal("⏳ Your tasks for later:", tgram.SentText)
+	r.Equal("⏳ Your tasks for later:", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("First task", tg.NewCmd("comp", []string{"later", "0824149b387"})),
 		tg.NewBtn("Second task", tg.NewCmd("comp", []string{"later", "2940ad40402"})),
@@ -248,7 +249,7 @@ func TestLater_QuickMenuFilled(t *testing.T) {
 	bot, tgram, r := makeBot(t, cfg)
 	err := bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("later", nil)))
 	r.NoError(err)
-	r.Equal("⏳ Your tasks for later:", tgram.SentText)
+	r.Equal("⏳ Your tasks for later:", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("Second task", tg.NewCmd("comp", []string{"later", "2940ad40402"})),
 		tg.NewRow(tg.NewBtn("📄", tg.NewCmd("files", []string{})),
@@ -281,7 +282,7 @@ func TestTodayWithMultilineTasks(t *testing.T) {
 	err = bot.Answer(upd)
 	r.NoError(err)
 
-	r.Equal("<b>2</b> left", tgram.SentText)
+	r.Equal("<b>2</b> left", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("👀 First task", tg.NewCmd("task", []string{"today", "0824149b387"})),
 		tg.NewBtn("Second task", tg.NewCmd("comp", []string{"today", "2940ad40402"})),
@@ -341,7 +342,7 @@ func TestChecklists(t *testing.T) {
 	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("checklists", nil)))
 	r.NoError(err)
 
-	r.Equal("☑️ Checklists", tgram.SentText)
+	r.Equal("☑️ Checklists", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("Checklist1", tg.NewCmd("checklist", []string{"8d2335b5ff3"})),
 		tg.NewBtn("Checklist2", tg.NewCmd("checklist", []string{"8d3625e2e84"})),
@@ -576,7 +577,7 @@ func TestSettingsMainPanel(t *testing.T) {
 	bot, tgram, r := makeBot(t, &userconfig.DefaultConfig)
 	err := bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("settings", nil)))
 	r.NoError(err)
-	r.Equal("Settings: ", tgram.SentText)
+	r.Equal("Settings:", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("🎛 Quick Panel", tg.NewCmd("configure_panel", nil)),
 		tg.NewBtn("🏠 Today", tg.NewCmd("today", nil)),
@@ -810,7 +811,7 @@ func RunQuickPanelTc(tc PrefTableTestCase, t *testing.T) {
 
 	err := bot.Answer(tc.cmd_to_execute)
 	r.NoError(err)
-	r.Equal("Configure quick panel (➕ = add to panel, ➖ = to remove): ", tgram.SentText)
+	r.Equal("Configure quick panel (➕ = add to panel, ➖ = to remove):", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard(tc.buttons), tgram.SentKeyboard)
 }
 
@@ -880,4 +881,105 @@ func TestShowToFile(t *testing.T) {
 		tg.NewRow(tg.NewBtn("Note", tg.NewCmd("mv_to_file", []string{"345fbd7ab08", "345fbd7ab08"}))),
 	},
 	), tgram.SentKeyboard)
+}
+
+func TestShow(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	redis, err := miniredis.Run()
+	r.NoError(err)
+	defer redis.Close()
+
+	tgram := fake.NewTG()
+
+	bot := NewBot(-1, tgram, userFS, db.NewDB(redis), &userconfig.DefaultConfig)
+	err = bot.show("text", nil, tg.MarkupHTML)
+	r.NoError(err)
+
+	r.Equal("text", tgram.LastSentText)
+}
+
+func TestShowLongMessage(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	redis, err := miniredis.Run()
+	r.NoError(err)
+	defer redis.Close()
+
+	tgram := fake.NewTG()
+
+	bot := NewBot(-1, tgram, userFS, db.NewDB(redis), &userconfig.DefaultConfig)
+	err = bot.show(strings.Repeat("a", 4096) + "b", nil, tg.MarkupHTML)
+	r.NoError(err)
+
+	r.Len(tgram.SentTexts, 2)
+	r.Equal("b", tgram.LastSentText)
+}
+
+
+// When utf8.RuneCountInString(textChunk) == 4096, tg sends the message (len(textChunk) => 7003)
+// if I have 4095 chars and add 🟢, we have 4096 chars and it is ok
+// if I have 4095 chars and add ⚪️, we have 4097 chars and we fail, so tg doesn't operate on glyth clusters
+func TestShowLongMessageWithColoredEmojis(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	redis, err := miniredis.Run()
+	r.NoError(err)
+	defer redis.Close()
+
+	tgram := fake.NewTG()
+
+	bot := NewBot(-1, tgram, userFS, db.NewDB(redis), &userconfig.DefaultConfig)
+	err = bot.show(strings.Repeat("a", 4095) + "🟢", nil, tg.MarkupHTML)
+	r.NoError(err)
+
+	r.Len(tgram.SentTexts, 1)
+}
+
+func TestShowLongMessageWithColoredEmoji(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	redis, err := miniredis.Run()
+	r.NoError(err)
+	defer redis.Close()
+
+	tgram := fake.NewTG()
+
+	bot := NewBot(-1, tgram, userFS, db.NewDB(redis), &userconfig.DefaultConfig)
+	err = bot.show(strings.Repeat("a", 4095) + "⚪️", nil, tg.MarkupHTML)
+	r.NoError(err)
+
+	r.Len(tgram.SentTexts, 2)
+}
+
+func TestShowLongMessageSplitByNewLine(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	redis, err := miniredis.Run()
+	r.NoError(err)
+	defer redis.Close()
+
+	tgram := fake.NewTG()
+
+	bot := NewBot(-1, tgram, userFS, db.NewDB(redis), &userconfig.DefaultConfig)
+	err = bot.show(strings.Repeat("a", 4094) + "\nabc", nil, tg.MarkupHTML)
+	r.NoError(err)
+
+	r.Len(tgram.SentTexts, 2)
+	r.Equal("abc", tgram.LastSentText)
 }

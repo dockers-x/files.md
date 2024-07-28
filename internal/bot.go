@@ -3,7 +3,6 @@ package internal
 import (
 	"errors"
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -1393,7 +1392,7 @@ func (b *Bot) showSettings(params []string) error {
 	kb.AddRow(tg.NewBtn(i18n.StrBtnQuickPanel, tg.NewCmd(constants.CmdConfigurePanel, nil)))
 	kb.AddRow(tg.NewBtn(i18n.StrBtnToday, tg.NewCmd(constants.CmdShowToday, nil)))
 
-	err := b.show("Settings: ", &kb, tg.MarkupHTML)
+	err := b.show("Settings:", &kb, tg.MarkupHTML)
 	if err != nil {
 		return fmt.Errorf("showSettings : %w", err)
 	}
@@ -1443,7 +1442,7 @@ func (b *Bot) showConfigureQuickPanel(params []string) error {
 
 	addBtn := userconfig.QuickPanelAddButton
 	delBtn := userconfig.QuickPanelDelButton
-	text := fmt.Sprintf("Configure quick panel (%s = add to panel, %s = to remove): ", addBtn, delBtn)
+	text := fmt.Sprintf("Configure quick panel (%s = add to panel, %s = to remove):", addBtn, delBtn)
 	err := b.show(text, &kb, tg.MarkupHTML)
 	if err != nil {
 		return fmt.Errorf("configureQuickPanel : %w", err)
