@@ -65,14 +65,20 @@ func AddEmoji(userFS *fs.FS, emoji string) error {
 		return err
 	}
 
-	var md string
-	if exists {
-		md, err = userFS.Read(fs.DirJournal, journalFilename)
-		if err != nil {
-			return err
-		}
-		// TODO if exists but doesn't have header we should add one
-		todayHeaderRE := regexp.MustCompile(fmt.Sprintf(`(%s) *(.*)`, todayHeader()))
+	if !exists {
+		md := fmt.Sprintf("%s %s", todayHeader(), emoji)
+		return userFS.Write(fs.DirJournal, journalFilename, md)
+	}
+
+	md, err := userFS.Read(fs.DirJournal, journalFilename)
+	if err != nil {
+		return err
+	}
+	md = txt.NormNewLines(md)
+	md = strings.TrimSpace(md)
+
+	todayHeaderRE := regexp.MustCompile(fmt.Sprintf(`(%s) *(.*)`, todayHeader()))
+	if todayHeaderRE.MatchString(md) {
 		replacement := fmt.Sprintf(`$1 ${2}%s`, emoji)
 		// Prepend day's mood emoji in front of all other emojis
 		if slices.Contains(habits.MoodEmojis, emoji) {
@@ -80,7 +86,7 @@ func AddEmoji(userFS *fs.FS, emoji string) error {
 		}
 		md = todayHeaderRE.ReplaceAllString(md, replacement)
 	} else {
-		md = fmt.Sprintf("%s %s", todayHeader(), emoji)
+		md += fmt.Sprintf("\n%s %s", todayHeader(), emoji)
 	}
 
 	return userFS.Write(fs.DirJournal, journalFilename, md)
