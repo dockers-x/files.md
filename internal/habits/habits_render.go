@@ -25,9 +25,9 @@ func Render(userID int64, userFS *fs.FS) ([]byte, error) {
 		return nil, fmt.Errorf("can't render habit: %w", err)
 	}
 
-	moods, ok := habits[moodHabit]
+	moods, ok := habits[MoodHabit]
 	if ok {
-		delete(habits, moodHabit)
+		delete(habits, MoodHabit)
 	}
 
 	var out bytes.Buffer

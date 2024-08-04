@@ -59,6 +59,10 @@ func AddRecord(userFS *fs.FS, noteFilename string) error {
 // AddEmoji adds an emoji to the current day's record
 // Creates a file if there's no one for the current month
 func AddEmoji(userFS *fs.FS, emoji string) error {
+	if len(emoji) == 0 {
+		return nil
+	}
+
 	journalFilename := now().Format("2006 January.md")
 	exists, err := userFS.Exists(fs.DirJournal, journalFilename)
 	if err != nil {

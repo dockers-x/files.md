@@ -42,6 +42,25 @@ func TestHabits(t *testing.T) {
 	r.EqualValues(Year{1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 1, 7: 0, 8: 0, 9: 0, 10: 0, 11: 1, 12: 0, 13: 0, 14: 1, 15: 0, 16: 0, 17: 0, 18: 1, 19: 0, 20: 1, 21: 0, 22: 0, 23: 1, 24: 0, 25: 1, 26: 0, 27: 1, 28: 0, 29: 1, 30: 0, 31: 1}, year)
 }
 
+func TestHabitsForTwoMonths(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+	userFS.Write(fs.DirInsights, "1970 Habits.md", twoMonthsMD)
+
+	habits, err := Habits(userFS, 1970)
+	r.NoError(err)
+
+	r.Len(habits, 2)
+	year, ok := habits["Habit"]
+	r.True(ok)
+
+	r.Len(year, 61)
+
+	r.EqualValues(Year{244: 0, 245: 0, 246: 0, 247: 0, 248: 0, 249: 1, 250: 0, 251: 1, 252: 0, 253: 0, 254: 0, 255: 0, 256: 1, 257: 0, 258: 0, 259: 0, 260: 1, 261: 0, 262: 0, 263: 1, 264: 1, 265: 1, 266: 0, 267: 1, 268: 1, 269: 0, 270: 1, 271: 0, 272: 1, 273: 0, 274: 0, 275: 0, 276: 1, 277: 0, 278: 0, 279: 1, 280: 1, 281: 0, 282: 1, 283: 1, 284: 0, 285: 0, 286: 0, 287: 0, 288: 0, 289: 0, 290: 0, 291: 0, 292: 1, 293: 1, 294: 0, 295: 0, 296: 1, 297: 0, 298: 1, 299: 1, 300: 1, 301: 1, 302: 1, 303: 0, 304: 1}, year)
+}
+
 func TestLastMonthHabits(t *testing.T) {
 	r := require.New(t)
 
@@ -84,7 +103,7 @@ func TestLastWeekHabitsWhenWeekFallsIntoTwoMonths(t *testing.T) {
 
 	habits, err := LastWeekHabits(userFS)
 	r.NoError(err)
-	r.Len(habits, 1)
+	r.Len(habits, 2)
 	r.Len(habits["Habit"], 7)
 	r.EqualValues(Year{271: 0, 272: 1, 273: 0, 274: 0, 275: 0, 276: 1, 277: 0}, habits["Habit"])
 }
@@ -124,4 +143,23 @@ func TestWrite(t *testing.T) {
 	r.NoError(err)
 
 	r.Equal(monthMD, updatedMonthMD)
+}
+
+func TestWritePreserveMoodsForPreviousMonth(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+	userFS.Write("insights", "1970 Habits.md", twoMonthsMD)
+
+	habits, err := Habits(userFS, 1970)
+	r.NoError(err)
+
+	err = Write(userFS, 1970, habits)
+	r.NoError(err)
+
+	updatedMD, err := userFS.Read("insights", "1970 Habits.md")
+	r.NoError(err)
+
+	r.Equal(twoMonthsMD, updatedMD)
 }

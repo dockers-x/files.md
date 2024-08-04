@@ -22,7 +22,7 @@ const (
 	habitCompleted          = "🟢"
 	habitCompletedAtWeekend = "🟡"
 
-	moodHabit = "Mood"
+	MoodHabit = "Mood"
 )
 
 var (
@@ -98,14 +98,16 @@ func Habits(userFS *fs.FS, year int) (map[string]Year, error) {
 		dayOfTheYear := firstDayOfMonth.YearDay()
 
 		// Moods line
-		moodsMarker := moodHabit
+		moodsMarker := MoodHabit
 		if strings.Contains(habit, moodsMarker) {
 			gr := uniseg.NewGraphemes(days)
 			dayOffset := 0
-			habits[moodHabit] = make(Year)
+			if _, ok := habits[MoodHabit]; !ok {
+				habits[MoodHabit] = make(Year)
+			}
 			for gr.Next() {
 				power := slices.Index(MoodEmojis, gr.Str())
-				habits[moodHabit][dayOfTheYear+dayOffset] = power
+				habits[MoodHabit][dayOfTheYear+dayOffset] = power
 				dayOfTheYear++
 			}
 			continue
@@ -169,14 +171,14 @@ func LastWeekHabits(userFS *fs.FS) (map[string]Year, error) {
 func Write(userFS *fs.FS, year int, habits map[string]Year) error {
 	habitKeys := make([]string, 0)
 	for k := range habits {
-		if k == moodHabit {
+		if k == MoodHabit {
 			continue
 		}
 		habitKeys = append(habitKeys, k)
 	}
 	sort.Strings(habitKeys)
-	if _, ok := habits[moodHabit]; ok {
-		habitKeys = append(habitKeys, moodHabit)
+	if _, ok := habits[MoodHabit]; ok {
+		habitKeys = append(habitKeys, MoodHabit)
 	}
 
 	for _, k := range habitKeys {
@@ -228,7 +230,7 @@ func Write(userFS *fs.FS, year int, habits map[string]Year) error {
 }
 
 func emojiForStatus(habitName string, day time.Time, status int) string {
-	if habitName == moodHabit {
+	if habitName == MoodHabit {
 		if status < len(MoodEmojis) {
 			return MoodEmojis[status]
 		}

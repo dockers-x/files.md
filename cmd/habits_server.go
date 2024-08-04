@@ -11,6 +11,7 @@ import (
 	"zakirullin/stuffbot/config"
 	"zakirullin/stuffbot/internal/fs"
 	"zakirullin/stuffbot/internal/habits"
+	"zakirullin/stuffbot/internal/journal"
 	"zakirullin/stuffbot/pkg/txt"
 )
 
@@ -75,8 +76,19 @@ func habitsServer() {
 		if err != nil {
 			w.Write([]byte("can't write habits"))
 		}
+
+		var emoji string
+		if habitName == habits.MoodHabit {
+			if int(status) < len(habits.MoodEmojis) {
+				emoji = habits.MoodEmojis[status]
+			}
+		} else {
+			emoji, _ = userFS.Read(fs.DirHabits, fs.Filename(habitName))
+		}
+		journal.AddEmoji(userFS, emoji)
 	})
 
+	// TODO before release, don't panic if we don't want habits
 	err := http.ListenAndServe(":81", router)
 	if err != nil {
 		panic(err)
