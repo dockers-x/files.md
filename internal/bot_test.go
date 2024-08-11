@@ -355,7 +355,7 @@ func TestCompleteTask(t *testing.T) {
 	tgram := fake.NewTG()
 
 	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), &userconfig.DefaultConfig)
-	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("comp", []string{"today", "0824149b387"})))
+	err = bot.Answer(fake.NewUpdCmdFake(-1, tg.NewCmd("c", []string{"today", "0824149b387"})))
 	r.NoError(err)
 
 	todayTasks, err := bot.fs.FilesAndDirs("today")
@@ -386,8 +386,8 @@ func TestToday(t *testing.T) {
 
 	r.Equal("<b>2</b> left", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
-		tg.NewBtn("First task", tg.NewCmd("comp", []string{"today", "0824149b387"})),
-		tg.NewBtn("🥈 Second task", tg.NewCmd("comp", []string{"today", "2940ad40402"})),
+		tg.NewBtn("First task", tg.NewCmd("c", []string{"today", "0824149b387"})),
+		tg.NewBtn("🥈 Second task", tg.NewCmd("c", []string{"today", "2940ad40402"})),
 	},
 	), tgram.SentKeyboard)
 }
@@ -410,8 +410,8 @@ func TestLater(t *testing.T) {
 
 	r.Equal("⏳ Your tasks for later:", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
-		tg.NewBtn("First task", tg.NewCmd("comp", []string{"later", "0824149b387"})),
-		tg.NewBtn("🥈 Second task", tg.NewCmd("comp", []string{"later", "2940ad40402"})),
+		tg.NewBtn("First task", tg.NewCmd("c", []string{"later", "0824149b387"})),
+		tg.NewBtn("🥈 Second task", tg.NewCmd("c", []string{"later", "2940ad40402"})),
 		tg.NewBtn("🏠 Today", tg.NewCmd("today", nil)),
 	},
 	), tgram.SentKeyboard)
@@ -427,7 +427,7 @@ func TestTodayQuickMenuFilled(t *testing.T) {
 	r.NoError(err)
 	r.Equal("<b>1</b> left", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
-		tg.NewBtn("First task", tg.NewCmd("comp", []string{"today", "0824149b387"})),
+		tg.NewBtn("First task", tg.NewCmd("c", []string{"today", "0824149b387"})),
 		tg.NewRow(
 			tg.NewBtn("📄", tg.NewCmd("files", []string{})),
 			tg.NewBtn("☑️", tg.NewCmd("checklists", []string{})),
@@ -457,7 +457,7 @@ func TestTodayWithMultilineTasks(t *testing.T) {
 	r.Equal("<b>2</b> left", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("👀 First task", tg.NewCmd("task", []string{"today", "0824149b387"})),
-		tg.NewBtn("🥈 Second task", tg.NewCmd("comp", []string{"today", "2940ad40402"})),
+		tg.NewBtn("🥈 Second task", tg.NewCmd("c", []string{"today", "2940ad40402"})),
 	},
 	), tgram.SentKeyboard)
 }
@@ -581,7 +581,7 @@ func TestShowChecklist(t *testing.T) {
 
 	r.Equal("Checklist1", tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
-		tg.NewBtn("Item", tg.NewCmd("comp_checklist", []string{"8d2335b5ff3", "7b72407ca70"})),
+		tg.NewBtn("Item", tg.NewCmd("cc", []string{"8d2335b5ff3", "7b72407ca70"})),
 		tg.NewBtn("🏠 Today", tg.NewCmd("today", nil)),
 	},
 	), tgram.SentKeyboard)
