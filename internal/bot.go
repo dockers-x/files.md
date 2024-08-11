@@ -1057,29 +1057,29 @@ func (b *Bot) moveToNewDir(params []string) error {
 func (b *Bot) moveToExistingFile(params []string) error {
 	// TODO Remove input expectations if dir is not list
 	existingFilenameHash := params[0]
-	filenameHash := params[1]
+	newFilenameHash := params[1]
 
-	if filenameHash == existingFilenameHash {
+	if newFilenameHash == existingFilenameHash {
 		return b.ShowTodayTasks(nil)
 	}
 
-	filename, err := b.fs.Unhash(fs.DirRoot, filenameHash)
+	newFilename, err := b.fs.Unhash(fs.DirRoot, newFilenameHash)
 	if err != nil {
-		return fmt.Errorf("move to file: can't unhash new filename '%s': %w", filenameHash, err)
+		return fmt.Errorf("move to file: can't unhash new filename '%s': %w", newFilenameHash, err)
 	}
 
 	existingFilename, err := b.fs.Unhash(fs.DirRoot, existingFilenameHash)
 	if err != nil {
-		return fmt.Errorf("move to file: can't unhash file '%s' in today: %w", filenameHash, err)
+		return fmt.Errorf("move to file: can't unhash file '%s' in today: %w", newFilenameHash, err)
 	}
 
-	fileContent, err := b.fs.Read(fs.DirRoot, filename)
+	fileContent, err := b.fs.Read(fs.DirRoot, newFilename)
 	if err != nil {
-		return fmt.Errorf("move to file: can't read content of '%s': %w", filename, err)
+		return fmt.Errorf("move to file: can't read content of '%s': %w", newFilename, err)
 	}
 	fileContent = strings.TrimSpace(fileContent)
 	if len(fileContent) == 0 {
-		fileContent = fs.Title(filename)
+		fileContent = fs.Title(newFilename)
 	}
 
 	existingContent, err := b.fs.Read(fs.DirRoot, existingFilename)
@@ -1088,7 +1088,7 @@ func (b *Bot) moveToExistingFile(params []string) error {
 	}
 
 	// We can tolerate this
-	_ = b.fs.Del(fs.DirRoot, filename)
+	_ = b.fs.Del(fs.DirRoot, newFilename)
 
 	header := fmt.Sprintf("### %s", now().Format("02.01.2006 Monday"))
 	content := txt.InsertTextAfterHeader(existingContent, header, fileContent)
@@ -1421,7 +1421,7 @@ func (b *Bot) toFileKeyboardButtons(newFilenameHash string) ([]tg.Btn, error) {
 	var buttons []tg.Btn
 	newBtn := func(title, existingFilenameHash string) tg.Btn {
 		title = fmt.Sprintf("%s %s", i18n.Emoji("file"), title)
-		params := []string{newFilenameHash, existingFilenameHash}
+		params := []string{existingFilenameHash, newFilenameHash}
 		return tg.NewBtn(title, tg.NewCmd(constants.CmdMoveToExistingFile, params))
 	}
 	for _, file := range files {
