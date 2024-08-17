@@ -17,19 +17,14 @@ var AvailableQuickBtns = []tg.Btn{
 	tg.NewBtn("Habits", tg.NewCustomCmd(consts.CmdWebAppHabits, nil, tg.CmdTypeWebApp)),
 }
 
-var (
-	QuickPanelAddButton = "➕"
-	QuickPanelDelButton = "➖"
-)
-
-func (c *Config) AddQuickBtn(button string) bool {
-	// Does this button already exist?
-	for _, curBtn := range c.raw.QuickCmds {
-		if curBtn == button {
+func (c *Config) AddQuickCmd(cmd string) bool {
+	// Does this cmd already exist?
+	for _, existingCmd := range c.raw.QuickCmds {
+		if existingCmd == cmd {
 			return false
 		}
 	}
-	c.raw.QuickCmds = append(c.raw.QuickCmds, button)
+	c.raw.QuickCmds = append(c.raw.QuickCmds, cmd)
 	return true
 }
 
@@ -46,14 +41,14 @@ func (c *Config) HasQuickCmd(cmd string) bool {
 	return false
 }
 
-func (c *Config) DelQuickBtn(toDelete string) bool {
+func (c *Config) DelQuickCmd(cmd string) bool {
 	var newButtons []string
 	found := false // Was the target
-	for _, curBtn := range c.raw.QuickCmds {
-		if curBtn == toDelete {
+	for _, curQuickCmd := range c.raw.QuickCmds {
+		if curQuickCmd == cmd {
 			found = true
 		} else {
-			newButtons = append(newButtons, curBtn)
+			newButtons = append(newButtons, curQuickCmd)
 		}
 	}
 	c.raw.QuickCmds = newButtons

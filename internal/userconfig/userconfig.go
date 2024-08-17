@@ -11,7 +11,6 @@ import (
 
 	"golang.org/x/exp/slog"
 
-	"zakirullin/stuffbot/i18n"
 	"zakirullin/stuffbot/internal/consts"
 	"zakirullin/stuffbot/internal/fs"
 )
@@ -33,20 +32,6 @@ var DefaultConfig = Config{ // TODO apply default config if some fields are miss
 		JournalFilenameFormat:  "January 2006.md",
 		JournalHeaderFormat:    "02, Monday",
 		QuickCmds:              []string{},
-	},
-}
-
-var TasksOnlyConfig = Config{
-	raw: raw{
-		HomeCmd:    "today",
-		MoveToCmds: []string{"tomorrow", "later", "day"},
-	},
-}
-
-var NotesOnlyConfig = Config{
-	raw: raw{
-		HomeCmd:    "notes",
-		MoveToCmds: []string{"##NOTE_DIRS##"},
 	},
 }
 
@@ -118,29 +103,6 @@ func (c *Config) Save(path string) error { // TODO add lazy saving, save only if
 	}
 
 	return nil
-}
-
-func (c *Config) MoveToCmds() []string {
-	configToReal := map[string]string{
-		"tomorrow":  i18n.StrForTomorrow,
-		"later":     i18n.StrForLater,
-		"day":       i18n.StrForDay,
-		"file":      i18n.StrToFile,
-		"journal":   i18n.StrToJournal,
-		"checklist": i18n.StrToChecklist,
-	}
-
-	var realCmds []string
-	for _, configName := range c.raw.MoveToCmds {
-		realName, ok := configToReal[configName]
-		if !ok {
-			continue
-		}
-
-		realCmds = append(realCmds, realName)
-	}
-
-	return realCmds
 }
 
 func (c *Config) SetPomodoroDuration(value time.Duration) error {

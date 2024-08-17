@@ -206,31 +206,32 @@ func (b *Bot) handlers() map[string]func([]string) error {
 		consts.CmdShowWatchChecklist: b.showWatch,
 		consts.CmdShowShopChecklist:  b.showShop,
 		// Button's commands (callbacks)
-		consts.CmdRenameFile:         b.showRenameFile,
-		consts.CmdShowMultilineTask:  b.showMultilineTask,
-		consts.CmdShowFile:           b.showFile,
-		consts.CmdShowChecklist:      b.showChecklist,
-		consts.CmdCompleteChecklist:  b.completeChecklist,
-		consts.CmdShowScheduleForDay: b.showChooseDay,
-		consts.CmdShowMoveToFile:     b.showMoveToFile,
-		consts.CmdShowToChecklist:    b.showToChecklist,
-		consts.CmdMoveToDir:          b.moveToDir,
-		consts.CmdMoveToNewDir:       b.moveToNewDir,
-		consts.CmdMoveToExistingFile: b.moveToExistingFile,
-		consts.CmdMoveToNewFile:      b.moveToNewFile,
-		consts.CmdMoveToChecklist:    b.moveToChecklist,
-		consts.CmdMoveToNewChecklist: b.moveToNewChecklist,
-		consts.CmdMoveToJournal:      b.moveToJournal,
-		consts.CmdSchedule:           b.schedule,
-		consts.CmdScheduleForTmrw:    b.scheduleForTmrw,
-		consts.CmdComplete:           b.complete,
-		consts.CmdPostpone:           b.postpone,
-		consts.CmdPomodoro:           b.togglePomodoro,
-		consts.CmdShowRecurringKB:    b.showRecurringKeyBoard,
-		consts.CmdShowSettings:       b.showSettings,
-		consts.CmdConfigurePanel:     b.showConfigureQuickBtns,
-		consts.CmdAddToPanel:         b.addToPanel,
-		consts.CmdDelFromPonel:       b.delFromPanel,
+		consts.CmdRenameFile:             b.showRenameFile,
+		consts.CmdShowMultilineTask:      b.showMultilineTask,
+		consts.CmdShowFile:               b.showFile,
+		consts.CmdShowChecklist:          b.showChecklist,
+		consts.CmdCompleteChecklist:      b.completeChecklist,
+		consts.CmdShowScheduleForDay:     b.showChooseDay,
+		consts.CmdShowMoveToFile:         b.showMoveToFile,
+		consts.CmdShowToChecklist:        b.showToChecklist,
+		consts.CmdMoveToDir:              b.moveToDir,
+		consts.CmdMoveToNewDir:           b.moveToNewDir,
+		consts.CmdMoveToExistingFile:     b.moveToExistingFile,
+		consts.CmdMoveToNewFile:          b.moveToNewFile,
+		consts.CmdMoveToChecklist:        b.moveToChecklist,
+		consts.CmdMoveToNewChecklist:     b.moveToNewChecklist,
+		consts.CmdMoveToJournal:          b.moveToJournal,
+		consts.CmdSchedule:               b.schedule,
+		consts.CmdScheduleForTmrw:        b.scheduleForTmrw,
+		consts.CmdComplete:               b.complete,
+		consts.CmdPostpone:               b.postpone,
+		consts.CmdPomodoro:               b.togglePomodoro,
+		consts.CmdShowRecurringKB:        b.showRecurringKeyBoard,
+		consts.CmdShowSettings:           b.showSettings,
+		consts.CmdShowQuickBtnsSettings:  b.showQuickBtnsSettings,
+		consts.CmdShowMoveToBtnsSettings: b.showMoveToBtnsSettings,
+		consts.CmdAddToQuickBtns:         b.addToQuickBtns,
+		consts.CmdDelFromQuickBtns:       b.delFromQuickBtns,
 		// Used for button-like separators
 		consts.CmdDoNothing: func(s []string) error { return nil },
 	}
@@ -554,7 +555,7 @@ func (b *Bot) showMoveTo(params []string) error {
 			lastRow = append(lastRow, tg.NewBtn(fs.Title(unhashedTarget), tg.NewCmd(quickCmd, args)))
 		}
 	}
-	lastRow = append(lastRow, tg.NewBtn(i18n.StrBtnGoToToday, tg.NewCmd(consts.CmdShowToday, nil)))
+	lastRow = append(lastRow, tg.NewBtn(i18n.StrGoToToday, tg.NewCmd(consts.CmdShowToday, nil)))
 	kb.AddRow(lastRow)
 
 	b.delAllKeyboards()
@@ -644,7 +645,7 @@ func (b *Bot) showLaterTasks(params []string) error {
 
 		kb.AddRow(btn)
 	}
-	kb.AddRow(tg.NewBtn(i18n.StrBtnToday, tg.NewCmd(consts.CmdShowToday, nil)))
+	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(consts.CmdShowToday, nil)))
 
 	msg := b.tr("⏳ Your tasks for later:")
 	err = b.show(msg, &kb, tg.MarkupHTML)
@@ -716,7 +717,7 @@ func (b *Bot) showFiles(params []string) error {
 		kb.AddRow(row)
 	}
 
-	kb.AddRow(tg.NewBtn(i18n.StrBtnToday, tg.NewCmd(consts.CmdShowToday, nil)))
+	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(consts.CmdShowToday, nil)))
 
 	err = b.show(b.tr("📄 Your files:")+wideSpacer, &kb, tg.MarkupHTML)
 	if err != nil {
@@ -843,7 +844,7 @@ func (b *Bot) showRenameFile(params []string) error {
 	}
 
 	kb := tg.NewKeyboard([]tg.Row{
-		tg.NewRow(tg.NewBtn(i18n.StrBtnBack, tg.NewCmd(dir, []string{dir}))),
+		tg.NewRow(tg.NewBtn(i18n.StrBack, tg.NewCmd(dir, []string{dir}))),
 	})
 
 	cmd := tg.NewCmd(consts.CmdMoveToDir, []string{dir, filename, dir, "%s"})
@@ -899,10 +900,10 @@ func (b *Bot) showMultilineTask(params []string) error {
 	content = txt.Html(content)
 
 	var moveToBtn tg.Btn
-	btnLabel := i18n.StrBtnMoveToLater
+	btnLabel := i18n.StrMoveToLater
 	toDir := fs.DirLater
 	if dir == fs.DirLater {
-		btnLabel = i18n.StrBtnMoveToToday
+		btnLabel = i18n.StrMoveToToday
 		toDir = fs.DirToday
 	}
 	moveToBtn = tg.NewBtn(btnLabel, tg.NewCmd(consts.CmdMoveToDir, []string{toDir, dir, filenameHash}))
@@ -910,8 +911,8 @@ func (b *Bot) showMultilineTask(params []string) error {
 	kb := tg.NewKeyboard([]tg.Row{
 		tg.NewRow(moveToBtn),
 		tg.NewRow(
-			tg.NewBtn(i18n.StrBtnBack, tg.NewCmd(dir, []string{dir})),
-			tg.NewBtn(i18n.StrBtnComplete, tg.NewCmd(consts.CmdComplete, []string{dir, filenameHash})),
+			tg.NewBtn(i18n.StrBack, tg.NewCmd(dir, []string{dir})),
+			tg.NewBtn(i18n.StrComplete, tg.NewCmd(consts.CmdComplete, []string{dir, filenameHash})),
 		),
 	})
 
@@ -949,7 +950,7 @@ func (b *Bot) showFile(params []string) error {
 	}
 
 	kb := tg.NewKeyboard([]tg.Row{
-		tg.NewRow(tg.NewBtn(i18n.StrBtnToday, tg.NewCmd(consts.CmdShowToday, nil))),
+		tg.NewRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(consts.CmdShowToday, nil))),
 	})
 
 	err = b.show(fmt.Sprintf("%s\n%s", fs.Title(filename), content), kb, tg.MarkupHTML)
@@ -986,7 +987,7 @@ func (b *Bot) showChecklist(params []string) error {
 	for _, item := range items {
 		kb.AddRow(tg.NewBtn(item.Title, tg.NewCmd(consts.CmdCompleteChecklist, []string{dirHash, item.Hash})))
 	}
-	kb.AddRow(tg.NewBtn(i18n.StrBtnToday, tg.NewCmd(consts.CmdShowToday, nil)))
+	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(consts.CmdShowToday, nil)))
 
 	err = b.show(fs.Title(checklist)+wideSpacer, kb, tg.MarkupHTML)
 	if err != nil {
@@ -1336,7 +1337,7 @@ func (b *Bot) forADayKeyboard(filenameHash string) (*tg.Keyboard, error) {
 	}
 
 	kb := tg.NewKeyboard([]tg.Row{
-		tg.NewRow(tg.NewBtn(i18n.StrBtnRepeat, tg.NewCmd(consts.CmdShowRecurringKB, []string{filenameHash}))),
+		tg.NewRow(tg.NewBtn(i18n.StrRepeat, tg.NewCmd(consts.CmdShowRecurringKB, []string{filenameHash}))),
 		tg.NewRow(
 			newBtn(i18n.StrMonday, "0 0 * * 1"),
 			newBtn(i18n.StrTuesday, "0 0 * * 2"),
@@ -1537,111 +1538,6 @@ func (b *Bot) togglePomodoro(params []string) error {
 	}
 
 	return b.ShowTodayTasks(nil)
-}
-
-func (b *Bot) showSettings(params []string) error {
-	var kb tg.Keyboard
-	kb.AddRow(tg.NewBtn(i18n.StrBtnQuickPanel, tg.NewCmd(consts.CmdConfigurePanel, nil)))
-	kb.AddRow(tg.NewBtn(i18n.StrBtnToday, tg.NewCmd(consts.CmdShowToday, nil)))
-
-	err := b.show("Settings:", &kb, tg.MarkupHTML)
-	if err != nil {
-		return fmt.Errorf("showSettings : %w", err)
-	}
-
-	return nil
-}
-
-func (b *Bot) showConfigureQuickBtns(params []string) error {
-	var kb tg.Keyboard
-
-	// Step 1. Append all buttons that are already chosen by user
-	var usedCmds []string
-
-	// We iterate through hardcoded panel to preserve order of buttons in UI
-	for _, cmd := range b.conf.QuickCmds() {
-		for _, btn := range userconfig.AvailableQuickBtns {
-			if btn.Cmd.Name != cmd {
-				continue
-			}
-
-			name := fmt.Sprintf("%s %s %s", i18n.Emoji(btn.Name), btn.Name, userconfig.QuickPanelDelButton)
-			enabledCmd := tg.NewCmd(consts.CmdDelFromPonel, []string{btn.Cmd.Name})
-			kb.AddRow(tg.NewBtn(name, enabledCmd))
-			usedCmds = append(usedCmds, cmd)
-			break
-		}
-	}
-
-	kb.AddRow(tg.NewBtn("-", tg.NewCmd(consts.CmdDoNothing, nil)))
-
-	// Step 2. now, let's fill buttons that are not disabled...
-	for _, btn := range userconfig.AvailableQuickBtns {
-		// Check if command is enabled
-		cmdUsed := false
-		for _, usedCmd := range usedCmds {
-			if btn.Cmd.Name == usedCmd {
-				cmdUsed = true
-			}
-		}
-		if cmdUsed {
-			continue
-		}
-		// Command is not enabled, so add it to disabled list
-		name := fmt.Sprintf("%s %s %s", i18n.Emoji(btn.Name), btn.Name, userconfig.QuickPanelAddButton)
-		disabledCmd := tg.NewCmd(consts.CmdAddToPanel, []string{btn.Cmd.Name})
-		kb.AddRow(tg.NewBtn(name, disabledCmd))
-	}
-
-	kb.AddRow(tg.NewBtn(i18n.StrBtnBack, tg.NewCmd(consts.CmdShowSettings, nil)))
-
-	addBtn := userconfig.QuickPanelAddButton
-	delBtn := userconfig.QuickPanelDelButton
-	text := fmt.Sprintf("Configure quick panel (%s = add to panel, %s = to remove):", addBtn, delBtn)
-	err := b.show(text, &kb, tg.MarkupHTML)
-	if err != nil {
-		return fmt.Errorf("configureQuickPanel : %w", err)
-	}
-
-	return nil
-}
-
-func (b *Bot) addToPanel(params []string) error {
-	if len(params) == 0 {
-		return fmt.Errorf("no params suplied to addToPanel")
-	}
-
-	// Search whether a command is valid
-	found := false
-	for _, btn := range userconfig.AvailableQuickBtns {
-		if btn.Cmd.Name == params[0] {
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		return fmt.Errorf("unknown command: %s", params[0])
-	}
-
-	if !b.conf.AddQuickBtn(params[0]) {
-		return fmt.Errorf("button already exists in user's prefs: %s", params[0])
-	}
-	b.showConfigureQuickBtns([]string{})
-
-	return nil
-}
-
-func (b *Bot) delFromPanel(params []string) error {
-	if len(params) == 0 {
-		return fmt.Errorf("no params suplied to delFromPanel")
-	}
-	if !b.conf.DelQuickBtn(params[0]) {
-		return fmt.Errorf("button doesn't exist in user's prefs: %s", params[0])
-	}
-
-	b.showConfigureQuickBtns([]string{})
-	return nil
 }
 
 func (b *Bot) showRecurringKeyBoard(params []string) error {
