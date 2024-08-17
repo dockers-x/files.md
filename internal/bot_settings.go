@@ -8,6 +8,7 @@ import (
 	"zakirullin/stuffbot/internal/consts"
 	"zakirullin/stuffbot/internal/userconfig"
 	"zakirullin/stuffbot/pkg/tg"
+	"zakirullin/stuffbot/pkg/txt"
 )
 
 const (
@@ -152,7 +153,7 @@ func (b *Bot) showMoveToBtnsSettings(params []string) error {
 				continue
 			}
 
-			name := fmt.Sprintf("%s %s", btn.Name, delBtn)
+			name := txt.Emoji(delBtn, btn.Name)
 			enabledCmd := tg.NewCmd(consts.CmdDelFromMoveToBtns, []string{btn.Cmd.Name})
 			kb.AddRow(tg.NewBtn(name, enabledCmd))
 			usedCmds = append(usedCmds, cmd)
@@ -175,7 +176,7 @@ func (b *Bot) showMoveToBtnsSettings(params []string) error {
 			continue
 		}
 		// Command is not enabled, so add it to disabled list
-		name := fmt.Sprintf("%s %s", btn.Name, addBtn)
+		name := txt.Emoji(addBtn, btn.Name)
 		disabledCmd := tg.NewCmd(consts.CmdAddToMoveToBtns, []string{btn.Cmd.Name})
 		kb.AddRow(tg.NewBtn(name, disabledCmd))
 	}

@@ -210,7 +210,8 @@ func (b *Bot) handlers() map[string]func([]string) error {
 		consts.CmdShowMultilineTask:      b.showMultilineTask,
 		consts.CmdShowFile:               b.showFile,
 		consts.CmdShowChecklist:          b.showChecklist,
-		consts.CmdCompleteChecklist:      b.completeChecklist,
+		consts.CmdCompleteChecklistItem:  b.completeChecklistItem,
+		consts.CmdShowChecklistItem:      b.showChecklistItem,
 		consts.CmdShowScheduleForDay:     b.showChooseDay,
 		consts.CmdShowMoveToFile:         b.showMoveToFile,
 		consts.CmdShowMoveToChecklist:    b.showToChecklist,
@@ -587,7 +588,7 @@ func (b *Bot) ShowTodayTasks(params []string) error {
 		var btn tg.Btn
 		if file.IsMultiline {
 			cmd := tg.NewCmd(consts.CmdShowMultilineTask, []string{fs.DirToday, fs.Hash(file.Name)})
-			btn = tg.NewBtn(txt.Emoji("👀", fs.UnsanitizeFilename(file.Title)), cmd)
+			btn = tg.NewBtn(txt.Emoji(i18n.Emoji("eyes"), fs.UnsanitizeFilename(file.Title)), cmd)
 		} else {
 			cmd := tg.NewCmd(consts.CmdComplete, []string{fs.DirToday, fs.Hash(file.Name)})
 			btn = tg.NewBtn(i18n.Emojify(fs.UnsanitizeFilename(file.Title)), cmd)
@@ -624,7 +625,7 @@ func (b *Bot) showLaterTasks(params []string) error {
 		var btn tg.Btn
 		if file.IsMultiline {
 			cmd := tg.NewCmd(consts.CmdShowMultilineTask, []string{fs.DirLater, fs.Hash(file.Name)})
-			btn = tg.NewBtn(txt.Emoji("👀", fs.UnsanitizeFilename(file.Title)), cmd)
+			btn = tg.NewBtn(txt.Emoji(i18n.Emoji("eyes"), fs.UnsanitizeFilename(file.Title)), cmd)
 		} else {
 			cmd := tg.NewCmd(consts.CmdComplete, []string{fs.DirLater, fs.Hash(file.Name)})
 			btn = tg.NewBtn(i18n.Emojify(fs.UnsanitizeFilename(file.Title)), cmd)
@@ -801,7 +802,7 @@ func (b *Bot) showRename(params []string) error {
 	for _, file := range files {
 		var btn tg.Btn
 		cmd := tg.NewCmd(consts.CmdRenameFile, []string{dir, fs.Hash(file.Name)})
-		btn = tg.NewBtn(txt.Emoji("👀", file.Title), cmd)
+		btn = tg.NewBtn(txt.Emoji(i18n.Emoji("eyes"), file.Title), cmd)
 
 		kb.AddRow(btn)
 	}
@@ -972,7 +973,13 @@ func (b *Bot) showChecklist(params []string) error {
 
 	kb := tg.NewKeyboard(nil)
 	for _, item := range items {
-		kb.AddRow(tg.NewBtn(item.Title, tg.NewCmd(consts.CmdCompleteChecklist, []string{dirHash, item.Hash})))
+		if item.IsMultiline {
+			title := txt.Emoji(i18n.Emoji("eyes"), item.Title)
+			kb.AddRow(tg.NewBtn(title, tg.NewCmd(consts.CmdShowChecklistItem, []string{dirHash, item.Hash})))
+		} else {
+			kb.AddRow(tg.NewBtn(item.Title, tg.NewCmd(consts.CmdCompleteChecklistItem, []string{dirHash, item.Hash})))
+		}
+
 	}
 	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(consts.CmdShowToday, nil)))
 
@@ -1241,7 +1248,7 @@ func (b *Bot) complete(params []string) error {
 	return nil
 }
 
-func (b *Bot) completeChecklist(params []string) error {
+func (b *Bot) completeChecklistItem(params []string) error {
 	dirHash := params[0]
 	filenameHash := params[1]
 
@@ -1262,6 +1269,38 @@ func (b *Bot) completeChecklist(params []string) error {
 	err = b.fs.Rename(dir, filename, fs.DirArchive, filename)
 	if err != nil {
 		return fmt.Errorf("complete: can't complete %s: %w", filename, err)
+	}
+
+	return b.showChecklist([]string{dirHash})
+}
+
+func (b *Bot) showChecklistItem(params []string) error {
+	dirHash := params[0]
+	filenameHash := params[1]
+
+	dir, err := b.fs.Unhash(fs.DirRoot, dirHash)
+	if err != nil {
+		return fmt.Errorf("show checklist item: can't unhash dir %s: %w", dir, err)
+	}
+
+	filename, err := b.fs.Unhash(dir, filenameHash)
+	if err != nil {
+		return fmt.Errorf("show checklist item: can't unhash filename %s: %w", filename, err)
+	}
+
+	content, err := b.fs.Read(dir, filename)
+	if err != nil {
+		return fmt.Errorf("show checklist item: can't read content of %s: %w", filename, err)
+	}
+
+	kb := tg.NewKeyboard([]tg.Row{
+		tg.NewBtn(i18n.StrBack, tg.NewCmd(consts.CmdShowChecklist, []string{dirHash})),
+		tg.NewBtn(i18n.StrComplete, tg.NewCmd(consts.CmdCompleteChecklistItem, []string{dirHash, filenameHash})),
+	})
+
+	err = b.show(content, kb, tg.MarkupHTML)
+	if err != nil {
+		return fmt.Errorf("show checklist item: %w", err)
 	}
 
 	return b.showChecklist([]string{dirHash})

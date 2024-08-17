@@ -204,7 +204,6 @@
     "face",
     "smile",
     "starry",
-    "eyes",
     "grinning"
   ],
   "😘": [
@@ -1521,14 +1520,15 @@
     "bone",
     "skeleton"
   ],
+  "👀" : [
+    "eyes"
+  ],
   "👁️": [
     "eye",
     "face",
     "look",
     "see",
     "stare",
-    "eyes",
-    "look",
     "stalk",
     "peek",
     "see",
@@ -6978,7 +6978,6 @@
   ],
   "🥽": [
     "goggles",
-    "eyes",
     "protection",
     "safety"
   ],
