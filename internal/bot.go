@@ -535,6 +535,8 @@ func (b *Bot) showMoveTo(params []string) error {
 	var kb tg.Keyboard
 	userMoveToBtns := b.moveToBtns(filenameHash)
 	if len(userMoveToBtns) == 0 {
+		b.delAllKeyboards()
+	
 		return b.ShowTodayTasks(nil)
 	}
 
