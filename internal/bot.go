@@ -280,6 +280,7 @@ func (b *Bot) allowedTextCmds() []string {
 		consts.CmdShowRename,
 		consts.CmdShowChecklists,
 		consts.CmdShowStats,
+		consts.CmdShowSchedule,
 		//"help" TODO,
 		//"err" TODO,
 	}
