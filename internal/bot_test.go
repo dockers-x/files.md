@@ -1143,3 +1143,32 @@ func TestMoveToExistingFileExistingRecord(t *testing.T) {
 	r.NoError(err)
 	r.Equal("### 11.08.2024 Sunday\nNew file\nContent", content)
 }
+
+func TestShowMoveTo(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+	err = userFS.Write("", "file", "")
+
+	tgram := fake.NewTG()
+
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), &userconfig.DefaultConfig)
+	err = bot.Answer(fake.NewUpd(-1, "New task\nContent"))
+	r.NoError(err)
+
+	r.Equal("Task added for <b>today</b>!", tgram.SentTexts[0])
+
+	kb := tg.NewKeyboard([]tg.Row{
+		[]tg.Btn{
+			{Name: "🌚 To tmrw", Cmd: tg.Cmd{Name: "sc_tmrw", Params: []string{"d0776a3e2b9"}, Type: "cmd"}},
+			{Name: "📆 To a day", Cmd: tg.Cmd{Name: "sc_day", Params: []string{"d0776a3e2b9"}, Type: "cmd"}},
+			{Name: "📄 To File", Cmd: tg.Cmd{Name: "to_file", Params: []string{"d0776a3e2b9"}, Type: "cmd"}},
+		},
+		[]tg.Btn{
+			{Name: "💚 To Journal", Cmd: tg.Cmd{Name: "mv_to_journal", Params: []string{"d0776a3e2b9"}, Type: "cmd"}},
+			{Name: "➡️ Today", Cmd: tg.Cmd{Name: "today", Params: []string(nil), Type: "cmd"}},
+		}},
+	)
+	r.Equal(kb, tgram.SentKeyboard)
+}

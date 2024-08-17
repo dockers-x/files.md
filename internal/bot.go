@@ -1258,7 +1258,7 @@ func (b *Bot) complete(params []string) error {
 		return fmt.Errorf("complete: can't touch %s: %w", filename, err)
 	}
 
-	// TODO multiline
+	// TODO multiline?
 	err = b.fs.Rename(dir, filename, fs.DirArchive, filename)
 	if err != nil {
 		return fmt.Errorf("complete: can't complete %s: %w", filename, err)
