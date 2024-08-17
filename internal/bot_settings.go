@@ -102,9 +102,8 @@ func (b *Bot) addToQuickBtns(params []string) error {
 	if !b.conf.AddQuickCmd(params[0]) {
 		return fmt.Errorf("button already exists in user's prefs: %s", params[0])
 	}
-	b.showQuickBtnsSettings([]string{})
 
-	return nil
+	return b.showQuickBtnsSettings([]string{})
 }
 
 func (b *Bot) delFromQuickBtns(params []string) error {
@@ -115,8 +114,7 @@ func (b *Bot) delFromQuickBtns(params []string) error {
 		return fmt.Errorf("button doesn't exist in user's prefs: %s", params[0])
 	}
 
-	b.showQuickBtnsSettings([]string{})
-	return nil
+	return b.showQuickBtnsSettings([]string{})
 }
 
 func (b *Bot) quickBtns() []tg.Btn {
@@ -211,12 +209,11 @@ func (b *Bot) addToMoveToBtns(params []string) error {
 		return fmt.Errorf("unknown command: %s", params[0])
 	}
 
-	if !b.conf.AddMoveToBtn(params[0]) {
+	if !b.conf.AddMoveToCmd(params[0]) {
 		return fmt.Errorf("button already exists in user's prefs: %s", params[0])
 	}
-	b.showMoveToBtnsSettings([]string{})
 
-	return nil
+	return b.showMoveToBtnsSettings([]string{})
 }
 
 func (b *Bot) delFromMoveToBtns(params []string) error {
@@ -227,8 +224,7 @@ func (b *Bot) delFromMoveToBtns(params []string) error {
 		return fmt.Errorf("button doesn't exist in user's prefs: %s", params[0])
 	}
 
-	b.showMoveToBtnsSettings([]string{})
-	return nil
+	return b.showMoveToBtnsSettings([]string{})
 }
 
 func (b *Bot) moveToBtns(filenameHash string) []tg.Btn {

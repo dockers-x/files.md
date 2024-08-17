@@ -18,14 +18,14 @@ var AvailableMoveToBtns = []tg.Btn{
 	tg.NewBtn(i18n.StrToChecklist, tg.NewCmd(consts.CmdShowMoveToChecklist, nil)),
 }
 
-func (c *Config) AddMoveToBtn(button string) bool {
-	// Does this button already exist?
-	for _, curBtn := range c.raw.QuickCmds {
-		if curBtn == button {
+func (c *Config) AddMoveToCmd(cmd string) bool {
+	// Does this cmd already exist?
+	for _, existingCmds := range c.raw.MoveToCmds {
+		if existingCmds == cmd {
 			return false
 		}
 	}
-	c.raw.QuickCmds = append(c.raw.QuickCmds, button)
+	c.raw.MoveToCmds = append(c.raw.MoveToCmds, cmd)
 
 	return true
 }
@@ -53,7 +53,7 @@ func (c *Config) DelMoveToCmd(cmd string) bool {
 			newCmds = append(newCmds, existingCmd)
 		}
 	}
-	c.raw.QuickCmds = newCmds
+	c.raw.MoveToCmds = newCmds
 
 	return found
 }
