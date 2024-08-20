@@ -233,13 +233,15 @@ func (c *Config) userLock() *sync.Mutex {
 	mu.Lock()
 	defer mu.Unlock()
 
+	if userLocks == nil {
+		userLocks = make(map[int64]*sync.Mutex)
+	}
 	if lock, exists := userLocks[c.userID]; exists {
 		return lock
 	}
 
-	// TODO fix real id
 	newLock := &sync.Mutex{}
-	userLocks[1] = newLock
+	userLocks[c.userID] = newLock
 
 	return newLock
 

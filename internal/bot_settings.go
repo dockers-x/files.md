@@ -149,7 +149,11 @@ func (b *Bot) showMoveToBtnsSettings(params []string) error {
 	var usedCmds []string
 
 	// We iterate through hardcoded panel to preserve order of buttons in UI
-	for _, cmd := range b.conf.MoveToCmds() {
+	cmds, err := b.conf.MoveToCmds()
+	if err != nil {
+		return fmt.Errorf("can't get move to cmds: %w", err)
+	}
+	for _, cmd := range cmds {
 		for _, btn := range userconfig.AvailableMoveToBtns {
 			if btn.Cmd.Name != cmd {
 				continue
@@ -186,7 +190,7 @@ func (b *Bot) showMoveToBtnsSettings(params []string) error {
 	kb.AddRow(tg.NewBtn(i18n.StrBack, tg.NewCmd(consts.CmdShowSettings, nil)))
 
 	text := fmt.Sprintf("Configure quick panel (%s = add to panel, %s = to remove):", addBtn, delBtn)
-	err := b.show(text, &kb, tg.MarkupHTML)
+	err = b.show(text, &kb, tg.MarkupHTML)
 	if err != nil {
 		return fmt.Errorf("configureQuickPanel : %w", err)
 	}
@@ -195,35 +199,21 @@ func (b *Bot) showMoveToBtnsSettings(params []string) error {
 }
 
 func (b *Bot) addToMoveToBtns(params []string) error {
-	if len(params) == 0 {
-		return fmt.Errorf("no params suplied to addToPanel")
-	}
+	cmd := params[0]
 
-	// Search whether a command is valid
-	found := false
-	for _, btn := range userconfig.AvailableMoveToBtns {
-		if btn.Cmd.Name == params[0] {
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		return fmt.Errorf("unknown command: %s", params[0])
-	}
-
-	if !b.conf.AddMoveToCmd(params[0]) {
-		return fmt.Errorf("button already exists in user's prefs: %s", params[0])
+	err := b.conf.AddMoveToCmd(cmd)
+	if err != nil {
+		return fmt.Errorf("can't add to move to buttons: %w", err)
 	}
 
 	return b.showMoveToBtnsSettings([]string{})
 }
 
 func (b *Bot) delFromMoveToBtns(params []string) error {
-	if len(params) == 0 {
-		return fmt.Errorf("no params suplied to delFromPanel")
-	}
-	if !b.conf.DelMoveToCmd(params[0]) {
+	cmd := params[0]
+
+	err := b.conf.DelMoveToCmd(cmd)
+	if err != nil {
 		return fmt.Errorf("button doesn't exist in user's prefs: %s", params[0])
 	}
 
@@ -233,8 +223,12 @@ func (b *Bot) delFromMoveToBtns(params []string) error {
 func (b *Bot) moveToBtns(filenameHash string) []tg.Btn {
 	moveToBtns := tg.NewRow()
 
-	// We iterate through hardcoded panel to preserve order of buttons in UI
-	for _, cmd := range b.conf.MoveToCmds() {
+	cmds, err := b.conf.MoveToCmds()
+	if err != nil {
+		return nil
+	}
+
+	for _, cmd := range cmds {
 		for _, btn := range userconfig.AvailableMoveToBtns {
 			if btn.Cmd.Name == cmd {
 				btn.Cmd.Params = []string{filenameHash}
