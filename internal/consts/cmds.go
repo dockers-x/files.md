@@ -56,12 +56,12 @@ const (
 	CmdInlineQuerySearchInDir      = "search_dir"
 	CmdWebAppHabits                = "habits"
 	CmdAddToJournalShortcut        = "j"
-	CmdAddToRecentFileShortcut     = "r"
+	CmdAddToRecentFileShortcut     = "a"
 )
 
 var (
 	Shortcuts = map[string][]string{
 		CmdAddToJournalShortcut:    {"/ж", "jj", "жж"},
-		CmdAddToRecentFileShortcut: {"/р", "rr", "рр"},
+		CmdAddToRecentFileShortcut: {"/a", "aa", "аа"},
 	}
 )
