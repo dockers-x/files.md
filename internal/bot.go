@@ -245,6 +245,7 @@ func (b *Bot) handlers() map[string]func([]string) error {
 		consts.CmdAddToMoveToBtns:             b.addToMoveToBtns,
 		consts.CmdDelFromMoveToBtns:           b.delFromMoveToBtns,
 		consts.CmdAddToJournalShortcut:        b.addToJournalFromShortcut,
+		consts.CmdAddToRecentFileShortcut:     b.addToRecentFileFromShortcut,
 		// Used for button-like separators
 		consts.CmdDoNothing: func(s []string) error { return nil },
 	}
@@ -610,7 +611,7 @@ func (b *Bot) showMoveTo(params []string) error {
 	return nil
 }
 
-func (b *Bot) ShowTodayTasks(params []string) error {
+func (b *Bot) ShowTodayTasks(_ []string) error {
 	files, err := b.fs.FilesAndDirs(fs.DirToday)
 	if err != nil {
 		return fmt.Errorf("show list: can't get files in %s dir: %w", fs.DirToday, err)
@@ -652,7 +653,7 @@ func (b *Bot) ShowTodayTasks(params []string) error {
 	return nil
 }
 
-func (b *Bot) showLaterTasks(params []string) error {
+func (b *Bot) showLaterTasks(_ []string) error {
 	files, err := b.fs.FilesAndDirs(fs.DirLater)
 	if err != nil {
 		return fmt.Errorf("show list: can't get files in %s dir: %w", fs.DirLater, err)
@@ -715,7 +716,7 @@ func (b *Bot) todayLabel() string {
 	return statusBar + fmt.Sprintf(i18n.Tr("<b>%d</b> left%s"), len(todayTasks), wideSpacer)
 }
 
-func (b *Bot) showFiles(params []string) error {
+func (b *Bot) showFiles(_ []string) error {
 	files, err := b.fs.FilesAndDirs(fs.DirRoot)
 	if err != nil {
 		return fmt.Errorf("show files: can't get dirs: %w", err)
@@ -761,7 +762,7 @@ func (b *Bot) showFiles(params []string) error {
 	return nil
 }
 
-func (b *Bot) showChecklists(params []string) error {
+func (b *Bot) showChecklists(_ []string) error {
 	checklists, err := b.fs.FilesAndDirs(fs.DirRoot)
 	if err != nil {
 		return fmt.Errorf("show checklists: %w", err)
@@ -785,7 +786,7 @@ func (b *Bot) showChecklists(params []string) error {
 	return nil
 }
 
-func (b *Bot) showPostpone(params []string) error {
+func (b *Bot) showPostpone(_ []string) error {
 	files, err := b.fs.FilesAndDirs(fs.DirToday)
 	if err != nil {
 		return fmt.Errorf("show postpone: can't get files in '%s' dir: %w", fs.DirToday, err)
@@ -810,7 +811,7 @@ func (b *Bot) showPostpone(params []string) error {
 	return nil
 }
 
-func (b *Bot) showMoveFromToday(params []string) error {
+func (b *Bot) showMoveFromToday(_ []string) error {
 	files, err := b.fs.FilesAndDirs(fs.DirToday)
 	if err != nil {
 		return fmt.Errorf("show move from today: can't get files in '%s' dir: %w", fs.DirToday, err)
@@ -917,7 +918,7 @@ func (b *Bot) showRenameFile(params []string) error {
 	return nil
 }
 
-func (b *Bot) showStats(params []string) error {
+func (b *Bot) showStats(_ []string) error {
 	report, err := stats.TodayReport(b.fs, b.db, b.userID)
 	if err != nil {
 		return fmt.Errorf("show stats: %w", err)
@@ -932,7 +933,7 @@ func (b *Bot) showStats(params []string) error {
 	return nil
 }
 
-func (b *Bot) showSchedule(params []string) error {
+func (b *Bot) showSchedule(_ []string) error {
 	scheduledTasks, err := b.cfg.Schedules()
 	if err != nil {
 		return fmt.Errorf("show schedule: %w", err)
@@ -951,15 +952,15 @@ func (b *Bot) showSchedule(params []string) error {
 	return nil
 }
 
-func (b *Bot) showRead(params []string) error {
+func (b *Bot) showRead(_ []string) error {
 	return b.showChecklist([]string{fs.Hash(fs.DirRead)})
 }
 
-func (b *Bot) showWatch(params []string) error {
+func (b *Bot) showWatch(_ []string) error {
 	return b.showChecklist([]string{fs.Hash(fs.DirWatch)})
 }
 
-func (b *Bot) showShop(params []string) error {
+func (b *Bot) showShop(_ []string) error {
 	return b.showChecklist([]string{fs.Hash(fs.DirShop)})
 }
 
@@ -1090,7 +1091,7 @@ func (b *Bot) send(msg string) error {
 	return nil
 }
 
-func (b *Bot) showStart(params []string) error {
+func (b *Bot) showStart(_ []string) error {
 	return b.send("Welcome!")
 }
 
@@ -1173,29 +1174,21 @@ func (b *Bot) moveToExistingFile(params []string) error {
 		return fmt.Errorf("move to file: can't unhash new filename '%s': %w", newFilenameHash, err)
 	}
 
-	fileContent, err := b.fs.Read(fromDir, newFilename)
+	content, err := b.fs.Read(fromDir, newFilename)
 	if err != nil {
 		return fmt.Errorf("move to file: can't read content of '%s': %w", newFilename, err)
 	}
-	fileContent = strings.TrimSpace(fileContent)
-	if len(fileContent) == 0 {
-		fileContent = fs.Title(newFilename)
-	}
-
-	existingContent, err := b.fs.Read(fs.DirRoot, existingFilename)
-	if err != nil {
-		return fmt.Errorf("move to file: can't get doc content of '%s': %w", existingFilename, err)
+	content = strings.TrimSpace(content)
+	if len(content) == 0 {
+		content = fs.Title(newFilename)
 	}
 
 	// We can tolerate this
 	_ = b.fs.Del(fromDir, newFilename)
 
-	header := fmt.Sprintf("#### %d %s, %s", now().Day(), now().Format("January"), now().Weekday())
-	content := txt.InsertTextAfterHeader(existingContent, header, fileContent)
-
-	err = b.fs.Write(fs.DirRoot, existingFilename, content)
+	err = b.addToFile(existingFilename, content)
 	if err != nil {
-		return fmt.Errorf("move to file: can't save file: %w", err)
+		return fmt.Errorf("move to file: can't add to existing file: %w", err)
 	}
 
 	b.db.SetRecentCommand(b.userID, consts.CmdMoveToExistingFile)
@@ -1327,6 +1320,33 @@ func (b *Bot) addToJournalFromShortcut(params []string) error {
 	err := journal.AddRecord(b.fs, content, b.cfg.Timezone())
 	if err != nil {
 		return fmt.Errorf("failed to move to journal: can't add note: %w", err)
+	}
+
+	return b.ShowTodayTasks(nil)
+}
+
+// TODO add tests
+func (b *Bot) addToRecentFileFromShortcut(params []string) error {
+	content := params[0]
+
+	cmd, _ := b.db.RecentCommand(b.userID)
+	if cmd != consts.CmdMoveToExistingFile {
+		return nil
+	}
+
+	args, _ := b.db.RecentCommandParams(b.userID)
+	if len(args) == 0 {
+		return nil
+	}
+
+	existingFilename, err := b.fs.Unhash(fs.DirRoot, args[0])
+	if err != nil {
+		return fmt.Errorf("failed to move to recent file: can't unhash filename: %w", err)
+	}
+
+	err = b.addToFile(existingFilename, content)
+	if err != nil {
+		return fmt.Errorf("failed to move to recent file: can't add note: %w", err)
 	}
 
 	return b.ShowTodayTasks(nil)
@@ -1659,7 +1679,7 @@ func (b *Bot) toChecklistKeyboard(filenameHash string) (*tg.Keyboard, error) {
 	return kb, nil
 }
 
-func (b *Bot) togglePomodoro(params []string) error {
+func (b *Bot) togglePomodoro(_ []string) error {
 	// Check if Pomodoro is already running
 	hasPomodoroInToday, err := b.fs.Exists(fs.DirToday, fs.FilePomodoro)
 	if err != nil {
@@ -1751,6 +1771,23 @@ func (b *Bot) showToADayRecurring(params []string) error {
 	err := b.show(i18n.Tr("Repeat the task"), kb, tg.MarkupHTML)
 	if err != nil {
 		return fmt.Errorf("showRecuringKeyboard : %w", err)
+	}
+
+	return nil
+}
+
+func (b *Bot) addToFile(filename, content string) error {
+	existingContent, err := b.fs.Read(fs.DirRoot, filename)
+	if err != nil {
+		return fmt.Errorf("add to file: can't get doc content of '%s': %w", filename, err)
+	}
+
+	header := fmt.Sprintf("#### %d %s, %s", now().Day(), now().Format("January"), now().Weekday())
+	newContent := txt.InsertTextAfterHeader(existingContent, header, content)
+
+	err = b.fs.Write(fs.DirRoot, filename, newContent)
+	if err != nil {
+		return fmt.Errorf("add to file: can't save file: %w", err)
 	}
 
 	return nil

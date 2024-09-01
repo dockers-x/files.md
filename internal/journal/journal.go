@@ -140,5 +140,4 @@ func userLock(rootPath string) *sync.Mutex {
 	userLocks[rootPath] = newLock
 
 	return newLock
-
 }

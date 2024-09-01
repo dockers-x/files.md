@@ -1,3 +1,5 @@
+// Package sync provides per-user lock, IS NOT USED currently, we decided to go with granular locks.
+// Every sensitive module has its own locks
 package sync
 
 import (
