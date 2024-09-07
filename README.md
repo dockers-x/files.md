@@ -58,6 +58,12 @@ We differentiate the following types of files (with `/` denoting your root folde
 - Pomodoro: `/today/Took a break.md`
 - Archive: `/archive/*`
 
+### Performance
+The app is  blazing fast :) If you're afraid of using files or mutexes unnecessarily for performance reasons, take a look at this:
+Mutex lock/unlock = `25 ns`
+Read 4K randomly from SSD = `150,000 ns`
+`1 ms` = `1,000,000 ns`
+
 ## ADRs (Architecture Decision Records)
 - We use granular locks (in db, journal, userconfig) instead of one global per user lock so to avoid bottlenecks. Workers might use 3rd party API like ChatGPT, and we don't want to hold user's lock all that time.
 - We read every userconfig value from the config file on every access. We don't need load/save whole config before/after `bot.Answer()` method. We have to reread it every time we need to change it, so we don't write back any stale data. Let's imagine we load config only once before `bot.Answer()`, next, we may have significant networking delays in `bot.Answer()` (let's say 2 seconds when making external requests), there are good changes that during those 2 seconds `worker.MoveDueTasks()` will modify `userconfig.Schedule`, causing data race (after bot's answer we write back stale data). And we don't want our schedule lost.
