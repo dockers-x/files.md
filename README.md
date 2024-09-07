@@ -9,8 +9,10 @@ An application for your personal stuff:
 - 🌱 Habits  
 - 🍅 Pomodoro  
 
-Everything is stored locally in plain `*.md` files.  
-Can be used as a desktop/mobile app or as a Telegram bot.
+It works like a regular chat, so it's easier to use because there's less resistance. We already know how to send memes to friends, only now we send notes to the bot.   
+
+- Everything is stored locally in plain `*.md` files.  
+- Can be used as a desktop/mobile app or as a Telegram bot.  
 
 [Tasks management via bot](https://club.mnogosdelal.ru/post/180/)  
 [Notes taking via bot](https://vas3k.club/post/18815/)
