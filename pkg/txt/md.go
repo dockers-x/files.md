@@ -28,7 +28,7 @@ var closeTags = map[string]string{
 	"`":  "</code>",
 }
 
-// MDtoHTML naively converts user's markdown to Telegram-supported subset of HTML.
+// MarkdownToHTML naively converts user's markdown to Telegram-supported subset of HTML.
 // We don't need to implement full-blown AST parser because TG only supports a few HTML tags.
 // Telegram supports the following HTML tags:
 // <b>bold</b>, <strong>bold</strong>
@@ -45,7 +45,7 @@ var closeTags = map[string]string{
 // <pre><code class="language-python">pre-formatted fixed-width code block written in the Python programming language</code></pre>
 // <blockquote>Block quotation started\nBlock quotation continued\nThe last line of the block quotation</blockquote>
 // <blockquote expandable>Expandable block quotation started\nExpandable block quotation continued\nExpandable block quotation continued\nHidden by default part of the block quotation started\nExpandable block quotation continued\nThe last line of the block quotation</blockquote>
-func MDtoHTML(md string) string {
+func MarkdownToHTML(md string) string {
 	mdWithoutCode := EscapeHTML(md)
 	mdWithoutCode, codePlaceholders := ReplaceWithPlaceholders(mdWithoutCode, "(?s)```.*?```", "c0debl0ck")
 	mdWithoutCode, inlinePlaceholders := ReplaceWithPlaceholders(mdWithoutCode, "`[^`]+`", "inl1ne")

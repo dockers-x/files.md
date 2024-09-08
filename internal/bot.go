@@ -292,10 +292,10 @@ func (b *Bot) extractCmd(u UpdInterface) (*tg.Cmd, error) {
 		return cmd, nil
 	}
 
-	for canonicCMD, schortcuts := range consts.Shortcuts {
-		for _, shortcut := range schortcuts {
-			escapedShorctut := regexp.QuoteMeta(shortcut)
-			re := regexp.MustCompile(fmt.Sprintf(`(?i)^%s\s+|\s+%s$`, escapedShorctut, escapedShorctut))
+	for canonicalCMD, shortcuts := range consts.Shortcuts {
+		for _, shortcut := range shortcuts {
+			escapedShortcut := regexp.QuoteMeta(shortcut)
+			re := regexp.MustCompile(fmt.Sprintf(`(?i)^%s\s+|\s+%s$`, escapedShortcut, escapedShortcut))
 
 			if !re.MatchString(u.MsgText()) {
 				continue
@@ -303,7 +303,7 @@ func (b *Bot) extractCmd(u UpdInterface) (*tg.Cmd, error) {
 
 			text := string(re.ReplaceAll([]byte(u.MsgText()), []byte("")))
 			text = txt.Ucfirst(strings.TrimSpace(text))
-			shortCmd := tg.NewCmd(canonicCMD, []string{text})
+			shortCmd := tg.NewCmd(canonicalCMD, []string{text})
 
 			return &shortCmd, nil
 		}
@@ -594,10 +594,10 @@ func (b *Bot) showMD(probablyInvalidMD string, kb *tg.Keyboard) error {
 		lastChunk := textChunks[len(textChunks)-1]
 		textChunks = textChunks[0 : len(textChunks)-1]
 		for _, textChunk := range textChunks {
-			_, _ = b.tg.Send(b.userID, txt.MDtoHTML(textChunk), nil, tg.MarkupHTML)
+			_, _ = b.tg.Send(b.userID, txt.MarkdownToHTML(textChunk), nil, tg.MarkupHTML)
 		}
 
-		mid, err := b.tg.Send(b.userID, txt.MDtoHTML(lastChunk), kb, tg.MarkupHTML)
+		mid, err := b.tg.Send(b.userID, txt.MarkdownToHTML(lastChunk), kb, tg.MarkupHTML)
 		if err != nil {
 			return fmt.Errorf("show: %w", err)
 		}
@@ -607,7 +607,7 @@ func (b *Bot) showMD(probablyInvalidMD string, kb *tg.Keyboard) error {
 		return nil
 	}
 
-	return b.tg.Edit(b.userID, mid, txt.MDtoHTML(probablyInvalidMD), kb, tg.MarkupHTML)
+	return b.tg.Edit(b.userID, mid, txt.MarkdownToHTML(probablyInvalidMD), kb, tg.MarkupHTML)
 }
 
 func (b *Bot) showMoveTo(params []string) error {
@@ -1034,7 +1034,7 @@ func (b *Bot) showMultilineTask(params []string) error {
 	if err != nil {
 		return fmt.Errorf("show task: %w", err)
 	}
-	content = txt.MDtoHTML(content)
+	content = txt.MarkdownToHTML(content)
 
 	var moveToBtn tg.Btn
 	btnLabel := i18n.StrMoveToLaterLong

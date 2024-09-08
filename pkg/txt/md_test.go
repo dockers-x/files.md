@@ -6,258 +6,249 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMDtoHTML(t *testing.T) {
+func TestMarkdownToHTML(t *testing.T) {
 	r := require.New(t)
 
 	md := "### Header\n**bold**\n*italic*"
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("<b>Header</b>\n<b>bold</b>\n<i>italic</i>", html)
 }
 
-func TestMDtoHTMLHeader(t *testing.T) {
-	r := require.New(t)
-
-	md := `# Header`
-	html := MDtoHTML(md)
-
-	r.Equal("<b>Header</b>", html)
-}
-
-func TestMDtoHTMLHeaderAndText(t *testing.T) {
+func TestMarkdownToHTMLHeaderAndText(t *testing.T) {
 	r := require.New(t)
 
 	md := "# Header\nText"
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("<b>Header</b>\nText", html)
 }
 
-func TestMDtoHTMlBold(t *testing.T) {
+func TestMarkdownToHTMLBold(t *testing.T) {
 	r := require.New(t)
 
 	md := "**bold**"
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("<b>bold</b>", html)
 }
 
-func TestMDtoHtmlMultilineBold(t *testing.T) {
+func TestMarkdownToHTMLMultilineBold(t *testing.T) {
 	r := require.New(t)
 
 	md := "**bold\nstill bold**"
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("<b>bold\nstill bold</b>", html)
 }
 
-func TestMDtoHTMLEmptyBoldAndItalic(t *testing.T) {
+func TestMarkdownToHTMLEmptyBoldAndItalic(t *testing.T) {
 	r := require.New(t)
 
 	md := "**"
-	r.Equal("**", MDtoHTML(md))
+	r.Equal("**", MarkdownToHTML(md))
 	md = "*"
-	r.Equal("*", MDtoHTML(md))
+	r.Equal("*", MarkdownToHTML(md))
 
 	md = "__"
-	r.Equal("__", MDtoHTML(md))
+	r.Equal("__", MarkdownToHTML(md))
 	md = "_"
-	r.Equal("_", MDtoHTML(md))
+	r.Equal("_", MarkdownToHTML(md))
 }
 
-func TestMDtoHTMLNewLineChar(t *testing.T) {
+func TestMarkdownToHTMLNewLineChar(t *testing.T) {
 	r := require.New(t)
 
 	bold := "**\n**"
-	r.Equal("<b>\n</b>", MDtoHTML(bold))
+	r.Equal("<b>\n</b>", MarkdownToHTML(bold))
 
 	italic := "*\n*"
-	r.Equal("<i>\n</i>", MDtoHTML(italic))
+	r.Equal("<i>\n</i>", MarkdownToHTML(italic))
 }
 
-func TestMDtoHTMLCharAndNewLineChar(t *testing.T) {
+func TestMarkdownToHTMLCharAndNewLineChar(t *testing.T) {
 	r := require.New(t)
 
 	bold := "**a\n**"
-	r.Equal("<b>a\n</b>", MDtoHTML(bold))
+	r.Equal("<b>a\n</b>", MarkdownToHTML(bold))
 
 	italic := "*a\n*"
-	r.Equal("<i>a\n</i>", MDtoHTML(italic))
+	r.Equal("<i>a\n</i>", MarkdownToHTML(italic))
 
 }
 
-func TestMDtoHTMLNewLineAndChar(t *testing.T) {
+func TestMarkdownToHTMLNewLineAndChar(t *testing.T) {
 	r := require.New(t)
 
 	bold := "**\na**"
-	r.Equal("<b>\na</b>", MDtoHTML(bold))
+	r.Equal("<b>\na</b>", MarkdownToHTML(bold))
 
 	italic := "*\na*"
-	r.Equal("<i>\na</i>", MDtoHTML(italic))
+	r.Equal("<i>\na</i>", MarkdownToHTML(italic))
 }
 
-func TestMDtoHTMLTwoNewlinesBreakFormatting(t *testing.T) {
+func TestMarkdownToHTMLTwoNewlinesBreakFormatting(t *testing.T) {
 	r := require.New(t)
 
 	bold := "**no bold\n\nno bold**"
-	r.Equal("**no bold\n\nno bold**", MDtoHTML(bold))
+	r.Equal("**no bold\n\nno bold**", MarkdownToHTML(bold))
 
 	italic := "*no italic\n\nno italic*"
-	r.Equal("*no italic\n\nno italic*", MDtoHTML(italic))
+	r.Equal("*no italic\n\nno italic*", MarkdownToHTML(italic))
 }
 
-func TestMDtoHTMlMultilineBoldAndItalic(t *testing.T) {
+func TestMarkdownToHTMLMultilineBoldAndItalic(t *testing.T) {
 	r := require.New(t)
 
 	md := "Some _italic text\nin two lines_, **bold text\nin two lines**, and ***bold italic text\nin two lines***."
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("Some <i>italic text\nin two lines</i>, <b>bold text\nin two lines</b>, and <b><i>bold italic text\nin two lines</i></b>.", html)
 }
 
-func TestMDtoHTMLHtmlInsideCode(t *testing.T) {
+func TestMarkdownToHTMLHtmlInsideCode(t *testing.T) {
 	r := require.New(t)
 
 	md := "```some code a > b```"
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("<pre>some code a &gt; b</pre>", html)
 }
 
-func TestMDtoHTMLInlineCodeAndCodeBlock(t *testing.T) {
+func TestMarkdownToHTMLInlineCodeAndCodeBlock(t *testing.T) {
 	r := require.New(t)
 
 	md := "`inline code` and ```code block```"
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("<code>inline code</code> and <pre>code block</pre>", html)
 }
 
-func TestMDtoHTMLInlineCodeBlockInsideCodeBlock(t *testing.T) {
+func TestMarkdownToHTMLInlineCodeBlockInsideCodeBlock(t *testing.T) {
 	r := require.New(t)
 
 	md := "```code block with `inline code` inside```"
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("<pre>code block with <code>inline code</code> inside</pre>", html)
 }
 
-func TestMDToHTMLItalic(t *testing.T) {
+func TestMarkdownToHTMLItalic(t *testing.T) {
 	r := require.New(t)
 
 	md := "*italic*"
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("<i>italic</i>", html)
 }
 
-func TestMDToHTMLInvalidMD(t *testing.T) {
+func TestMarkdownToHTMLInvalidMD(t *testing.T) {
 	r := require.New(t)
 
 	md := "__valid__**invalid"
-	r.Equal("<b>valid</b>**invalid", MDtoHTML(md))
+	r.Equal("<b>valid</b>**invalid", MarkdownToHTML(md))
 
-	r.Equal("*invalid_markdown", MDtoHTML("*invalid_markdown"))
-	r.Equal("*``invalid_markdown", MDtoHTML("*``invalid_markdown"))
-	r.Equal("*```invalid_markdown", MDtoHTML("*```invalid_markdown"))
+	r.Equal("*invalid_markdown", MarkdownToHTML("*invalid_markdown"))
+	r.Equal("*``invalid_markdown", MarkdownToHTML("*``invalid_markdown"))
+	r.Equal("*```invalid_markdown", MarkdownToHTML("*```invalid_markdown"))
 }
 
-func TestMDToHTMLMultiline(t *testing.T) {
+func TestMarkdownToHTMLMultiline(t *testing.T) {
 	r := require.New(t)
 
 	md := "line1\n**line2**\nline3"
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("line1\n<b>line2</b>\nline3", html)
 }
 
-func TestMDToHTMLBoldInsideItalic(t *testing.T) {
+func TestMarkdownToHTMLBoldInsideItalic(t *testing.T) {
 	r := require.New(t)
 
 	md := "*italic and __bold__*"
-	r.Equal("<i>italic and <b>bold</b></i>", MDtoHTML(md))
+	r.Equal("<i>italic and <b>bold</b></i>", MarkdownToHTML(md))
 
 	md = "*italic and **bold***"
-	r.Equal("<i>italic and <b>bold</b></i>", MDtoHTML(md))
+	r.Equal("<i>italic and <b>bold</b></i>", MarkdownToHTML(md))
 }
 
-func TestMDToHTMLItalicInsideBold(t *testing.T) {
+func TestMarkdownToHTMLItalicInsideBold(t *testing.T) {
 	r := require.New(t)
 
 	md := "__bold and _italic___"
-	r.Equal("<b>bold and <i>italic</i></b>", MDtoHTML(md))
+	r.Equal("<b>bold and <i>italic</i></b>", MarkdownToHTML(md))
 
 	md = "**bold and *italic***"
-	r.Equal("<b>bold and <i>italic</i></b>", MDtoHTML(md))
+	r.Equal("<b>bold and <i>italic</i></b>", MarkdownToHTML(md))
 }
 
-func TestMDtoHTMLNoLists(t *testing.T) {
+func TestMarkdownToHTMLNoLists(t *testing.T) {
 	r := require.New(t)
 
 	md := "list\n1) item1\n2) item2"
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("list\n1) item1\n2) item2", html)
 }
 
-func TestMDToHTMLEscapeHtml(t *testing.T) {
+func TestMarkdownToHTMLEscapeHtml(t *testing.T) {
 	r := require.New(t)
 
-	html := MDtoHTML("<a> &b")
+	html := MarkdownToHTML("<a> &b")
 
 	r.Equal("&lt;a&gt; &amp;b", html)
 }
 
-func TestMDToHTMLHeader(t *testing.T) {
+func TestMarkdownToHTMLHeader(t *testing.T) {
 	r := require.New(t)
 
 	md := "Multiline\n# Header"
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("Multiline\n<b>Header</b>", html)
 }
 
-func TestMDtoHTMLMultipleHeaders(t *testing.T) {
+func TestMarkdownToHTMLMultipleHeaders(t *testing.T) {
 	r := require.New(t)
 
 	md := "# Header1\n## Header2"
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("<b>Header1</b>\n<b>Header2</b>", html)
 }
 
-func TestMDtoHTMLInlineCode(t *testing.T) {
+func TestMarkdownToHTMLInlineCode(t *testing.T) {
 	r := require.New(t)
 
 	md := "`inline code`"
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("<code>inline code</code>", html)
 }
 
-func TestMDtoHTMLMultilineCodeBlock(t *testing.T) {
+func TestMarkdownToHTMLMultilineCodeBlock(t *testing.T) {
 	r := require.New(t)
 
 	md := "```\ncode line 1\ncode line 2\n```"
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("<pre>\ncode line 1\ncode line 2\n</pre>", html)
 }
 
-func TestMDtoHTMLCodeWithBold(t *testing.T) {
+func TestMarkdownToHTMLCodeWithBold(t *testing.T) {
 	r := require.New(t)
 
 	md := "`code` **bold**"
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("<code>code</code> <b>bold</b>", html)
 }
 
-func TestMDtoHTMLHeaderWithInlineCode(t *testing.T) {
+func TestMarkdownToHTMLHeaderWithInlineCode(t *testing.T) {
 	r := require.New(t)
 
 	md := "# Header\n`inline code`"
-	html := MDtoHTML(md)
+	html := MarkdownToHTML(md)
 
 	r.Equal("<b>Header</b>\n<code>inline code</code>", html)
 }
