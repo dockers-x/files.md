@@ -1140,11 +1140,11 @@ func (b *Bot) showChecklist(params []string) error {
 
 	title := fs.Title(checklist)
 	if checklist == fs.DirRead {
-		title = i18n.Tr("Reading List")
+		title = i18n.Tr(i18n.Emojify("Reading List"))
 	} else if checklist == fs.DirWatch {
-		title = i18n.Tr("Watchlist")
+		title = i18n.Tr(i18n.Emojify("Watchlist"))
 	} else if checklist == fs.DirShop {
-		title = i18n.Tr("Shopping List")
+		title = i18n.Tr(i18n.Emojify("Shopping List"))
 	}
 	err = b.showHTML(title+wideSpacer, kb)
 	if err != nil {
