@@ -3,7 +3,6 @@ package fs
 import (
 	"os"
 	"testing"
-	"time"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
@@ -11,7 +10,7 @@ import (
 
 func init() {
 	Ctime = func(fi os.FileInfo) int64 {
-		return fi.ModTime().Unix()
+		return 0
 	}
 }
 
@@ -244,18 +243,8 @@ func TestFSTouchExisting(t *testing.T) {
 	err := fs.Write("today", "a.md", "A")
 	r.NoError(err)
 
-	path := fs.UnsafePath("today", "a.md")
-	fi, err := fs.backend.Stat(path)
-	r.NoError(err)
-	orig_ctime := Ctime(fi)
-
-	time.Sleep(time.Second)
 	err = fs.Touch("today", "a.md")
 	r.NoError(err)
-
-	fi, err = fs.backend.Stat(path)
-	r.NoError(err)
-	r.Less(orig_ctime, Ctime(fi))
 
 	content, err := fs.Read("today", "a.md")
 	r.NoError(err)

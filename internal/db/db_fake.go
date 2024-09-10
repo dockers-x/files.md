@@ -11,6 +11,8 @@ type FakeDB struct {
 	FilenameByMessageID string
 	InputExpectationCMD *tg.Cmd
 	LastKeyboardMID     int
+	RecentCMD           string
+	RecentCMDParams     []string
 }
 
 func NewFakeDB() *FakeDB {
@@ -61,16 +63,18 @@ func (db *FakeDB) SetDirByMsgID(userID int64, msgID int, dir string) {
 	db.DirByMessageID = dir
 }
 
-func (db *FakeDB) RecentCommand(userID int64) (string, bool) {
-	return "", false
+func (db *FakeDB) RecentCommand(_ int64) (string, bool) {
+	return db.RecentCMD, db.RecentCMD != ""
 }
 
-func (db *FakeDB) SetRecentCommand(userID int64, cmd string) {
+func (db *FakeDB) SetRecentCommand(_ int64, cmd string) {
+	db.RecentCMD = cmd
 }
 
-func (db *FakeDB) RecentCommandParams(userID int64) ([]string, bool) {
-	return nil, false
+func (db *FakeDB) RecentCommandParams(_ int64) ([]string, bool) {
+	return db.RecentCMDParams, len(db.RecentCMDParams) > 0
 }
 
-func (db *FakeDB) SetRecentCommandParams(userID int64, params []string) {
+func (db *FakeDB) SetRecentCommandParams(_ int64, params []string) {
+	db.RecentCMDParams = params
 }

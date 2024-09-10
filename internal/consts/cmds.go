@@ -29,6 +29,7 @@ const (
 	CmdMoveToDir                   = "mv"
 	CmdMoveToNewDir                = "mv_to_new_dir"
 	CmdMoveToExistingFile          = "mf"
+	CmdMoveToExistingNote          = "mvn"
 	CmdMoveToNewFile               = "mn"
 	CmdMoveToChecklist             = "mv_to_chk"
 	CmdMoveToRead                  = "mv_to_read"
@@ -58,7 +59,7 @@ const (
 	CmdInlineQuerySearchInDir      = "search_dir"
 	CmdWebAppHabits                = "habits"
 	CmdAddToJournalShortcut        = "j"
-	CmdAddToRecentFileShortcut     = "&"
+	CmdAddToRecentFileShortcut     = "+"
 )
 
 var (

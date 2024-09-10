@@ -2354,3 +2354,98 @@ func TestSaveToNewCustomFileIntegration(t *testing.T) {
 	r.Equal(1, msgID)
 	r.Equal(msgID, tgram.LastSentMessageID)
 }
+
+func TestSaveToRecentFileIntegration(t *testing.T) {
+	r := require.New(t)
+
+	savedNow := now
+	defer func() {
+		now = savedNow
+	}()
+	now = func() time.Time {
+		return time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+	err = userFS.Write("", "Text.md", "Text")
+	r.NoError(err)
+	err = userFS.MakeDir("today")
+	r.NoError(err)
+	err = userFS.MakeDir("inbox")
+	r.NoError(err)
+
+	cfg := userconfig.NewConfig(userFS, -1, "config.json")
+	err = cfg.CreateDefaultIfNotExists()
+	r.NoError(err)
+
+	cfg.AddMoveToCmd(consts.CmdScheduleForTmrw)
+
+	tgram := tg.NewFakeTG()
+	database := db.NewFakeDB()
+	bot := NewBot(-1, tgram, userFS, database, fakeConfig())
+	err = bot.Answer(tg.NewFakeUpd(-1, "New text"))
+	r.NoError(err)
+
+	kb := tg.NewKeyboard([]tg.Row{
+		tg.NewRow(
+			tg.NewBtn("🌚 To tmrw", tg.NewCmd("sc_tmrw", []string{"72e564182be"})),
+			tg.NewBtn("📆 To a day", tg.NewCmd("sc_day", []string{"72e564182be"})),
+			tg.NewBtn("📄 To File", tg.NewCmd("to_file", []string{"72e564182be"})),
+		),
+		tg.NewRow(
+			tg.NewBtn("💚 To Journal", tg.NewCmd("mv_to_journal", []string{"72e564182be"})),
+			tg.NewBtn("➡️ Today", tg.NewCmd("today", nil)),
+		)})
+	r.Equal(kb, tgram.LastSentKeyboard)
+
+	err = bot.Answer(tg.NewFakeUpdCmd(-1, tg.NewCmd("to_file", []string{"72e564182be"})))
+	r.NoError(err)
+
+	selectFileKeyboard := tg.NewKeyboard([]tg.Row{
+		tg.NewRow(
+			tg.NewBtn("📄 Text", tg.NewCmd("mf", []string{"23200", "", "72e56"})),
+			tg.NewBtn("📄 New text", tg.NewCmd("mf", []string{"72e56", "", "72e56"})),
+		),
+		tg.NewBtn("Or choose a dir:", tg.NewCustomCmd("search", nil, "iq")),
+		tg.NewRow(
+			tg.NewBtn("🗂️ inbox", tg.NewCmd("mv", []string{"af1cd", "", "72e564182be"})),
+		),
+	})
+	r.Equal(selectFileKeyboard, tgram.LastEditedKeyboard)
+
+	err = bot.Answer(tg.NewFakeUpdCmd(-1, tg.NewCmd("mf", []string{"23200", "", "72e56"})))
+	r.NoError(err)
+
+	r.Empty(tgram.LastEditedKeyboard.Btns)
+	content, err := userFS.Read("", "Text.md")
+	r.NoError(err)
+	r.Equal("#### 1 January, Thursday\nNew text\nText", content)
+
+	recentCMD, ok := database.RecentCommand(-1)
+	r.Equal("mf", recentCMD)
+	r.True(ok)
+
+	// Adding text again to see if we have a recent file
+	err = bot.Answer(tg.NewFakeUpd(-1, "Text2"))
+	r.NoError(err)
+
+	kb = tg.NewKeyboard([]tg.Row{
+		tg.NewRow(
+			tg.NewBtn("🌚 To tmrw", tg.NewCmd("sc_tmrw", []string{"76bddbd30b1"})),
+			tg.NewBtn("📆 To a day", tg.NewCmd("sc_day", []string{"76bddbd30b1"})),
+			tg.NewBtn("📄 To File", tg.NewCmd("to_file", []string{"76bddbd30b1"})),
+		),
+		tg.NewRow(
+			tg.NewBtn("💚 To Journal", tg.NewCmd("mv_to_journal", []string{"76bddbd30b1"})),
+			tg.NewBtn("📄 Text", tg.NewCmd("mf", []string{"23200", "c5e7d", "76bddbd30b1"})),
+			tg.NewBtn("➡️ Today", tg.NewCmd("today", nil)),
+		)})
+	r.Equal(kb, tgram.LastSentKeyboard)
+
+	r.Nil(database.InputExpectation(-1))
+	msgID, ok := database.LastKeyboardMsgID(-1)
+	r.True(ok)
+	r.Equal(2, msgID)
+	r.Equal(msgID, tgram.LastSentMessageID)
+}

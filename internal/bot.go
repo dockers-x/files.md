@@ -215,6 +215,7 @@ func (b *Bot) handlers() map[string]func([]string) error {
 		consts.CmdMoveToDir:                   b.moveToDir,
 		consts.CmdMoveToNewDir:                b.moveToNewDir,
 		consts.CmdMoveToExistingFile:          b.moveToExistingFile,
+		consts.CmdMoveToExistingNote:          b.moveToExistingNote,
 		consts.CmdMoveToNewFile:               b.moveToNewFile,
 		consts.CmdMoveToChecklist:             b.moveToChecklist,
 		consts.CmdMoveToRead:                  b.moveToRead,
@@ -236,7 +237,7 @@ func (b *Bot) handlers() map[string]func([]string) error {
 		consts.CmdAddToMoveToBtns:             b.addToMoveToBtns,
 		consts.CmdDelFromMoveToBtns:           b.delFromMoveToBtns,
 		consts.CmdAddToJournalShortcut:        b.addToJournalFromShortcut,
-		consts.CmdAddToRecentFileShortcut:     b.addToRecentFileFromShortcut,
+		consts.CmdAddToRecentFileShortcut:     b.addToRecentFileOrNoteFromShortcut,
 		consts.CmdRename:                      b.rename,
 		// Used for button-like separators
 		consts.CmdDoNothing: func(s []string) error { return nil },
@@ -536,13 +537,23 @@ func (b *Bot) answerFileRequest(msg string) error {
 			content = fs.Title(newFilename)
 		}
 
-		// No worries if we can't delete - we'll have a redundant file
-		_ = b.fs.Del(fs.DirRoot, newFilename)
+		if dir == fs.DirRoot {
+			// We have a file
+			b.db.SetRecentCommand(b.userID, consts.CmdMoveToExistingFile)
+			b.db.SetRecentCommandParams(b.userID, []string{fs.ShortHash(filename), fs.ShortHash(fs.DirToday)})
+		} else {
+			// We have a note (a file placed in a subdirectory)
+			b.db.SetRecentCommand(b.userID, consts.CmdMoveToExistingNote)
+			b.db.SetRecentCommandParams(b.userID, []string{fs.ShortHash(filename), fs.ShortHash(dir)})
+		}
 
 		err = b.addToFile(dir, filename, content)
 		if err != nil {
 			return fmt.Errorf("inline query: can't add to file %s: %w", filename, err)
 		}
+
+		// No worries if we can't delete - we'll have a redundant file
+		_ = b.fs.Del(fs.DirRoot, newFilename)
 
 		// Just an informative message
 		_, _ = b.tg.Send(b.userID, fmt.Sprintf(i18n.Tr("Saved to <b>%s</b>"), fs.Title(filename)), nil, tg.MarkupHTML)
@@ -674,8 +685,8 @@ func (b *Bot) showMoveTo(params []string) error {
 	if ok {
 		args, _ := b.db.RecentCommandParams(b.userID)
 		args = append(args, filenameHash)
-		targetFilename := args[0]
-		unhashedTarget, err := b.fs.Unhash(fs.DirRoot, targetFilename)
+		targetFilenameHash := args[0]
+		unhashedTarget, err := b.fs.Unhash(fs.DirRoot, targetFilenameHash)
 		if err == nil {
 			icon := i18n.Emoji("file")
 			if recentCmd == consts.CmdMoveToDir {
@@ -1314,6 +1325,48 @@ func (b *Bot) moveToExistingFile(params []string) error {
 	return b.ShowToday(nil)
 }
 
+// TODO add tests
+// Move from today to existing note
+func (b *Bot) moveToExistingNote(params []string) error {
+	toFilenameHash := params[0]
+	toDirHash := params[1]
+	fromFilenameHash := params[2]
+
+	toDir, err := b.fs.Unhash(fs.DirRoot, toDirHash)
+	if err != nil {
+		return fmt.Errorf("move to exsiting note: %w", err)
+	}
+
+	toFilename, err := b.fs.Unhash(toDir, toFilenameHash)
+	if err != nil {
+		return fmt.Errorf("move to exsiting note:: %w", err)
+	}
+
+	fromFilename, err := b.fs.Unhash(fs.DirToday, fromFilenameHash)
+	if err != nil {
+		return fmt.Errorf("move to existing note:: %w", err)
+	}
+
+	content, err := b.fs.Read(fs.DirToday, fromFilename)
+	if err != nil {
+		return fmt.Errorf("move to existing note: can't read file %s: %w", fromFilename, err)
+	}
+	content = strings.TrimSpace(content)
+	if len(content) == 0 {
+		content = fs.Title(fromFilename)
+	}
+
+	err = b.addToFile(toDir, toFilename, content)
+	if err != nil {
+		return fmt.Errorf("move to existing note: can't add to file %s: %w", toFilename, err)
+	}
+
+	// No worries if we can't delete - we'll have a redundant file
+	_ = b.fs.Del(fs.DirRoot, fromFilename)
+
+	return nil
+}
+
 func (b *Bot) moveToChecklist(params []string) error {
 	filenameHash := params[0]
 	checklistHash := params[1]
@@ -1469,16 +1522,15 @@ func (b *Bot) addToJournalFromShortcut(params []string) error {
 }
 
 // TODO add tests
-func (b *Bot) addToRecentFileFromShortcut(params []string) error {
+func (b *Bot) addToRecentFileOrNoteFromShortcut(params []string) error {
 	content := params[0]
 
-	cmd, _ := b.db.RecentCommand(b.userID)
-	if cmd != consts.CmdMoveToExistingFile {
+	args, _ := b.db.RecentCommandParams(b.userID)
+	if len(args) < 2 {
 		return nil
 	}
-
-	args, _ := b.db.RecentCommandParams(b.userID)
-	if len(args) == 0 {
+	cmd, _ := b.db.RecentCommand(b.userID)
+	if cmd != consts.CmdMoveToExistingFile && cmd != consts.CmdMoveToExistingNote {
 		return nil
 	}
 
@@ -1487,9 +1539,23 @@ func (b *Bot) addToRecentFileFromShortcut(params []string) error {
 		return fmt.Errorf("failed to move to recent file: can't unhash filename: %w", err)
 	}
 
-	err = b.addToFile(fs.DirRoot, existingFilename, content)
-	if err != nil {
-		return fmt.Errorf("failed to move to recent file: can't add note: %w", err)
+	if cmd == consts.CmdMoveToExistingFile {
+		err = b.addToFile(fs.DirRoot, existingFilename, content)
+		if err != nil {
+			return fmt.Errorf("failed to move to recent file: can't add note: %w", err)
+		}
+	}
+
+	if cmd == consts.CmdMoveToExistingNote {
+		dir, err := b.fs.Unhash(fs.DirRoot, args[1])
+		if err != nil {
+			return fmt.Errorf("failed to move to recent note: can't unhash dir: %w", err)
+		}
+
+		err = b.addToFile(dir, existingFilename, content)
+		if err != nil {
+			return fmt.Errorf("failed to move to recent note: can't add note: %w", err)
+		}
 	}
 
 	msg := fmt.Sprintf(i18n.Tr("Added to <b>%s</b>"), fs.Title(existingFilename))
