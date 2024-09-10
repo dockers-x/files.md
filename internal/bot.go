@@ -284,7 +284,8 @@ func (b *Bot) extractCmd(u UpdInterface) (*tg.Cmd, error) {
 				continue
 			}
 
-			text := string(re.ReplaceAll([]byte(u.MsgText()), []byte("")))
+			text := extractPlainText(u)
+			text = string(re.ReplaceAll([]byte(u.MsgText()), []byte("")))
 			text = txt.Ucfirst(strings.TrimSpace(text))
 			shortCmd := tg.NewCmd(canonicalCMD, []string{text})
 
