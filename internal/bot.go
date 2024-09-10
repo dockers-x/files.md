@@ -686,7 +686,20 @@ func (b *Bot) showMoveTo(params []string) error {
 		args, _ := b.db.RecentCommandParams(b.userID)
 		args = append(args, filenameHash)
 		targetFilenameHash := args[0]
-		unhashedTarget, err := b.fs.Unhash(fs.DirRoot, targetFilenameHash)
+
+		var unhashedTarget string
+		var err error
+		if recentCmd == consts.CmdMoveToExistingFile {
+			unhashedTarget, err = b.fs.Unhash(fs.DirRoot, targetFilenameHash)
+		} else if recentCmd == consts.CmdMoveToExistingNote {
+			dir, dirErr := b.fs.Unhash(fs.DirRoot, args[1])
+			if dirErr == nil {
+				unhashedTarget, err = b.fs.Unhash(dir, targetFilenameHash)
+			}
+		} else {
+			err = fmt.Errorf("unsupported")
+		}
+
 		if err == nil {
 			icon := i18n.Emoji("file")
 			if recentCmd == consts.CmdMoveToDir {
