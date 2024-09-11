@@ -363,7 +363,7 @@ func (b *Bot) saveFromPhoto(u UpdInterface) error {
 	imgPath := fmt.Sprintf("../%s/%s", fs.DirImg, imgFilename)
 	content := fmt.Sprintf("![[%s|center|%d]]", imgPath, imgWidth)
 	if u.Caption() != "" {
-		caption := txt.EntitiesToMarkdown(u.Caption(), u.CaptionEntities())
+		caption := txt.TelegramEntitiesToMarkdown(u.Caption(), u.CaptionEntities())
 		caption = strings.TrimSpace(txt.NormNewLines(caption))
 		content = fmt.Sprintf("%s\n%s", content, txt.Ucfirst(caption))
 	}
@@ -728,6 +728,45 @@ func (b *Bot) showMoveTo(params []string) error {
 	}
 
 	return nil
+}
+
+func (b *Bot) recentCmdBtn(filenameHash string) *tg.Btn {
+	recentCmd, ok := b.db.RecentCommand(b.userID)
+	if !ok {
+		return nil
+	}
+
+	args, _ := b.db.RecentCommandParams(b.userID)
+	args = append(args, filenameHash)
+	targetFilenameHash := args[0]
+
+	var unhashedTarget string
+	var icon string
+	if recentCmd == consts.CmdMoveToExistingFile {
+		icon = i18n.Emoji("file")
+		var err error
+		unhashedTarget, err = b.fs.Unhash(fs.DirRoot, targetFilenameHash)
+		if err != nil {
+			return nil
+		}
+	} else if recentCmd == consts.CmdMoveToExistingNote {
+		icon = i18n.Emoji("dir")
+		dir, err := b.fs.Unhash(fs.DirRoot, args[1])
+		if err != nil {
+			return nil
+		}
+
+		unhashedTarget, err = b.fs.Unhash(dir, targetFilenameHash)
+		if err != nil {
+			return nil
+		}
+	} else {
+		return nil
+	}
+
+	name := fmt.Sprintf("%s %s", icon, fs.Title(unhashedTarget))
+	btn := tg.NewBtn(name, tg.NewCmd(recentCmd, args))
+	return &btn
 }
 
 func (b *Bot) ShowToday(_ []string) error {
@@ -1546,9 +1585,6 @@ func (b *Bot) addToRecentFileOrNoteFromShortcut(params []string) error {
 		return nil
 	}
 	cmd, _ := b.db.RecentCommand(b.userID)
-	if cmd != consts.CmdMoveToExistingFile && cmd != consts.CmdMoveToExistingNote {
-		return nil
-	}
 
 	var existingFilename string
 	if cmd == consts.CmdMoveToExistingFile {
@@ -1562,9 +1598,7 @@ func (b *Bot) addToRecentFileOrNoteFromShortcut(params []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to move to recent file: can't add note: %w", err)
 		}
-	}
-
-	if cmd == consts.CmdMoveToExistingNote {
+	} else if cmd == consts.CmdMoveToExistingNote {
 		dir, err := b.fs.Unhash(fs.DirRoot, args[1])
 		if err != nil {
 			return fmt.Errorf("failed to move to recent note: can't unhash dir: %w", err)
@@ -1578,6 +1612,8 @@ func (b *Bot) addToRecentFileOrNoteFromShortcut(params []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to move to recent note: can't add note: %w", err)
 		}
+	} else {
+		return nil
 	}
 
 	msg := fmt.Sprintf(i18n.Tr("Added to <b>%s</b>"), fs.Title(existingFilename))
@@ -2073,7 +2109,7 @@ func (b *Bot) showHelp(_ []string) error {
 }
 
 func extractPlainText(u UpdInterface) string {
-	content := txt.EntitiesToMarkdown(u.MsgText(), u.MsgEntities())
+	content := txt.TelegramEntitiesToMarkdown(u.MsgText(), u.MsgEntities())
 	content = strings.TrimSpace(txt.NormNewLines(content))
 
 	return txt.Ucfirst(content)

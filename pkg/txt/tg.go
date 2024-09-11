@@ -8,23 +8,13 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-var needEscape = make(map[rune]struct{})
-
-const RUNE_NEWLINE = '\n'
-
-func init() {
-	for _, r := range []rune{'_', '*', '~', '`'} { // '[', ']', '(', ')', '>', '#',  '+', '-', '=', '|', '{', '}', '.', '!'} {
-		needEscape[r] = struct{}{}
-	}
-}
-
-// EntitiesToMarkdown converts plain text with Telegram entities (with UTF-16 offsets) to CommonMark Markdown.
+// TelegramEntitiesToMarkdown converts plain text with Telegram entities (with UTF-16 offsets) to CommonMark Markdown.
 // Telegram's formatting entities don't take the new lines into account. I.e. if we have a multiline
 // bold text, it would be referred as a single bold entity, which is not what we want. This function
 // inserts the necessary closing tags before the new lines and opening tags after the new lines.
 // https://core.telegram.org/bots/api#messageentity
 // https://commonmark.org/help/
-func EntitiesToMarkdown(text string, messageEntities []tgbotapi.MessageEntity) string {
+func TelegramEntitiesToMarkdown(text string, messageEntities []tgbotapi.MessageEntity) string {
 	input := []rune(NormNewLines(text))
 	insertions := make(map[int]string)
 	noEscape := make(map[int]*struct{})
@@ -73,7 +63,7 @@ func EntitiesToMarkdown(text string, messageEntities []tgbotapi.MessageEntity) s
 		isOpen := false
 		spacesToEat := 0
 		for offset, c := range input[e.Offset : e.Offset+e.Length] {
-			if c == RUNE_NEWLINE && !eatNewlines && isOpen {
+			if c == '\n' && !eatNewlines && isOpen {
 				insertions[(e.Offset+offset)-spacesToEat] += after
 				isOpen = false
 				spacesToEat = 0
@@ -98,10 +88,6 @@ func EntitiesToMarkdown(text string, messageEntities []tgbotapi.MessageEntity) s
 	utf16pos := 0
 	for _, c := range input {
 		output = append(output, []rune(insertions[utf16pos])...)
-		_, stopEscaping := noEscape[utf16pos]
-		if _, shouldEscape := needEscape[c]; shouldEscape && !stopEscaping {
-			output = append(output, '\\')
-		}
 		output = append(output, c)
 		utf16pos += len(utf16.Encode([]rune{c}))
 	}

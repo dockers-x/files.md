@@ -15,7 +15,7 @@ func TestBold(t *testing.T) {
 		{Type: "bold", Offset: 0, Length: 4},
 	}
 
-	md := EntitiesToMarkdown(text, messageEntities)
+	md := TelegramEntitiesToMarkdown(text, messageEntities)
 	r.Equal("**bold**", md)
 }
 
@@ -27,7 +27,7 @@ func TestItalic(t *testing.T) {
 		{Type: "italic", Offset: 0, Length: 6},
 	}
 
-	md := EntitiesToMarkdown(text, messageEntities)
+	md := TelegramEntitiesToMarkdown(text, messageEntities)
 	r.Equal("*italic*", md)
 }
 
@@ -40,7 +40,7 @@ func TestBoldAndItalic(t *testing.T) {
 		{Type: "italic", Offset: 0, Length: 13},
 	}
 
-	md := EntitiesToMarkdown(text, messageEntities)
+	md := TelegramEntitiesToMarkdown(text, messageEntities)
 	r.Equal("***BoldAndItalic***", md)
 }
 
@@ -53,7 +53,7 @@ func TestBoldThenItalic(t *testing.T) {
 		{Type: "italic", Offset: 4, Length: 6},
 	}
 
-	md := EntitiesToMarkdown(text, messageEntities)
+	md := TelegramEntitiesToMarkdown(text, messageEntities)
 	r.Equal("**bold***italic*", md)
 }
 
@@ -65,7 +65,7 @@ func TestLink(t *testing.T) {
 		{Type: "text_link", Offset: 0, Length: 1, URL: "google.com"},
 	}
 
-	md := EntitiesToMarkdown(text, messageEntities)
+	md := TelegramEntitiesToMarkdown(text, messageEntities)
 	r.Equal("[l](google.com)", md)
 }
 
@@ -81,7 +81,7 @@ func TestMultilineTextWithMarkdown(t *testing.T) {
 		{Type: "code", Offset: 43, Length: 4},
 	}
 
-	markdown := EntitiesToMarkdown(text, messageEntities)
+	markdown := TelegramEntitiesToMarkdown(text, messageEntities)
 	expectedMarkdown := "**header**\n*italic*\n\n*Also italic*\n\n**header2**\n*italic*\n`code`"
 	r.Equal(expectedMarkdown, markdown)
 }
@@ -94,7 +94,7 @@ func TestSpacedItalic(t *testing.T) {
 		{Type: "italic", Offset: 16, Length: 20},
 	}
 
-	markdown := EntitiesToMarkdown(text, messageEntities)
+	markdown := TelegramEntitiesToMarkdown(text, messageEntities)
 	expectedMarkdown := "Header\nLeverage *one Minute Praising* instead"
 	r.Equal(expectedMarkdown, markdown)
 }
@@ -107,7 +107,7 @@ func TestEmoji(t *testing.T) {
 		{Type: "bold", Offset: 2, Length: 1}, // Emoji is 4 bytes or 2 runes
 	}
 
-	md := EntitiesToMarkdown(text, messageEntities)
+	md := TelegramEntitiesToMarkdown(text, messageEntities)
 	r.Equal("👍**b**", md)
 }
 
@@ -119,7 +119,7 @@ func TestSkinEmoji(t *testing.T) {
 		{Type: "bold", Offset: 4, Length: 1}, // Tone emoji is 8 bytes or 4 runes
 	}
 
-	md := EntitiesToMarkdown(text, messageEntities)
+	md := TelegramEntitiesToMarkdown(text, messageEntities)
 	r.Equal("🤘🏾**b**", md)
 }
 
@@ -131,6 +131,26 @@ func TestPre(t *testing.T) {
 		{Type: "pre", Offset: 0, Length: 11},
 	}
 
-	md := EntitiesToMarkdown(text, messageEntities)
+	md := TelegramEntitiesToMarkdown(text, messageEntities)
 	r.Equal("```line1\nline2```", md)
+}
+
+func TestDoesntEscapeMD(t *testing.T) {
+	r := require.New(t)
+
+	text := "Ask @_a_ __b__ *a* **b** `c` ```multiline```"
+	md := TelegramEntitiesToMarkdown(text, nil)
+	r.Equal("Ask @_a_ __b__ *a* **b** `c` ```multiline```", md)
+}
+
+func TestDoesntEscapeBrokenMD(t *testing.T) {
+	r := require.New(t)
+
+	text := "Ask @nick_name * `"
+	md := TelegramEntitiesToMarkdown(text, nil)
+	r.Equal("Ask @nick_name * `", md)
+
+	text = "___ *** __ ```"
+	md = TelegramEntitiesToMarkdown(text, nil)
+	r.Equal("___ *** __ ```", md)
 }

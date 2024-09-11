@@ -151,7 +151,7 @@ func TestAddTaskWithSpecCharsToToday(t *testing.T) {
 
 	content, err := bot.fs.Read("today", "New task.md")
 	r.NoError(err)
-	r.Equal("New task\nUrl! http://g.com (Also\\_text] ##header\n-item1\n-item2\n1+1=2", content)
+	r.Equal("New task\nUrl! http://g.com (Also_text] ##header\n-item1\n-item2\n1+1=2", content)
 }
 
 func TestSaveFromRegularReply(t *testing.T) {
