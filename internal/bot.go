@@ -1292,7 +1292,6 @@ func (b *Bot) moveToDir(params []string) error {
 	return b.ShowToday(nil)
 }
 
-// TODO add tests
 func (b *Bot) requestNewDir(params []string) error {
 	filenameHash := params[0]
 

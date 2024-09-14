@@ -2414,6 +2414,88 @@ func TestSaveToNewFileIntegration(t *testing.T) {
 	r.Equal(msgID, tgram.LastSentMessageID)
 }
 
+func TestSaveToNewDirIntegration(t *testing.T) {
+	r := require.New(t)
+
+	savedNow := now
+	defer func() {
+		now = savedNow
+	}()
+	now = func() time.Time {
+		return time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+	err = userFS.CreateDirsIfNotExist()
+	r.NoError(err)
+
+	cfg := userconfig.NewConfig(userFS, -1, "config.json")
+	err = cfg.CreateDefaultIfNotExists()
+	r.NoError(err)
+
+	_ = cfg.AddMoveToCmd(consts.CmdScheduleForTmrw)
+	_ = cfg.AddMoveToCmd(consts.CmdMoveToLater)
+	_ = cfg.AddMoveToCmd(consts.CmdShowScheduleForDay)
+	_ = cfg.AddMoveToCmd(consts.CmdShowMoveToDirOrFile)
+	_ = cfg.AddMoveToCmd(consts.CmdMoveToJournal)
+
+	tgram := tg.NewFakeTG()
+	database := db.NewFakeDB()
+	bot := NewBot(-1, tgram, userFS, database, cfg)
+	err = bot.Answer(tg.NewFakeUpd(-1, "Text"))
+	r.NoError(err)
+
+	kb := tg.NewKeyboard([]tg.Row{
+		tg.NewRow(
+			tg.NewBtn("🌚 To tmrw", tg.NewCmd("sc_tmrw", []string{"232004794e5"})),
+			tg.NewBtn("⏳ To later", tg.NewCmd("mv_later", []string{"232004794e5"})),
+			tg.NewBtn("📆 To a day", tg.NewCmd("sc_day", []string{"232004794e5"})),
+		),
+		tg.NewRow(
+			tg.NewBtn("📄 To File", tg.NewCmd("to_file", []string{"232004794e5"})),
+			tg.NewBtn("💚 To Journal", tg.NewCmd("mv_to_journal", []string{"232004794e5"})),
+			tg.NewBtn("➡️ Today", tg.NewCmd("today", nil)),
+		)})
+	r.Equal(kb, tgram.LastSentKeyboard)
+
+	err = bot.Answer(tg.NewFakeUpdCmd(-1, tg.NewCmd("to_file", []string{"232004794e5"})))
+	r.NoError(err)
+
+	selectFileKB := tg.NewKeyboard([]tg.Row{
+		tg.NewRow(
+			tg.NewBtn("📄 Text", tg.NewCmd("mf", []string{"23200", "", "23200"})),
+		),
+		tg.NewBtn("Or choose a dir:", tg.NewCustomCmd("search", nil, "iq")),
+		tg.NewRow(
+			tg.NewBtn("🗂️ habits", tg.NewCmd("mv", []string{"51fc0", "", "232004794e5"})),
+			tg.NewBtn("🗂️ inbox", tg.NewCmd("mv", []string{"af1cd", "", "232004794e5"})),
+			tg.NewBtn("🗂 New Dir", tg.NewCmd("new_dir", []string{"232004794e5"})),
+		),
+	})
+	r.Equal(selectFileKB, tgram.LastEditedKeyboard)
+
+	err = bot.Answer(tg.NewFakeUpdCmd(-1, tg.NewCmd("new_dir", []string{"232004794e5"})))
+	r.NoError(err)
+
+	r.Equal("OK. Send me the name for your new dir", tgram.LastEditedText)
+	r.Nil(tgram.LastEditedKeyboard)
+	r.Equal(tg.NewCmd("mv_to_new_dir", []string{"232004794e5", "%s"}), *database.InputExpectation(-1))
+
+	err = bot.Answer(tg.NewFakeUpd(-1, "my dir"))
+	r.NoError(err)
+
+	content, err := userFS.Read("my dir", "Text.md")
+	r.NoError(err)
+	r.Empty(content)
+
+	r.Nil(database.InputExpectation(-1))
+	msgID, ok := database.LastKeyboardMsgID(-1)
+	r.True(ok)
+	r.Equal(1, msgID)
+	r.Equal(msgID, tgram.LastSentMessageID)
+}
+
 func TestSaveToNewMultilineFileIntegration(t *testing.T) {
 	r := require.New(t)
 
