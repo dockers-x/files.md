@@ -38,6 +38,6 @@ deploy:
 	ssh $(host) "killall bot || true" && \
 	scp /tmp/bot $(host):/app/bot && printf "$${GREEN}The binary is copied on the server$${RESET}\n" && \
 	ssh $(host) "sudo setcap 'cap_net_bind_service=+ep' /app/bot" && \
-	ssh $(host) "su -c \"cd /app && nohup ./bot >> /app/out 2>>/app/err &\" -s /bin/sh www-data" && \
+	ssh $(host) "su -c \"cd /app && nohup ./bot >> /app/log 2>>/app/err &\" -s /bin/sh www-data" && \
 	rm /tmp/bot && \
 	printf "$${GREEN}Successfully deployed!$${RESET}\n"
