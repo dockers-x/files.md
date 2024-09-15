@@ -26,6 +26,7 @@ type ChatGUI struct {
 	entry     *entry
 	updater   func(updInterface internal.Update) error
 	container *fyne.Container
+	removable []*fyne.Container
 }
 
 var Chat *ChatGUI
@@ -93,6 +94,7 @@ func (c *ChatGUI) Send(_ int64, text string, kb *tg.Keyboard, markup string) (in
 	c.attachKeyboard(kb, btnsContainer)
 
 	c.messages.Add(msgContainer)
+	c.removable = append(c.removable, msgContainer)
 	c.scroll.Refresh()
 	c.scroll.ScrollToBottom()
 
@@ -104,7 +106,7 @@ func (c *ChatGUI) Edit(userID int64, _ int, text string, kb *tg.Keyboard, markup
 		return nil
 	}
 
-	c.messages.RemoveAll()
+	removeBotMessages()
 	c.Send(userID, text, kb, markup)
 
 	return nil
@@ -127,7 +129,7 @@ func (c *ChatGUI) AnswerCallbackQuery(_ string, msg string) error {
 
 	Chat.window.Canvas().Content()
 	go func() {
-		time.Sleep(2 * time.Second)
+		time.Sleep(1 * time.Second)
 		toast.Hide()
 	}()
 
@@ -177,9 +179,18 @@ func sendMsg() {
 		if (msg[0] == '/') && (len(msg) > 1) {
 			Chat.updater(tg.NewFakeUpdCmd(1, tg.NewCmd(msg[1:], nil)))
 		} else {
-			Chat.messages.RemoveAll()
+			label := widget.NewLabel(msg)
+			label.Alignment = fyne.TextAlignTrailing
+			removeBotMessages()
+			Chat.messages.Add(label)
 			Chat.updater(tg.NewFakeUpd(1, msg))
 		}
 	}
 	Chat.entry.SetText("")
+}
+
+func removeBotMessages() {
+	for _, msg := range Chat.removable {
+		Chat.messages.Remove(msg)
+	}
 }

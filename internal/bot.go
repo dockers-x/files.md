@@ -48,7 +48,7 @@ const (
 	maxMsgsToSendAtOnce    = 5    // For lengthy messages
 	imgWidth               = 400  // We insert images into *.md files with this width
 
-	// Buttons shrink to the msg width, so we make the msg wider
+	// On mobile buttons shrink to the message width, and sometimes it's too narrow, so we make the message wider
 	wideSpacer = "<code>            ⁠</code>"
 )
 
