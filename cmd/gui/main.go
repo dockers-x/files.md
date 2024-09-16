@@ -54,6 +54,7 @@ func main() {
 
 		userPath := config.GUICfg.GUIUserStoragePath
 		userPath, err = filepath.Abs(userPath)
+		fmt.Println(userPath)
 		if err != nil {
 			slog.Error("Bot error: can't get absolute path for curent dir", "err", err)
 			return err

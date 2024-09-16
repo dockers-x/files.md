@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"zakirullin/stuffbot/internal"
@@ -29,6 +30,7 @@ type ChatGUI struct {
 	container *fyne.Container
 	removable []*fyne.Container
 	toastLock sync.Mutex
+	menu      *widget.PopUpMenu
 }
 
 var Chat *ChatGUI
@@ -47,17 +49,30 @@ func (c *ChatGUI) Run(startupCMD tg.Cmd) {
 	a := app.New()
 	c.window = a.NewWindow("Files.md")
 
-	sendBtn := newButton("✉️", func() {
-		if c.entry.MultiLine {
-			c.entry.Resize(fyne.NewSize(c.entry.Size().Width, c.entry.Size().Height/2))
-			c.entry.Refresh()
-			c.entry.MultiLine = false
+	handleCmd := func(cmd string) func() {
+		return func() {
+			c.updater(tg.NewFakeUpdCmd(1, tg.NewCmd(cmd, nil)))
 		}
-		sendMsg()
-	})
+	}
 
-	// Make sure the entry field takes all available width
-	inputLine := container.New(layout.NewBorderLayout(nil, nil, nil, sendBtn), c.entry, sendBtn)
+	items := []*fyne.MenuItem{
+		fyne.NewMenuItem("🏠 Today", handleCmd("today")),
+		fyne.NewMenuItem("📄 Files", handleCmd("files")),
+		fyne.NewMenuItem("☑️ Checklists", handleCmd("checklists")),
+		fyne.NewMenuItem("📆 Schedule", handleCmd("schedule")),
+		fyne.NewMenuItem("📊 Stats", handleCmd("stats")),
+		fyne.NewMenuItem("🦥 Postpone", handleCmd("postpone")),
+		fyne.NewMenuItem("✏️ Rename", handleCmd("rename")),
+		fyne.NewMenuItem("➡️ Move", handleCmd("move")),
+		fyne.NewMenuItem("⚙️ Settings", handleCmd("settings")),
+		fyne.NewMenuItem("📕 Help", handleCmd("help")),
+	}
+	c.menu = widget.NewPopUpMenu(fyne.NewMenu("", items...), Chat.window.Canvas())
+
+	menuBtn := newButton("📋", toggleMenu)
+	sendBtn := newButton("✉️", sendMsg)
+
+	inputLine := container.New(layout.NewBorderLayout(nil, nil, menuBtn, sendBtn), menuBtn, c.entry, sendBtn)
 	c.scroll = container.NewVScroll(container.NewVBox(layout.NewSpacer(), c.messages))
 	c.container = container.New(layout.NewBorderLayout(nil, inputLine, nil, nil), c.scroll, inputLine)
 
@@ -137,11 +152,17 @@ func (c *ChatGUI) AnswerCallbackQuery(_ string, msg string) error {
 	}
 
 	toast := widget.NewLabel(msg)
-	toast.Alignment = fyne.TextAlignCenter
-	Chat.container.Add(toast)
+	bgRect := canvas.NewRectangle(theme.Color(theme.ColorNameBackground))
+	bgRect.CornerRadius = 5
+	stack := container.NewCenter(container.NewStack(bgRect, toast))
+	bgRect.Resize(fyne.NewSize(10, 10))
+	bgRect.Refresh()
+	stack.Resize(fyne.NewSize(10, 10))
+	stack.Refresh()
+	Chat.container.Add(stack)
 	go func() {
 		time.Sleep(1 * time.Second)
-		toast.Hide()
+		stack.Hide()
 		c.toastLock.Unlock()
 	}()
 
@@ -205,4 +226,11 @@ func removeBotMessages() {
 	for _, msg := range Chat.removable {
 		Chat.messages.Remove(msg)
 	}
+}
+
+func toggleMenu() {
+	y := Chat.window.Canvas().Size().Height - Chat.menu.Size().Height
+	y -= Chat.entry.Size().Height
+	y -= theme.Padding()
+	Chat.menu.ShowAtPosition(fyne.NewPos(theme.Padding(), y))
 }

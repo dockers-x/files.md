@@ -8,7 +8,7 @@ test:
 	go test ./...
 
 install:
-	go mod tidy
+	go mod vendor
 
 check:
 	go fmt ./... && go vet ./... && go test ./...
