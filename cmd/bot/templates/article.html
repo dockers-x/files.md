@@ -174,7 +174,7 @@
             font-size: calc(1em + 0.2vw);
             letter-spacing: -0.015em;
             line-height: 1.3;
-            margin-top: 1em;
+            margin-top: 2em;
             margin-bottom: 0.5em;
         }
 
@@ -274,7 +274,6 @@
 
         .highlight {
             color: var(--color-tx-faint);
-            background-color: blue;
             animation: highlight 1s infinite;
         }
 
@@ -290,6 +289,14 @@
 
         input[type="range"] {
             opacity: 0.4;
+        }
+
+        #links {
+            text-align: center;
+        }
+
+        #links a {
+            color: var(--color-tx-muted);
         }
     </style>
 </head>
@@ -313,7 +320,6 @@
 
             <l2>
                 <h2>Introduction</h2>
-                <hr>
             </l2>
             <p>There are so many buzzwords and best practices out there, but let's focus on something more fundamental. What matters is the amount of confusion developers feel when going through the code.</p>
             <p>Confusion costs time and money. Confusion is caused by high <em>cognitive load</em>. It's not some fancy abstract concept, but rather <strong>a fundamental human constraint</strong>.</p>
@@ -321,7 +327,6 @@
 
             <l3>
                 <h2>Cognitive load</h2>
-                <hr>
             </l3>
 
             <blockquote><p>Cognitive load is how much a developer needs to think in order to complete a task.</p></blockquote>
@@ -358,7 +363,6 @@
 
             <l3>
             <h2>Complex conditionals</h2>
-            <hr>
             <p>
 <pre>
 if val > someConstant // 🧠+
@@ -388,7 +392,6 @@ if isValid && isAllowed && isSecure {
 
             <l2>
             <h2>Nested ifs</h2>
-            <hr>
 <pre>
 if isValid { // 🧠+, okay nested code applies to valid input only
     if isSecure { // 🧠++, we do stuff for valid and secure input only
@@ -414,26 +417,7 @@ stuff // 🧠+
             </l2>
 
             <l3>
-            <h2>Inheritance nightmare</h2>
-            <hr>
-            <p>We are asked to change a few things for our admin users: <code>🧠</code></p>
-
-            <p><code>AdminController extends UserController extends GuestController extends BaseController</code><br></p>
-
-            <p>Ohh, part of the functionality is in <code>BaseController</code>, let's have a look: <code>🧠+</code></p>
-            <p>Basic role mechanics got introduced in <code></code>GuestController</code>: <code>🧠++</code></p>
-            <p>Things got partially altered in <code>UserController</code>: <code>🧠+++</code><p>
-            <p>Finally we are here, <code>AdminController</code>, let's code stuff! <code>🧠++++</code></p>
-
-            <p>Oh, wait, there's <code>SuperuserController</code> which extends <code>AdminController</code>. By modifying <code>AdminController</code> we can break things in the inherited class, so let's dive in <code>SuperuserController</code> first: <code>🤯</code></p>
-
-            <p>Prefer composition over inheritance. We won't go into detail - there's plenty of material out there.</p>
-            </l3>
-
-
-            <l3>
             <h2>Cognitive load in familiar projects</h2>
-            <hr>
 
             <p>The more mental models there are to learn, the longer it takes for a new developer to deliver value.</p>
 
@@ -442,7 +426,6 @@ stuff // 🧠+
 
             <l2>
             <h2>Conclusion</h2>
-            <hr>
             <p>Imagine for a moment that what we inferred in the second chapter isn’t actually true. If that’s the case, then the conclusion we just negated, along with the conclusions in the previous chapter that we had accepted as valid, might not be correct either. <code>🤯</code></p>
 
             <p>Do you feel it? Not only do you have to jump all over the article to get the meaning (shallow modules!), but the paragraph in general is difficult to understand. We have just created an unnecessary cognitive load in your head. <strong>Do not do this to your colleagues.</strong></p>
@@ -451,7 +434,15 @@ stuff // 🧠+
             <figure><img src="https://github.com/zakirullin/cognitive-load/raw/main/img/smartauthorv13paper.png"></figure>
 
             <p>We should reduce any cognitive load above and beyond what is intrinsic to the work we do.</p>
-            <hr>
+            <hr class="except-level-3">
+            <div id="links">
+                <only-level-1>
+                    <a href="javascript:void(0);" onclick="goMedium()">Medium version</a>
+                </only-level-1>
+                <except-level-3>
+                    <a href="javascript:void(0);" onclick="goFull()">Full version</a>
+                </except-level-3>
+            </div>
         </content>
     </article>
     <script>
@@ -481,28 +472,49 @@ stuff // 🧠+
         function handleContentVisibility(currentValue, previousValue) {
             let isMoreContent = currentValue > previousValue;
             if (isMoreContent) {
-                if (currentValue >= 2) {
-                    document.querySelectorAll('l2').forEach(el => el.style.display = 'inline');
+                if (currentValue === 2) {
+                    document.querySelectorAll('only-level-1').forEach(el => {
+                        el.style.display = 'none';
+                    });
                     if (previousValue !== 0 && previousValue < 2) {
-                        highlightNewBlocks('l2');
+                        highlightNewBlocks('level-2, .level-2');
+                    }
+                }
+                if (currentValue >= 2) {
+                    document.querySelectorAll('l2, .l2').forEach(el => {
+                        el.style.display = 'inline-block';
+                    });
+                    if (previousValue !== 0 && previousValue < 2) {
+                        highlightNewBlocks('level-2, .level-2');
                     }
                 }
                 if (currentValue === 3) {
-                    document.querySelectorAll('l3').forEach(el => el.style.display = 'inline');
+                    document.querySelectorAll('only-level-1, except-level-3, .except-level-3').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                    document.querySelectorAll('l3, .l3').forEach(el => {
+                        el.style.display = 'inline-block';
+                    });
                     if (previousValue !== 0) {
-                        highlightNewBlocks('l3');
+                        highlightNewBlocks('level-3, .level-3');
                     }
                 }
             } else {
                 if (currentValue < 3) {
-                    document.querySelectorAll('l3').forEach(el => {
+                    document.querySelectorAll('except-level-3, .except-level-3').forEach(el => {
+                        el.style.display = 'inline-block';
+                    });
+                    document.querySelectorAll('l3, .l3').forEach(el => {
                         highlightRemovedBlocks(el, () => {
                             el.style.display = 'none';
                         });
                     });
                 }
                 if (currentValue < 2) {
-                    document.querySelectorAll('l2').forEach(el => {
+                    document.querySelectorAll('only-level-1').forEach(el => {
+                        el.style.display = 'inline-block';
+                    });
+                    document.querySelectorAll('l2, .l2').forEach(el => {
                         highlightRemovedBlocks(el, () => {
                             el.style.display = 'none';
                         });
@@ -530,7 +542,6 @@ stuff // 🧠+
             }, 500);
         }
 
-
         function updateLabels(value) {
             const labels = document.querySelectorAll('#slider-container-labels span');
             labels.forEach((label) => {
@@ -556,22 +567,42 @@ stuff // 🧠+
             message.classList.add('fade-in-out');    // Start fade-in-out animation
         }
 
+        function goShort() {
+            window.location.replace('#short');
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        function goMedium() {
+            window.location.replace('#medium');
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        function goFull() {
+            window.location.replace('#full');
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
         window.addEventListener('load', updateContentBasedOnHash);
         window.addEventListener('hashchange', updateContentBasedOnHash);
 
         document.getElementById('slider').addEventListener('input', function() {
             const sliderValue = parseInt(this.value);
             if (sliderValue === 1) {
-                location.replace('#short');
+                goShort();
             } else if (sliderValue === 2) {
-                location.replace('#medium');
+                goMedium();
             } else if (sliderValue === 3) {
-                location.replace('#full');
+                goFull();
             }
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
         });
 
         document.querySelectorAll('#slider-container-labels span').forEach((label) => {
