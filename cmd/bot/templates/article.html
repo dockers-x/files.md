@@ -35,13 +35,28 @@
                 p, pre {
                     margin-right: 30px;
                 }
-                .slider-container {
-                    right: -50px;
-                    padding-right: 0;
-                }
-                .slider-container-labels {
+                hr {
                     display: none;
                 }
+                .desktop {
+                    display: none;
+                }
+                .mobile {
+                    display: inline;
+                }
+                .slider-container input {
+                    position: absolute;
+                    right: -20px;
+                }
+            }
+        }
+
+        @media (min-width: 861px) {
+            .mobile{
+                display: none;
+            }
+            .desktop {
+                display: inline;
             }
         }
 
@@ -172,7 +187,7 @@
             top: 10px;
             height: 100%;
             display: flex;
-            align-items: center;
+            align-items: end;
             justify-content: center;
             gap: 20px;
             flex-direction: column;
@@ -375,9 +390,12 @@ stuff // 🧠+
     <div class="slider-container">
         <input type="range" id="slider" min="1" max="3" value="1" class="slider">
         <div class="slider-container-labels">
-            <span>Quick</span>
-            <span>Detailed</span>
-            <span>Full</span>
+            <span class="desktop">Quick</span>
+            <span class="desktop">Detailed</span>
+            <span class="desktop">Full</span>
+            <span class="mobile">⚡</span>
+            <span class="mobile">👀</span>
+            <span class="mobile">🧐</span>
         </div>
     </div>
     <script>
@@ -407,7 +425,6 @@ stuff // 🧠+
         function highlightNewBlocks(selector) {
             const newBlocks = document.querySelectorAll(selector);
             newBlocks.forEach(block => {
-                console.log('hi')
                 block.classList.add('highlight');
                 setTimeout(() => {
                     block.classList.remove('highlight');
