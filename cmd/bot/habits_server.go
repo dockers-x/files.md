@@ -117,7 +117,7 @@ func setupRouter(router *http.ServeMux, logger *log.Logger) {
 	router.HandleFunc("/styles.css", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/css")
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(favicon))
+		_, _ = w.Write([]byte(styles))
 	})
 
 	router.HandleFunc("GET /habits_v2/{userID}", func(w http.ResponseWriter, r *http.Request) {
