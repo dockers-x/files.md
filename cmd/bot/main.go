@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sync"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -23,6 +24,55 @@ import (
 	"zakirullin/stuffbot/pkg/tg"
 	"zakirullin/stuffbot/pkg/txt"
 )
+
+var userChannels = sync.Map{} // Updates are processed sequentially on per-user basis
+
+func processUserUpdates(updates <-chan tgbotapi.Update, telegram *tg.TG, infolog *slog.Logger) {
+	for upd := range updates {
+		go func(upd tgbotapi.Update) {
+			defer func() {
+				err := recover()
+				if err != nil {
+					slog.Error("Bot panic", "err", err)
+				}
+			}()
+
+			u := tg.NewTGUpd(upd)
+			userID := u.UserID()
+
+			var updJSON []byte
+			updJSON, _ = json.Marshal(upd)
+			infolog.Info("Bot update: ", "upd", string(updJSON))
+
+			storagePath := config.BotCfg.StorageDir
+			storagePath, err := filepath.Abs(storagePath)
+			userPath := path.Join(storagePath, txt.I64(userID))
+			userFS, err := fs.NewFS(userPath, afero.NewOsFs())
+			if err != nil {
+				slog.Error("Bot error: can't create fs", "err", err)
+				return
+			}
+			err = userFS.CreateDirsIfNotExist()
+			if err != nil {
+				slog.Error("Bot error: can't create user dirs", "err", err)
+				return
+			}
+
+			confFilename := config.BotCfg.ConfigFilename
+			userconf := userconfig.NewConfig(userFS, userID, confFilename)
+			err = userconf.CreateDefaultIfNotExists()
+			if err != nil {
+				slog.Error("Bot error: can't create default user config", "err", err)
+				return
+			}
+
+			bot := internal.NewBot(userID, telegram, userFS, db.NewDB(), userconf)
+			if err := bot.Answer(u); err != nil {
+				slog.Error("Bot error", "err", err)
+			}
+		}(upd)
+	}
+}
 
 func main() {
 	err := godotenv.Load()
@@ -75,55 +125,33 @@ func main() {
 		go habitsServer(config.BotCfg.HabitsHost, config.BotCfg.ServerCertDir, config.BotCfg.ServerLogFile)
 	}
 
-	infolog := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	var infolog = slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	// Main bot loop.
-	// Listen for updates from user and process them in separate goroutines.
+	// Listen for updates from user and process them in separate per-user goroutines.
 	tgConfig := tgbotapi.NewUpdate(0)
 	tgConfig.Timeout = 60 // TODO release, check if it's enough
 	updates := api.GetUpdatesChan(tgConfig)
 	for upd := range updates {
 		go func(upd tgbotapi.Update) {
-			defer func() {
-				err := recover()
-				if err != nil {
-					slog.Error("Bot panic", "err", err)
-				}
-			}()
-
+			fmt.Println("invoking per user ")
 			u := tg.NewTGUpd(upd)
 			userID := u.UserID()
 
-			var updJSON []byte
-			updJSON, _ = json.Marshal(upd)
-			infolog.Info("Bot update: ", "upd", string(updJSON))
-
-			storagePath := config.BotCfg.StorageDir
-			storagePath, err = filepath.Abs(storagePath)
-			userPath := path.Join(storagePath, txt.I64(userID))
-			userFS, err := fs.NewFS(userPath, afero.NewOsFs())
-			if err != nil {
-				slog.Error("Bot error: can't create fs", "err", err)
-				return
-			}
-			err = userFS.CreateDirsIfNotExist()
-			if err != nil {
-				slog.Error("Bot error: can't create user dirs", "err", err)
-				return
+			ch, loaded := userChannels.LoadOrStore(userID, make(chan tgbotapi.Update))
+			userCh := ch.(chan tgbotapi.Update)
+		
+			// Start per-user worker if none is running
+			if !loaded {
+				fmt.Println("starting routine")
+				go func() {
+					defer userChannels.Delete(userID)
+					processUserUpdates(userCh, telegram, infolog)
+					println("DEFERRING")
+				}()
 			}
 
-			confFilename := config.BotCfg.ConfigFilename
-			userconf := userconfig.NewConfig(userFS, userID, confFilename)
-			err = userconf.CreateDefaultIfNotExists()
-			if err != nil {
-				slog.Error("Bot error: can't create default user config", "err", err)
-				return
-			}
-
-			bot := internal.NewBot(userID, telegram, userFS, db.NewDB(), userconf)
-			if err := bot.Answer(u); err != nil {
-				slog.Error("Bot error", "err", err)
-			}
+			userCh <- upd
 		}(upd)
 	}
 }
