@@ -96,3 +96,7 @@ func (u *Upd) Caption() string {
 func (u *Upd) MsgID() (int, bool) {
 	return 0, false
 }
+
+func (u *Upd) Time() (int, bool) {
+	return 0, false
+}

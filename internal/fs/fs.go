@@ -170,11 +170,12 @@ func (fs FS) Write(dir, filename, content string) error {
 	dirs = dirs[:len(dirs)-1]
 	pathToDir := strings.Join(dirs, "/")
 	if err := fs.backend.MkdirAll(pathToDir, 0o755); err != nil {
-		return fmt.Errorf("put: can't create dirs '%s': %w", pathToDir, err)
+		return fmt.Errorf("fs write: can't create dirs '%s': %w", pathToDir, err)
 	}
 
+	// Append mode for forwards?
 	if err := afero.WriteFile(fs.backend, filePath, []byte(content), 0o644); err != nil {
-		return fmt.Errorf("put to '%s/%s': %w", dir, filename, err)
+		return fmt.Errorf("fs write to '%s/%s': %w", dir, filename, err)
 	}
 
 	return nil

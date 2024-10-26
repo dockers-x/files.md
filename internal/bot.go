@@ -29,10 +29,10 @@ import (
 )
 
 var (
-	botPlugins                  []BotPlugin
 	errUnknownCommand           = errors.New("unknown command")
 	errInvalidRequestFromInline = errors.New("invalid request from inline query")
 	errInvalidInlineQuery       = errors.New("invalid inline query")
+	botPlugins                  []BotPlugin
 )
 
 const (
@@ -69,6 +69,7 @@ type Update interface {
 	PhotoOrImageID() (string, bool)
 	Caption() string
 	MsgID() (int, bool)
+	Time() (int, bool)
 }
 
 // Chat provides a simple interface to chat API like Telegram
@@ -179,10 +180,10 @@ func (b *Bot) Answer(u Update) error {
 		return nil
 	}
 
-	// Handle forwards
-	if u.IsForwarded() {
-		return b.saveFromForward(u)
-	}
+	//// Handle forwards
+	//if u.IsForwarded() {
+	//	return b.saveFromForward(u)
+	//}
 
 	// Handle photos
 	if _, hasPhoto := u.PhotoOrImageID(); hasPhoto {
@@ -325,6 +326,19 @@ func (b *Bot) saveFromRegularMsg(u Update) error {
 		return fmt.Errorf("save: %w", err)
 	}
 
+	// Collapse a few consecutive messages into one, see bot_forwards.go
+	msgTime, updateHasTime := u.Time()
+	if updateHasTime {
+		filename, shouldCollapse := collapseToMsg(b.userID, msgTime)
+		if shouldCollapse {
+			err = b.createOrAdd(fs.DirToday, filename, content)
+			if err != nil {
+				return fmt.Errorf("save collapsed: %w", err)
+			}
+			return nil
+		}
+	}
+
 	// Adding to an existing file
 	if replyMsgID, ok := u.ReplyToMsgID(); ok {
 		return b.addToRepliedFile(replyMsgID, content)
@@ -344,6 +358,11 @@ func (b *Bot) saveFromRegularMsg(u Update) error {
 	err = b.createOrAdd(fs.DirToday, filename, content)
 	if err != nil {
 		return fmt.Errorf("save: %w", err)
+	}
+
+	if updateHasTime {
+		setFirstMsg(b.userID, filename, msgTime)
+		setFirstMsgTime(b.userID, msgTime)
 	}
 
 	msgID, _ := u.MsgID()

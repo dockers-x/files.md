@@ -250,6 +250,14 @@ func (u *TGUpd) MsgID() (int, bool) {
 	return 0, false
 }
 
+func (u *TGUpd) Time() (int, bool) {
+	if u.raw.Message != nil {
+		return u.raw.Message.Date, true
+	}
+
+	return 0, false
+}
+
 // Takes into account Telegram's UTF-16 encoding
 // First we encode runes [128078 127997] into UTF-16 representation
 // We get string [55357 56398 55356 57341]
