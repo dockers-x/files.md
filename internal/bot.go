@@ -1276,14 +1276,25 @@ func (b *Bot) showChecklist(params []string) error {
 	return nil
 }
 
-func (b *Bot) showStart(_ []string) error {
+func (b *Bot) showStart(params []string) error {
+	if len(params) > 0 {
+		mode := params[0]
+		if mode == "notes" {
+			return b.notesOnlyMode(nil)
+		} else if mode == "tasks" {
+			return b.tasksOnlyMode(nil)
+		} else if mode == "full" {
+			return b.fullMode(nil)
+		}
+	}
+
 	kb := tg.NewKeyboard([]tg.Row{
 		tg.NewRow(tg.NewBtn(txt.Emoji(i18n.Emoji("notes"), b.tr("Notes only")), tg.NewCmd(consts.CmdNotesOnlyMode, nil))),
 		tg.NewRow(tg.NewBtn(txt.Emoji(i18n.Emoji("tasks"), b.tr("Tasks only")), tg.NewCmd(consts.CmdTasksOnlyMode, nil))),
 		tg.NewRow(tg.NewBtn(txt.Emoji(i18n.Emoji("brain"), b.tr("Everything")), tg.NewCmd(consts.CmdFullMode, nil))),
 	})
 
-	return b.showHTML("Welcome 👋! What is you need?", kb)
+	return b.showHTML("Welcome 👋! What do you need?", kb)
 }
 
 func (b *Bot) moveToDir(params []string) error {
