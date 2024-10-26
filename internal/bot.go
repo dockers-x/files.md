@@ -1277,8 +1277,9 @@ func (b *Bot) showChecklist(params []string) error {
 }
 
 func (b *Bot) showStart(params []string) error {
+	fmt.Printf("%v\n", params)
 	if len(params) > 0 {
-		mode := params[0]
+		mode := strings.ToLower(params[0])
 		if mode == "notes" {
 			return b.notesOnlyMode(nil)
 		} else if mode == "tasks" {
