@@ -118,6 +118,8 @@ func setupRouter(router *http.ServeMux, logger *log.Logger) {
 	})
 
 	router.HandleFunc("/tomassanchez.webp", func(w http.ResponseWriter, r *http.Request) {
+		oneMonth := 30 * 24 * time.Hour
+		w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", int(oneMonth.Seconds())))
 		w.Header().Set("Content-Type", "image/webp")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(img))
