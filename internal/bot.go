@@ -1594,7 +1594,6 @@ func (b *Bot) moveToNewChecklist(params []string) error {
 
 	dir := strings.ToLower(supposedName)
 	dir = fmt.Sprintf("_%s_", dir)
-
 	exists, err := b.fs.Exists(fs.DirRoot, dir)
 	if err != nil {
 		return fmt.Errorf("move to new checklist: %w", err)
@@ -1610,7 +1609,7 @@ func (b *Bot) moveToNewChecklist(params []string) error {
 	// Just an informative message
 	_, _ = b.tg.Send(b.userID, fmt.Sprintf(i18n.Tr("Saved to <b>%s</b>"), fs.Title(supposedName)), nil, tg.MarkupHTML)
 
-	return b.moveToDir([]string{dir, fs.DirRoot, filenameHash})
+	return b.moveToDir([]string{dir, fs.DirToday, filenameHash})
 }
 
 func (b *Bot) moveToJournal(params []string) error {
