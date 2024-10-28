@@ -1360,7 +1360,7 @@ func (b *Bot) requestNewDirName(params []string) error {
 
 func (b *Bot) moveToNewDir(params []string) error {
 	filenameHash := params[0]
-	dir := strings.ToLower(params[1])
+	dir := strings.ToLower(fs.SanitizeFilename(params[1]))
 
 	exists, err := b.fs.Exists(fs.DirRoot, dir)
 	if err != nil {
