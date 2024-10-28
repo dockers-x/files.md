@@ -1403,22 +1403,26 @@ func (b *Bot) moveToExistingFile(params []string) error {
 		return fmt.Errorf("move to file: can't unhash from dir '%s': %w", fromFilenameHash, err)
 	}
 
-	toFilename, err := b.fs.Unhash(fromDir, fromFilenameHash)
+	fromFilename, err := b.fs.Unhash(fromDir, fromFilenameHash)
 	if err != nil {
 		return fmt.Errorf("move to file: can't unhash new filename '%s': %w", fromFilenameHash, err)
 	}
 
-	content, err := b.fs.Read(fromDir, toFilename)
+	content, err := b.fs.Read(fromDir, fromFilename)
 	if err != nil {
-		return fmt.Errorf("move to file: can't read content of '%s': %w", toFilename, err)
+		return fmt.Errorf("move to file: can't read content of '%s': %w", fromFilename, err)
 	}
 	content = strings.TrimSpace(content)
+
+	filenameHasContent := strings.HasPrefix(strings.ToLower(content), strings.ToLower(fs.Title(fromFilename)))
 	if len(content) == 0 {
-		content = fs.Title(toFilename)
+		content = fs.Title(fromFilename)
+	} else if filenameHasContent {
+		content = fmt.Sprintf("%s\n%s", fs.Title(fromFilename), content)
 	}
 
 	// We can tolerate this
-	_ = b.fs.Del(fromDir, toFilename)
+	_ = b.fs.Del(fromDir, fromFilename)
 
 	err = b.addToFile(fs.DirRoot, existingFilename, content)
 	if err != nil {
@@ -1462,9 +1466,12 @@ func (b *Bot) moveToExistingNote(params []string) error {
 	if err != nil {
 		return fmt.Errorf("move to existing note: can't read file %s: %w", fromFilename, err)
 	}
-	content = strings.TrimSpace(content)
+
+	filenameHasContent := strings.HasPrefix(strings.ToLower(content), strings.ToLower(fs.Title(fromFilename)))
 	if len(content) == 0 {
 		content = fs.Title(fromFilename)
+	} else if filenameHasContent {
+		content = fmt.Sprintf("%s\n%s", fs.Title(fromFilename), content)
 	}
 
 	err = b.addToFile(toDir, toFilename, content)
