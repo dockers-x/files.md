@@ -632,7 +632,7 @@ func (b *Bot) tr(str string, args ...any) string {
 // Or show the new one (in case of photo).
 func (b *Bot) showHTML(validHTML string, kb *tg.Keyboard) error {
 	b.delAllImages()
-	
+
 	mid, hasLastKeyboard := b.db.LastKeyboardMsgID(b.userID)
 	if !hasLastKeyboard {
 		b.delAllKeyboards()
@@ -682,8 +682,8 @@ func (b *Bot) showMD(probablyInvalidMD string, kb *tg.Keyboard) error {
 		// Sending a gallery of images if there are any
 		if len(images) > 0 {
 			// We tolerate errors with the image gallery for now, text is more important
-			imgMid, err := b.tg.SendImages(b.userID, images)
-			if err == nil {
+			imgMid, imgErr := b.tg.SendImages(b.userID, images)
+			if imgErr == nil {
 				b.db.SetImageMsgID(b.userID, imgMid)
 			}
 		}
@@ -1888,19 +1888,15 @@ func (b *Bot) delAllKeyboards() {
 }
 
 func (b *Bot) delAllImages() {
-	var msgIDs []int
 	mid, hasImageSent := b.db.ImageMsgID(b.userID)
-	if hasImageSent {
-		b.db.DelImageMsgID(b.userID)
-		msgIDs = append(msgIDs, mid)
+	if !hasImageSent {
+		return
 	}
 
-	// No worries if we fail - it will be cleaned up by the worker
-	for _, msgID := range msgIDs {
-		// If we fail to del - user would get a bunch
-		// of keyboards in one chat, which is messy but not critical
-		_ = b.tg.Del(b.userID, msgID)
-	}
+	b.db.DelImageMsgID(b.userID)
+	// If we fail to del - user would get a bunch
+	// of keyboards in one chat, which is messy but not critical
+	_ = b.tg.Del(b.userID, mid)
 }
 
 func (b *Bot) showToADay(params []string) error {
