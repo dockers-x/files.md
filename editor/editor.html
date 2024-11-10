@@ -64,11 +64,11 @@
     editor.on("inputRead", function (cm, change) {
         if (change.text.length === 1 && change.text[0] === '[') editor.showHint()
     })
-    editor.hmdReadLink = function(path, t) {
+    editor.hmdReadLink = function(path) {
         path = path.replace('[', '').replace(']', '');
+        console.log(path);
         let parts = path.split('/');
-        // TODO set current file here as well
-        editor.getDoc().setValue(zettel[parts[0]][parts[1] + '.md']);
+        editor.getDoc().setValue(zettel[parts[0]][parts[1] + '.md'].content);
         setTimeout(function () {
             editor.focus();
             editor.setCursor(editor.lineCount(), 0);
