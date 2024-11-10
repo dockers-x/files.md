@@ -23,7 +23,7 @@
     <script src="./lib/fold-emoji.js"></script>
     <script src="./lib/complete-emoji.js"></script>
     <script src="./lib/show-hint.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<!--    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>-->
     <script type="module" src="./lib/ninja-keys/ninja-keys.js"></script>
     <link rel="stylesheet" href="lib/codemirror.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror/addon/fold/foldgutter.css">
@@ -82,13 +82,9 @@
             for (file in zettel[dir]) {
                 fileNode = new TreeNode(file, {expanded: false});
                 fileNode.on('click', function (n, node) {
-                    if (node.parent.toString() === 'journal') {
-                        document.getElementById('editor-content').innerHTML = marked.parse(zettel[node.parent.toString()][node.toString()]);
-                    } else {
-                        editor.getDoc().setValue(zettel[node.parent.toString()][node.toString()]);
-                        editor.focus();
-                        editor.setCursor(editor.lineCount(), 0);
-                    }
+                    editor.getDoc().setValue(zettel[node.parent.toString()][node.toString()]);
+                    editor.focus();
+                    editor.setCursor(editor.lineCount(), 0);
                 });
                 dirNode.addChild(fileNode);
             }
@@ -163,11 +159,16 @@
     }
 
     // Recursively load directory and parse .md files
-    async function loadDirectory(directoryHandle, path = "") {
+    async function loadDirectory(directoryHandle, path = "", depth = 1) {
         for await (const entry of directoryHandle.values()) {
             if (entry.kind === 'directory') {
-                zettel[entry.name] = {};
-                await loadDirectory(entry, `${path}${entry.name}/`);
+                if (entry.name.startsWith('.')) continue;
+
+                if (depth < 2) {
+                    const folder = `${path}${entry.name}/`;
+                    zettel[entry.name] = {};
+                    await loadDirectory(entry, folder, depth + 1);
+                }
             } else if (entry.kind === 'file' && entry.name.endsWith('.md')) {
                 const header = entry.name.replace('.md', '').replace(/^\w/, (c) => c.toUpperCase());
                 const fileContent = await readFile(entry);
