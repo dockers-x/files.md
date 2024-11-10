@@ -23,7 +23,6 @@
     <script src="lib/fold-emoji.js"></script>
     <script src="lib/complete-emoji.js"></script>
     <script src="lib/show-hint.js"></script>
-    <script type="module" src="./lib/ninja-keys/ninja-keys.js"></script>
     <link rel="stylesheet" href="lib/codemirror.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror/addon/fold/foldgutter.css">
     <link rel="stylesheet" href="lib/hypermd.css">
@@ -187,7 +186,7 @@
         zettel = {};  // Reset the zettel structure
         await loadDirectory(savedDirectoryHandle);
         buildSidebar();
-        await openFirstFile();
+        await openRandomFile();
     }
 
     // Recursively load directory and parse .md files
@@ -214,22 +213,36 @@
             }
         }
     }
+    async function openRandomFile() {
+        const ignoredFolders = ["img", "archive", "_read_", "_watch_", "_shop_", "today", "later", "journal", "habits", "triggers", ""];
 
-    async function openFirstFile() {
-        // Loop through the `zettel` object to find the first file
+        const allFiles = [];
         for (let folder in zettel) {
+            if (ignoredFolders.includes(folder)) continue;
+
             for (let file in zettel[folder]) {
-                try {
-                    const content = await loadFile(folder, file);
-                    editor.getDoc().setValue(content);
-                    editor.currentFolder = folder;
-                    editor.currentFile = file;
-                    editor.focus();
-                    return; // Stop after the first file is opened
-                } catch (error) {
-                    console.error("Failed to open first file:", error);
-                }
+                allFiles.push({ folder, file });
             }
+        }
+
+        // Check if there are any files
+        if (allFiles.length === 0) {
+            console.error("No files found to open.");
+            return;
+        }
+
+        // Select a random file from the list
+        const randomFile = allFiles[Math.floor(Math.random() * allFiles.length)];
+
+        try {
+            // Load the content of the randomly selected file
+            const content = await loadFile(randomFile.folder, randomFile.file);
+            editor.getDoc().setValue(content);
+            editor.currentFolder = randomFile.folder;
+            editor.currentFile = randomFile.file;
+            editor.focus();
+        } catch (error) {
+            console.error("Failed to open random file:", error);
         }
     }
 
@@ -262,12 +275,6 @@
         } else {
             alert(`Cannot save ${filename}. No file handle found.`);
         }
-    }
-
-    // Read file content
-    async function readFile(fileHandle) {
-        const file = await fileHandle.getFile();
-        return await file.text();
     }
 
     document.addEventListener("keydown", function (event) {

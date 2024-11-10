@@ -43,6 +43,7 @@
 
 .tj_container li span.tj_mod_icon, .tj_container li span.tj_mod_icon *{
 	width: 1em;
+	margin-right: 5px;
 }
 
 .tj_container li span.tj_description.tj_leaf{
