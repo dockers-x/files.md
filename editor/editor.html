@@ -111,7 +111,7 @@
                 const fileName = `${new Date().toISOString().replace(/[:.]/g, '-')}.png`;
                 await saveImageToDirectory(file, fileName);
 
-                const markdownImageSyntax = `![Image](img/${fileName})`;
+                const markdownImageSyntax = `![](img/${fileName})`;
                 editor.replaceSelection(markdownImageSyntax);
                 // if (fileHandle) {
                 //     // Insert the Markdown image syntax into the editor
@@ -460,9 +460,12 @@
         const lowPriorityResults = [];
 
         searchList.forEach(({ filename, folder }) => {
+            const baseFilename = filename.replace(/\.md$/, "");
             const similarityScore = similarity(input, filename.replace(/\.md$/, "")) * 100;
+            const isSubstringMatch = baseFilename.toLowerCase().includes(input.toLowerCase());
 
-            if (similarityScore >= similarityThreshold) {
+            // Check if the similarity is above the threshold or if it's a substring match
+            if (similarityScore >= similarityThreshold || isSubstringMatch) {
                 if (lowPriorityFolders.includes(folder)) {
                     lowPriorityResults.push({ folder, filename });
                 } else {
