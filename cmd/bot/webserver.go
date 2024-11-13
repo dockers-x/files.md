@@ -129,7 +129,7 @@ func setupRouter(router *http.ServeMux, logger *log.Logger) {
 		// Serving editor app
 		host := r.Host
 		if strings.HasPrefix(host, "app.") {
-			if r.URL.Path == "/app" || r.URL.Path == "/app/" {
+			if r.URL.Path == "" || r.URL.Path == "/" {
 				http.ServeFile(w, r, "./editor/editor.html")
 				return
 			}
