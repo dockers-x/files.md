@@ -185,10 +185,8 @@ function buildSidebar() {
         }
     }
 
-    let tree = new TreeView(root, "#editor-sidebar", {
+    new TreeView(root, "#editor-sidebar", {
         show_root: false,
-        leaf_icon: ' ',
-        parent_icon: '<i class="fas fa-folder"></i>'
     });
 }
 

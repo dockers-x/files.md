@@ -6,6 +6,7 @@
 .tj_container ul{
 	padding-left: 2em;
 	list-style-type: none;
+	cursor: pointer;
 }
 
 .tj_container > ul:first-of-type{
@@ -18,7 +19,7 @@
 	text-overflow: ellipsis;
 
 	cursor: pointer;
-	padding: 2px 5px;
+	padding: 4px 5px;
 	display: block;
 	border-radius: 2px;
 
@@ -30,6 +31,8 @@
 	user-select: none;
 
 	text-align: left;
+
+	font-size: 0.9em;
 }
 
 .tj_container li span.tj_description:hover{
