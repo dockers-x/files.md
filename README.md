@@ -47,6 +47,10 @@ $ make bot
 [app.files.md](https://app.files.md), a standalone application for viewing/editing files, alpha version. Works offline.
 1) Open `/app/app.html`
 
+`[` to create a link.  
+`cmd + [` to move back in history, `cmd + ]` to move forward.  
+`cmd + enter` to hide/show sidebar.  
+
 ## Storage file structure
 We differentiate the following types of files (with `/` denoting your root folder):
 - Tasks: `/today/Pay the bills.md` (`/today/*.md`, `/later/*.md`)

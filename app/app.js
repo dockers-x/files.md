@@ -577,7 +577,6 @@ window.addEventListener('popstate', (event) => {
 document.getElementById('goToFile').addEventListener('keydown', (event) => {
     const resultsList = document.getElementById('goToFileResults').querySelectorAll('li');
 
-    // Handle Enter key to open focused item
     if (event.key === 'Enter') {
         event.preventDefault();
         if (resultsList[focusedItemIndex]) {
@@ -587,7 +586,6 @@ document.getElementById('goToFile').addEventListener('keydown', (event) => {
         }
     }
 
-    // Navigate up/down with arrow keys
     if (event.key === 'ArrowDown') {
         event.preventDefault();
         focusedItemIndex = (focusedItemIndex + 1) % resultsList.length;
