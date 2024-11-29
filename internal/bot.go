@@ -37,16 +37,16 @@ var (
 
 const (
 	maxTitleLength         = 100
-	inlineResultsCacheTime = 15 // In seconds
+	inlineResultsCacheTime = 15 // Seconds
 	btnsPerRow             = 3
 	quickBtnsPerRow        = 4
 	maxBtns                = 50
 	maxBtnsInChecklist     = 5 // For _read_ and _watch_ checklists, so we're less likely to be overwhelmed :)
-	maxBtnsInMoveTo        = 6
+	maxGroupedBtnsInMoveTo = 6
 	maxInlineResults       = 20
 	maxMsgLength           = 4096 // In UTF-8 characters (runes), skin-tone emojis count as 2
 	maxMsgsToSendAtOnce    = 5    // For lengthy messages
-	imgWidth               = 400  // We insert images into *.md files with the specified width
+	savedImgWidth          = 400  // We insert images into *.md files with the specified width
 
 	// On mobile phones buttons shrink to the message width, and sometimes it's too narrow, so we make the message wider
 	wideSpacer = "<code>            ⁠</code>"
@@ -426,7 +426,7 @@ func (b *Bot) saveImage(u Update) (string, error) {
 	}
 
 	imgPath := fmt.Sprintf("%s/%s", fs.DirImg, imgFilename)
-	content := fmt.Sprintf("![center|%d](%s)", imgWidth, imgPath)
+	content := fmt.Sprintf("![center|%d](%s)", savedImgWidth, imgPath)
 	if u.Caption() != "" {
 		caption := txt.TelegramEntitiesToMarkdown(u.Caption(), u.CaptionEntities())
 		caption = strings.TrimSpace(txt.NormNewLines(caption))
@@ -583,7 +583,6 @@ func (b *Bot) createOrAdd(dir, filename, content string) error {
 		}
 		existingContent = strings.TrimSpace(existingContent)
 
-		// TODO add test, before the fix adding same file twice resulted in file with empty content and \n
 		if len(existingContent) != 0 {
 			content = fmt.Sprintf("%s\n%s", strings.TrimSpace(existingContent), content)
 		}
@@ -1984,7 +1983,7 @@ func (b *Bot) toADayKeyboard(filenameHash string) (*tg.Keyboard, error) {
 
 func (b *Bot) showMoveToFileOrDir(params []string) error {
 	filenameHash := params[0]
-	maxRecentBtns := maxBtnsInMoveTo
+	maxRecentBtns := maxGroupedBtnsInMoveTo
 
 	filename := ""
 	// If there's a second param that we want to show all the buttons (user clicked More...)

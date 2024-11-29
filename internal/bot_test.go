@@ -3179,3 +3179,71 @@ func TestSaveFromImage_EmptyCaption(t *testing.T) {
 	r.NoError(err)
 	r.Equal("![center|400](img/tg_PHOTO_ID)", content)
 }
+
+func TestCreateOrAdd_NewFile(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	bot := NewBot(-1, nil, userFS, nil, nil)
+
+	dir := "today"
+	filename := "NewFile.md"
+	content := "This is new content"
+
+	err = bot.createOrAdd(dir, filename, content)
+	r.NoError(err)
+
+	storedContent, err := bot.fs.Read(dir, filename)
+	r.NoError(err)
+	r.Equal(content, storedContent)
+}
+
+func TestCreateOrAdd_AppendToExistingFile(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	bot := NewBot(-1, nil, userFS, nil, nil)
+
+	dir := "today"
+	filename := "ExistingFile.md"
+	existingContent := "Existing content"
+	newContent := "New content"
+
+	err = userFS.Write(dir, filename, existingContent)
+	r.NoError(err)
+
+	err = bot.createOrAdd(dir, filename, newContent)
+	r.NoError(err)
+
+	expectedContent := "Existing content\nNew content"
+	storedContent, err := bot.fs.Read(dir, filename)
+	r.NoError(err)
+	r.Equal(expectedContent, storedContent)
+}
+
+func TestCreateOrAdd_ReplaceEmptyContent(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	bot := NewBot(-1, nil, userFS, nil, nil)
+
+	dir := "today"
+	filename := "EmptyFile.md"
+	newContent := "New content"
+
+	err = userFS.Write(dir, filename, "\n")
+	r.NoError(err)
+
+	err = bot.createOrAdd(dir, filename, newContent)
+	r.NoError(err)
+
+	storedContent, err := bot.fs.Read(dir, filename)
+	r.NoError(err)
+	r.Equal(newContent, storedContent)
+}
