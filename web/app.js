@@ -234,7 +234,7 @@ async function loadDirectory(dirHandle, path = "", depth = 1) {
         if (entry.kind === 'directory') {
             if (filename.startsWith('.')) continue;
 
-            if (depth < 2) {
+            if (depth < 10) {
                 const folder = `${path}${filename}/`;
                 zettel[filename] = {};
                 await loadDirectory(entry, folder, depth + 1);
