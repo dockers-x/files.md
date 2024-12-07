@@ -389,7 +389,6 @@ async function getSavedDirectoryHandle() {
 }
 
 async function init(el) {
-    document.title = 'files.md';
     initHyperMD(el);
     buildSidebar();
     const savedDirectoryHandle = await getSavedDirectoryHandle();
