@@ -467,17 +467,19 @@ function closeSearchModal() {
 }
 
 function loadRecentFiles() {
-    const ignoredDirs = ["archive", "_read_", "_watch_", "_shop_", "habits", "triggers", "journal", "today", "later", "insights"];
+    const ignoredDirs = ["img", "archive", "_read_", "_watch_", "_shop_", "habits", "triggers", "journal", "today", "later", "insights"];
     let results = [];
     for (const folder of Object.keys(files)) {
-        if (folder !== 'img' && !ignoredDirs.includes(folder)) {
-            for (const filename of Object.keys(files[folder])) {
-                results.push({
-                    folder,
-                    filename,
-                    lastModified: files[folder][filename].lastModified,
-                });
-            }
+        if (ignoredDirs.includes(folder)) {
+            continue;
+        }
+
+        for (const filename of Object.keys(files[folder])) {
+            results.push({
+                folder,
+                filename,
+                lastModified: files[folder][filename].lastModified,
+            });
         }
     }
 
@@ -498,47 +500,66 @@ function filterFiles() {
     const list = document.getElementById('goToFileResults');
     list.innerHTML = '';
 
-    const lowPriorityFolders = ["archive", "_read_", "_watch_", "_shop_", "habits", "triggers", "today", "later"];
 
-    let results = [];
+    let searchableFiles = [];
+    let ignoredDirs = ['img'];
+    for (const folder of Object.keys(files)) {
+        if (ignoredDirs.includes(folder)) {
+            continue;
+        }
 
-    let searchableFiles = Object.keys(files)
-        .filter(folder => folder !== 'img')
-        .flatMap(folder =>
-            Object.keys(files[folder]).map(filename => ({
+        for (const filename of Object.keys(files[folder])) {
+            searchableFiles.push({
                 folder,
                 filename,
                 lastModified: files[folder][filename].lastModified,
-            }))
-        );
+            });
+        }
+    }
+
+    let results = [];
+    const lowPriorityFolders = ["archive", "_read_", "_watch_", "_shop_", "habits", "triggers", "today", "later"];
 
     // Levenshtein distance
-    searchableFiles.forEach(({filename, folder}) => {
-        const potentialMatch = filename.replace(/\.md$/, "");
-        let similarityScore = similarity(search, potentialMatch);
-        if (similarityScore >= 70) {
-            if (lowPriorityFolders.includes(folder)) {
-                similarityScore -= 30;
+    for (const folder in files) {
+        if (ignoredDirs.includes(folder)) continue;
+
+        for (const filename in files[folder]) {
+            const potentialMatch = filename.replace(/\.md$/, "");
+            let similarityScore = similarity(search, potentialMatch);
+
+            if (similarityScore >= 70) {
+                if (lowPriorityFolders.includes(folder)) {
+                    similarityScore -= 30;
+                }
+                results.push({
+                    filename: filename,
+                    folder: folder,
+                    score: similarityScore
+                });
             }
-            results.push({filename: filename, folder: folder, score: similarityScore});
         }
-    });
+    }
 
     // Substring
-    searchableFiles.forEach(({filename, folder}) => {
-        const potentialMatch = filename.replace(/\.md$/, "");
-        const isSubstringMatch = potentialMatch.toLowerCase().includes(search.toLowerCase());
-        if (!isSubstringMatch) {
-            return;
-        }
+    for (const folder in files) {
+        for (const filename in files[folder]) {
+            const potentialMatch = filename.replace(/\.md$/, "");
+            const isSubstringMatch = potentialMatch.toLowerCase().includes(search.toLowerCase());
 
-        let matchedPercent = search.length / potentialMatch.length * 100;
-        results.push({
-            filename: filename,
-            folder: folder,
-            score: Math.round(matchedPercent)
-        });
-    });
+            if (!isSubstringMatch) {
+                continue; // Skip this filename if it doesn't match
+            }
+
+            let matchedPercent = (search.length / potentialMatch.length) * 100;
+
+            results.push({
+                filename: filename,
+                folder: folder,
+                score: Math.round(matchedPercent)
+            });
+        }
+    }
 
     const uniqueResultsMap = new Map();
     for (let i = 0; i < results.length; i++) {
