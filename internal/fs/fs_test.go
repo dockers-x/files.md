@@ -1,7 +1,10 @@
 package fs
 
 import (
+	"errors"
 	"os"
+	"path"
+	"strings"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -642,4 +645,50 @@ func TestTouchFile(t *testing.T) {
 	exists, err := fs.Exists("today", "touchfile.md")
 	r.NoError(err)
 	r.True(exists)
+}
+
+func FuzzWrite(f *testing.F) {
+	f.Add("valid_dir", "valid_file.txt", "This is valid content")
+	f.Add("valid_dir", "../../unsafe_file.txt", "Unsafe path content")
+	f.Add("valid_dir/subdir", "valid_file.md", "Nested content")
+	f.Add("invalid<>|*?dir", "invalid_file.txt", "Invalid dir")
+	f.Add("valid_dir", "file_with_emoji_🀀.txt", "Unicode content")
+
+	f.Fuzz(func(t *testing.T, dir, filename, content string) {
+		filename = filename + ".md"
+
+		r := require.New(t)
+
+		fs := afero.NewMemMapFs()
+		_ = fs.Mkdir("/user", 0o755)
+
+		userFS, err := NewFS("/user", fs)
+		r.NoError(err)
+
+		err = userFS.Write(dir, filename, content)
+
+		unsafePath := path.Join("/user/", dir, filename)
+		otherUserDir := !strings.HasPrefix(unsafePath, "/user/")
+		if unsafePath == "/user" {
+			otherUserDir = false
+		}
+		if otherUserDir || strings.Contains(unsafePath, "../") || strings.Contains(unsafePath, "/..") {
+			if !errors.Is(err, errUnsafePath) {
+				t.Errorf("Expected unsafe path error for dir: '%s', filename: '%s', calculated path: '%s'", dir, filename, unsafePath)
+			}
+			return
+		}
+
+		r.NoError(err, "Unexpected error for valid inputs dir: '%s', filename: '%s'", dir, filename)
+
+		filePath := userFS.UnsafePath(dir, filename)
+		actualContent, readErr := afero.ReadFile(userFS.backend, filePath)
+		r.NoError(readErr, "Error reading file: %s", filePath)
+		r.Equal(content, string(actualContent), "Content mismatch for file: %s", filePath)
+
+		// Check that a file is indeed created in user fs, and not outside
+		files, err := userFS.FilesAndDirs("")
+		r.NoError(err, "Unexpected error for valid inputs dir: '%s', filename: '%s', calculated path: '%s", dir, filename, unsafePath)
+		r.Len(files, 1, "File has been written outside of user dir. Provided dir: '%s', filename: '%s', unsafe path: '%s", dir, filename, filePath)
+	})
 }

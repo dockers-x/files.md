@@ -3451,7 +3451,7 @@ func FuzzSaveFromTextMsg(f *testing.F) {
 		err = bot.Answer(tg.NewUpd(-1, input))
 		if err != nil {
 			if strings.Contains(err.Error(), "unsafe path") &&
-				(input == "." || strings.HasPrefix(input, "..")) {
+				(strings.TrimSpace(input) == "." || strings.HasPrefix(input, "..")) {
 				t.Logf("Expected error for unsafe path %q: %v", input, err)
 				return
 			}
@@ -3477,16 +3477,7 @@ func FuzzSaveFromTextMsg(f *testing.F) {
 		r.Equal(filename, tasks[0].Name)
 
 		_, err = bot.fs.Read("today", filename)
-		if err != nil {
-			if strings.Contains(err.Error(), "unsafe path") &&
-				(input == "." || strings.HasPrefix(input, "..")) {
-				t.Logf("Expected error for unsafe path %q: %v", input, err)
-				return
-			}
-
-			t.Errorf("Unexpected error for input %q: %v", input, err)
-			return
-		}
+		r.NoError(err)
 		//r.Equal(input, content)
 	})
 }

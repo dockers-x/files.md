@@ -3,3 +3,4 @@
 .idea/**
 **/.DS_Store
 /internal/testdata/fuzz
+/internal/fs/testdata/fuzz
