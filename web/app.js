@@ -24,6 +24,10 @@ const systemDirs = ["img", "archive", "_read_", "_watch_", "_shop_", "today", "l
 let editor = null;
 let focusedItemIndex = -1;
 
+let saveQueue = [];
+
+let pollingInterval;
+
 async function init(el) {
     initEditor(el);
     buildSidebar();
@@ -34,26 +38,29 @@ async function init(el) {
             document.getElementById('welcome').style.display = 'flex';
         }
         files = await loadFiles(savedDirectoryHandle);
-        // setInterval(async function() {
-        //     let newFiles = await loadFiles(savedDirectoryHandle);
-        //
-        //     // Check if current file has been modified
-        //     let dir = editor.currentDir;
-        //     let file = editor.currentFile;
-        //     const newFile = await newFiles[dir]?.[file].handle.getFile();
-        //     if (newFile) {
-        //         let newContent = await newFile.text();
-        //         // TODO dirty hack, we replace links on the fly
-        //         newContent = newContent.replace(/\[\[(.+?)\|.*?\]\]/g, '[[$1]]');
-        //         if (getCurrentContent() !== newContent) {
-        //             console.log("File was modified, reloading...");
-        //             await showFile(dir, file, false);
-        //         }
-        //     }
-        //
-        //     files = newFiles;
-        //
-        // }, 3000)
+        pollingInterval = setInterval(async function() {
+            // console.time("loadFiles Execution Time");
+            let newFiles = await loadFiles(savedDirectoryHandle);
+            // console.timeEnd("loadFiles Execution Time");
+
+            // Check if current file has been modified
+            let dir = editor.currentDir;
+            let file = editor.currentFile;
+            // TODO handle removed file cases etc
+            const updatedFile = await newFiles[dir]?.[file].handle.getFile();
+            let newContent = await updatedFile.text();
+            // TODO dirty hack, we replace links on the fly
+            let currentContent = getCurrentContent();
+            if (saveQueue.length === 0) {
+                newContent = newContent.replace(/\[\[(.+?)\|.*?\]\]/g, '[[$1]]');
+                if (currentContent !== newContent) {
+                    console.log("File was modified, reloading...");
+                    await showFile(dir, file, false);
+                }
+            }
+
+            files = newFiles;
+        }, 1000)
         buildSidebar();
         await showRandomFile();
     } else {
@@ -124,9 +131,12 @@ function initEditor(el) {
     })
 
     editor.on("change", async function (cm, changeObj) {
+        console.log("1 CHANGED");
         // Save on user input only
         if (changeObj.origin && changeObj.origin !== "setValue") {
-            await saveFile();
+            editor.currentFileSaving = true;
+            saveQueue.push(true);
+            // await saveFile();
         }
     });
 
@@ -239,6 +249,21 @@ function buildSidebar() {
     });
 }
 
+async function processSaveQueue() {
+    if (isProcessing) return;
+    isProcessing = true;
+
+    while (saveQueue.length > 0) {
+        const saveTask = saveQueue.shift();
+        try {
+            await saveTask(); // Execute the save task
+        } catch (error) {
+            console.error("Error during save:", error);
+        }
+    }
+
+    isProcessing = false; // Mark as idle
+}
 
 async function showRandomFile() {
     const allFiles = [];
@@ -274,6 +299,7 @@ async function showFile(dir, filename, saveToHistory = true) {
 
     editor.currentDir = dir;
     editor.currentFile = filename;
+    editor.currentFileSaving = false;
     if (saveToHistory) {
         const state = {dir: dir, file: filename};
         history.pushState(state, '');
@@ -482,6 +508,10 @@ window.addEventListener('popstate', (event) => {
     }
 });
 
+window.addEventListener('beforeunload', function () {
+    clearInterval(pollingInterval);
+});
+
 document.getElementById('goToFile').addEventListener('keydown', (event) => {
     const resultsList = document.getElementById('goToFileResults').querySelectorAll('li');
 
@@ -535,6 +565,8 @@ async function openDir() {
 //      ...
 //   },
 // }
+// The code is quite messy. We have to make lots of optimizations,
+// otherwise it's going to be slow even with 5K files.
 async function loadFiles(dirHandle) {
     let newFiles = {};
 
@@ -558,8 +590,13 @@ async function loadFiles(dirHandle) {
             } else if (entry.kind === 'file' && allowedFileTypes.includes(filename.split('.').pop())) {
                 const dir = path.replace(/\/+$/, '');
                 if (!newFiles[dir]) newFiles[dir] = {};
-                let file = await entry.getFile();
 
+                if (files?.[dir]?.[filename] !== undefined) {
+                    newFiles[dir][filename] = files[dir][filename];
+                    continue;
+                }
+
+                let file = await entry.getFile();
                 newFiles[dir][filename] = {
                     handle: entry,
                     lastModified: file.lastModified
@@ -583,6 +620,7 @@ async function loadFiles(dirHandle) {
 }
 
 async function saveFile() {
+    console.log("2 TRYING TO SAVE");
     const dir = editor.currentDir;
     const filename = editor.currentFile;
     const fileData = files[dir][filename];
@@ -590,7 +628,9 @@ async function saveFile() {
         let content = getCurrentContent();
         const writable = await fileData.handle.createWritable();
         await writable.write(content);
-        await writable.close();
+        console.log("3 WROTE");
+        await writable.close(); // Buffer is flushed on disk at this moment, it could be interrupted by the event pool, so maintain a flag
+        console.log("4 FLUSHED");
     } else {
         alert(`Cannot save ${filename}. No file handle found.`);
     }
@@ -611,3 +651,22 @@ async function getImageUrl(fileHandle) {
     const file = await fileHandle.getFile();
     return URL.createObjectURL(file);
 }
+
+// Worker to process the saving queue
+let isProcessing = false;
+setInterval(async function processSaveQueue() {
+    if (isProcessing) return;
+    if (saveQueue.length === 0) return;
+
+    isProcessing = true;
+    while (saveQueue.length > 0) {
+        try {
+            await saveFile();
+        } catch (error) {
+            console.error("Error during save:", error);
+        }
+        saveQueue.shift();
+    }
+
+    isProcessing = false;
+}, 50);
