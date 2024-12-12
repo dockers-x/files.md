@@ -33,7 +33,7 @@ async function init(el) {
         if (permission !== 'granted') {
             document.getElementById('welcome').style.display = 'flex';
         }
-        await loadFiles(savedDirectoryHandle);
+        files = await loadFiles(savedDirectoryHandle);
         buildSidebar();
         await showRandomFile();
     } else {
