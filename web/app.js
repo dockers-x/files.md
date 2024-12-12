@@ -272,7 +272,7 @@ async function showFile(dir, filename, saveToHistory = true) {
     content = content.replace(/\[\[(.+?)\|.*?\]\]/g, '[[$1]]');
 
     editor.currentDir = dir;
-    editor.currentFilename = filename;
+    editor.currentFile = filename;
     if (saveToHistory) {
         const state = {dir: dir, file: filename};
         history.pushState(state, '');
