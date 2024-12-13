@@ -1371,6 +1371,8 @@ func (b *Bot) showStart(params []string) error {
 			return b.notesOnlyMode(nil)
 		} else if mode == "tasks" {
 			return b.tasksOnlyMode(nil)
+		} else if mode == "journal" {
+			return b.journalOnlyMode(nil)
 		} else if mode == "full" {
 			return b.fullMode(nil)
 		}
@@ -1379,6 +1381,7 @@ func (b *Bot) showStart(params []string) error {
 	kb := tg.NewKeyboard([]tg.Row{
 		tg.NewRow(tg.NewBtn(txt.Emoji(i18n.Emoji("notes"), b.tr("Notes only")), tg.NewCmd(consts.CmdNotesOnlyMode, nil))),
 		tg.NewRow(tg.NewBtn(txt.Emoji(i18n.Emoji("tasks"), b.tr("Tasks only")), tg.NewCmd(consts.CmdTasksOnlyMode, nil))),
+		tg.NewRow(tg.NewBtn(txt.Emoji(i18n.Emoji("journal"), b.tr("Journal only")), tg.NewCmd(consts.CmdJournalOnlyMode, nil))),
 		tg.NewRow(tg.NewBtn(txt.Emoji(i18n.Emoji("brain"), b.tr("Everything")), tg.NewCmd(consts.CmdFullMode, nil))),
 	})
 
