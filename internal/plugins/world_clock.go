@@ -19,15 +19,17 @@ var (
 	locationNames = []string{"UTC", "MSK", "CY", "ME"}
 	locations     = map[string]*time.Location{
 		"UTC": loadLocation("UTC"),
-		"MSK": loadLocation("Europe/Moscow"),
 		"CY":  loadLocation("Asia/Nicosia"),
 		"ME":  loadLocation("Europe/Podgorica"),
+		"BG":  loadLocation("Europe/Belgrade"),
+		"MSK": loadLocation("Europe/Moscow"),
 	}
 	locationIcons = map[string]string{
 		"UTC": "🕰",
-		"MSK": "🔺",
 		"CY":  "🏝",
-		"ME":  "🏝",
+		"ME":  "⛰",
+		"BG":  "☕️",
+		"MSK": "🔺",
 	}
 )
 
