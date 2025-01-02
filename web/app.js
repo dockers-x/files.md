@@ -16,7 +16,7 @@
 //   ]
 // }
 let files = [];
-const allowedFileTypes = ['md', 'txt', 'png', 'jpg', 'jpeg', 'webp', 'gif',];
+const supportedFileTypes = ['md', 'txt', 'png', 'jpg', 'jpeg', 'webp', 'gif',];
 const nonTextDirs = ['img'];
 const systemDirs = ["img", "archive", "_read_", "_watch_", "_shop_", "today", "later", "journal", "habits", "triggers", "places"];
 
@@ -32,40 +32,41 @@ async function init(el) {
     initEditor(el);
     buildSidebar();
     const savedDirectoryHandle = await getSavedDirectoryHandle();
-    if (savedDirectoryHandle instanceof FileSystemDirectoryHandle) {
-        const permission = await savedDirectoryHandle.queryPermission({mode: 'read'});
-        if (permission !== 'granted') {
-            document.getElementById('welcome').style.display = 'flex';
-        }
-        files = await loadFiles(savedDirectoryHandle);
-        changesPollingInterval = setInterval(async function() {
-            // console.time("loadFiles Execution Time");
-            let newFiles = await loadFiles(savedDirectoryHandle);
-            // console.timeEnd("loadFiles Execution Time");
+    if (!(savedDirectoryHandle instanceof FileSystemDirectoryHandle)) {
+        document.getElementById('welcome').style.display = 'flex';
+        return;
+    }
 
-            // Check if current file has been modified
-            let dir = editor.currentDir;
-            let file = editor.currentFile;
-            // TODO handle removed file cases etc
-            const updatedFile = await newFiles[dir]?.[file].handle.getFile();
-            let newContent = await updatedFile.text();
-            // TODO dirty hack, we replace links on the fly
-            let currentContent = getCurrentContent();
-            if (saveQueue.length === 0) {
-                newContent = newContent.replace(/\[\[(.+?)\|.*?\]\]/g, '[[$1]]');
-                if (currentContent !== newContent) {
-                    console.log("File was modified, reloading...");
-                    await showFile(dir, file, false);
-                }
-            }
-
-            files = newFiles;
-        }, 3000)
-        buildSidebar();
-        await showRandomFile();
-    } else {
+    const permission = await savedDirectoryHandle.queryPermission({mode: 'read'});
+    if (permission !== 'granted') {
         document.getElementById('welcome').style.display = 'flex';
     }
+    files = await loadFiles(savedDirectoryHandle);
+    changesPollingInterval = setInterval(async function() {
+        // console.time("loadFiles Execution Time");
+        let newFiles = await loadFiles(savedDirectoryHandle);
+        // console.timeEnd("loadFiles Execution Time");
+
+        // Check if current file has been modified
+        let dir = editor.currentDir;
+        let file = editor.currentFile;
+        // TODO handle removed file cases etc
+        const updatedFile = await newFiles[dir]?.[file].handle.getFile();
+        let newContent = await updatedFile.text();
+        // TODO dirty hack, we replace links on the fly
+        let currentContent = getCurrentContent();
+        if (saveQueue.length === 0) {
+            newContent = newContent.replace(/\[\[(.+?)\|.*?\]\]/g, '[[$1]]');
+            if (currentContent !== newContent) {
+                console.log("File was modified, reloading...");
+                await showFile(dir, file, false);
+            }
+        }
+
+        files = newFiles;
+    }, 3000)
+    buildSidebar();
+    await showRandomFile();
 }
 
 function initEditor(el) {
@@ -590,7 +591,7 @@ async function loadFiles(dirHandle) {
                     newFiles[filename] = {};
                     await loadDir(entry, dir, depth + 1);
                 }
-            } else if (entry.kind === 'file' && allowedFileTypes.includes(filename.split('.').pop())) {
+            } else if (entry.kind === 'file' && supportedFileTypes.includes(filename.split('.').pop())) {
                 const dir = path.replace(/\/+$/, '');
                 if (!newFiles[dir]) newFiles[dir] = {};
 
