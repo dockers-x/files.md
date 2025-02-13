@@ -1,124 +1,124 @@
 /**
-* TreeJS is a JavaScript librarie for displaying TreeViews
-* on the web.
-*
-* @author Matthias Thalmann
-*/
+ * TreeJS is a JavaScript librarie for displaying TreeViews
+ * on the web.
+ *
+ * @author Matthias Thalmann
+ */
 
-function TreeView(root, container, options){
+function TreeView(root, container, options) {
 	var self = this;
 
 	/*
 	* Konstruktor
 	*/
-	if(typeof root === "undefined"){
+	if (typeof root === "undefined") {
 		throw new Error("Parameter 1 must be set (root)");
 	}
 
-	if(!(root instanceof TreeNode)){
+	if (!(root instanceof TreeNode)) {
 		throw new Error("Parameter 1 must be of type TreeNode");
 	}
 
-	if(container){
-		if(!TreeUtil.isDOM(container)){
+	if (container) {
+		if (!TreeUtil.isDOM(container)) {
 			container = document.querySelector(container);
 
-			if(container instanceof Array){
+			if (container instanceof Array) {
 				container = container[0];
 			}
 
-			if(!TreeUtil.isDOM(container)){
+			if (!TreeUtil.isDOM(container)) {
 				throw new Error("Parameter 2 must be either DOM-Object or CSS-QuerySelector (#, .)");
 			}
 		}
-	}else{
+	} else {
 		container = null;
 	}
 
-	if(!options || typeof options !== "object"){
+	if (!options || typeof options !== "object") {
 		options = {};
 	}
 
 	/*
 	* Methods
 	*/
-	this.setRoot = function(_root){
-		if(root instanceof TreeNode){
+	this.setRoot = function (_root) {
+		if (root instanceof TreeNode) {
 			root = _root;
 		}
 	}
 
-	this.getRoot = function(){
+	this.getRoot = function () {
 		return root;
 	}
 
-	this.expandAllNodes = function(){
+	this.expandAllNodes = function () {
 		root.setExpanded(true);
 
-		root.getChildren().forEach(function(child){
+		root.getChildren().forEach(function (child) {
 			TreeUtil.expandNode(child);
 		});
 	}
 
-	this.expandPath = function(path){
-		if(!(path instanceof TreePath)){
+	this.expandPath = function (path) {
+		if (!(path instanceof TreePath)) {
 			throw new Error("Parameter 1 must be of type TreePath");
 		}
 
-		path.getPath().forEach(function(node){
+		path.getPath().forEach(function (node) {
 			node.setExpanded(true);
 		});
 	}
 
-	this.collapseAllNodes = function(){
+	this.collapseAllNodes = function () {
 		root.setExpanded(false);
 
-		root.getChildren().forEach(function(child){
+		root.getChildren().forEach(function (child) {
 			TreeUtil.collapseNode(child);
 		});
 	}
 
-	this.setContainer = function(_container){
-		if(TreeUtil.isDOM(_container)){
+	this.setContainer = function (_container) {
+		if (TreeUtil.isDOM(_container)) {
 			container = _container;
-		}else{
+		} else {
 			_container = document.querySelector(_container);
 
-			if(_container instanceof Array){
+			if (_container instanceof Array) {
 				_container = _container[0];
 			}
 
-			if(!TreeUtil.isDOM(_container)){
+			if (!TreeUtil.isDOM(_container)) {
 				throw new Error("Parameter 1 must be either DOM-Object or CSS-QuerySelector (#, .)");
 			}
 		}
 	}
 
-	this.getContainer = function(){
+	this.getContainer = function () {
 		return container;
 	}
 
-	this.setOptions = function(_options){
-		if(typeof _options === "object"){
+	this.setOptions = function (_options) {
+		if (typeof _options === "object") {
 			options = _options;
 		}
 	}
 
-	this.changeOption = function(option, value){
+	this.changeOption = function (option, value) {
 		options[option] = value;
 	}
 
-	this.getOptions = function(){
+	this.getOptions = function () {
 		return options;
 	}
 
 	// TODO: set selected key: up down; expand right; collapse left; enter: open;
-	this.getSelectedNodes = function(){
+	this.getSelectedNodes = function () {
 		return TreeUtil.getSelectedNodesForNode(root);
 	}
 
-	this.reload = function(){
-		if(container == null){
+	this.reload = function () {
+		if (container == null) {
 			console.warn("No container specified");
 			return;
 		}
@@ -127,10 +127,10 @@ function TreeView(root, container, options){
 
 		var cnt = document.createElement("ul");
 
-		if(TreeUtil.getProperty(options, "show_root", true)){
+		if (TreeUtil.getProperty(options, "show_root", true)) {
 			cnt.appendChild(renderNode(root));
-		}else{
-			root.getChildren().forEach(function(child){
+		} else {
+			root.getChildren().forEach(function (child) {
 				cnt.appendChild(renderNode(child));
 			});
 		}
@@ -139,41 +139,41 @@ function TreeView(root, container, options){
 		container.appendChild(cnt);
 	}
 
-	function renderNode(node){
+	function renderNode(node) {
 		var li_outer = document.createElement("li");
 		var span_desc = document.createElement("span");
 		span_desc.className = "tj_description";
 		span_desc.tj_node = node;
 
-		if(!node.isEnabled()){
+		if (!node.isEnabled()) {
 			li_outer.setAttribute("disabled", "");
 			node.setExpanded(false);
 			node.setSelected(false);
 		}
 
-		if(node.isSelected()){
+		if (node.isSelected()) {
 			span_desc.classList.add("selected");
 		}
 
-		span_desc.addEventListener("click", function(e){
+		span_desc.addEventListener("click", function (e) {
 			var cur_el = e.target;
 
-			while(typeof cur_el.tj_node === "undefined" || cur_el.classList.contains("tj_container")){
+			while (typeof cur_el.tj_node === "undefined" || cur_el.classList.contains("tj_container")) {
 				cur_el = cur_el.parentElement;
 			}
 
 			var node_cur = cur_el.tj_node;
 
-			if(typeof node_cur === "undefined"){
+			if (typeof node_cur === "undefined") {
 				return;
 			}
 
-			if(node_cur.isEnabled()){
-				if(e.ctrlKey == false){
-					if(!node_cur.isLeaf()){
+			if (node_cur.isEnabled()) {
+				if (e.ctrlKey == false) {
+					if (!node_cur.isLeaf()) {
 						node_cur.toggleExpanded();
 						self.reload();
-					}else{
+					} else {
 						node_cur.open();
 					}
 
@@ -181,14 +181,14 @@ function TreeView(root, container, options){
 				}
 
 
-				if(e.ctrlKey == true){
+				if (e.ctrlKey == true) {
 					node_cur.toggleSelected();
 					self.reload();
-				}else{
+				} else {
 					var rt = node_cur.getRoot();
 
-					if(rt instanceof TreeNode){
-						TreeUtil.getSelectedNodesForNode(rt).forEach(function(_nd){
+					if (rt instanceof TreeNode) {
+						TreeUtil.getSelectedNodesForNode(rt).forEach(function (_nd) {
 							_nd.setSelected(false);
 						});
 					}
@@ -199,36 +199,36 @@ function TreeView(root, container, options){
 			}
 		});
 
-		span_desc.addEventListener("contextmenu", function(e){
+		span_desc.addEventListener("contextmenu", function (e) {
 			var cur_el = e.target;
 
-			while(typeof cur_el.tj_node === "undefined" || cur_el.classList.contains("tj_container")){
+			while (typeof cur_el.tj_node === "undefined" || cur_el.classList.contains("tj_container")) {
 				cur_el = cur_el.parentElement;
 			}
 
 			var node_cur = cur_el.tj_node;
 
-			if(typeof node_cur === "undefined"){
+			if (typeof node_cur === "undefined") {
 				return;
 			}
 
-			if(typeof node_cur.getListener("contextmenu") !== "undefined"){
+			if (typeof node_cur.getListener("contextmenu") !== "undefined") {
 				node_cur.on("contextmenu")(e, node_cur);
 				e.preventDefault();
-			}else if(typeof TreeConfig.context_menu === "function"){
+			} else if (typeof TreeConfig.context_menu === "function") {
 				TreeConfig.context_menu(e, node_cur);
 				e.preventDefault();
 			}
 		});
 
-		if(node.isLeaf() && !TreeUtil.getProperty(node.getOptions(), "forceParent", false)){
+		if (node.isLeaf() && !TreeUtil.getProperty(node.getOptions(), "forceParent", false)) {
 			var ret = '';
 			var icon = TreeUtil.getProperty(node.getOptions(), "icon", "");
-			if(icon != ""){
+			if (icon != "") {
 				ret += '<span class="tj_icon">' + icon + '</span>';
-			}else if((icon = TreeUtil.getProperty(options, "leaf_icon", "")) != ""){
+			} else if ((icon = TreeUtil.getProperty(options, "leaf_icon", "")) != "") {
 				ret += '<span class="tj_icon">' + icon + '</span>';
-			}else{
+			} else {
 				ret += '<span class="tj_icon">' + TreeConfig.leaf_icon + '</span>';
 			}
 
@@ -236,20 +236,20 @@ function TreeView(root, container, options){
 			span_desc.classList.add("tj_leaf");
 
 			li_outer.appendChild(span_desc);
-		}else{
+		} else {
 			var ret = '';
-			if(node.isExpanded()){
+			if (node.isExpanded()) {
 				ret += '<span class="tj_mod_icon">' + TreeConfig.open_icon + '</span>';
-			}else{
-				ret+= '<span class="tj_mod_icon">' + TreeConfig.close_icon + '</span>';
+			} else {
+				ret += '<span class="tj_mod_icon">' + TreeConfig.close_icon + '</span>';
 			}
 
 			var icon = TreeUtil.getProperty(node.getOptions(), "icon", "");
-			if(icon != ""){
+			if (icon != "") {
 				ret += '<span class="tj_icon">' + icon + '</span>';
-			}else if((icon = TreeUtil.getProperty(options, "parent_icon", "")) != ""){
+			} else if ((icon = TreeUtil.getProperty(options, "parent_icon", "")) != "") {
 				ret += '<span class="tj_icon">' + icon + '</span>';
-			}else{
+			} else {
 				ret += '<span class="tj_icon">' + TreeConfig.parent_icon + '</span>';
 			}
 
@@ -257,10 +257,10 @@ function TreeView(root, container, options){
 
 			li_outer.appendChild(span_desc);
 
-			if(node.isExpanded()){
+			if (node.isExpanded()) {
 				var ul_container = document.createElement("ul");
 
-				node.getChildren().forEach(function(child){
+				node.getChildren().forEach(function (child) {
 					ul_container.appendChild(renderNode(child));
 				});
 
@@ -271,11 +271,11 @@ function TreeView(root, container, options){
 		return li_outer;
 	}
 
-	if(typeof container !== "undefined")
+	if (typeof container !== "undefined")
 		this.reload();
 }
 
-function TreeNode(userObject, options){
+function TreeNode(userObject, options) {
 	var children = new Array();
 	var self = this;
 	var events = new Array();
@@ -287,17 +287,17 @@ function TreeNode(userObject, options){
 	/*
 	* Konstruktor
 	*/
-	if(userObject){
-		if(typeof userObject !== "string" && typeof userObject.toString !== "function"){
+	if (userObject) {
+		if (typeof userObject !== "string" && typeof userObject.toString !== "function") {
 			throw new Error("Parameter 1 must be of type String or Object, where it must have the function toString()");
 		}
-	}else{
+	} else {
 		userObject = "";
 	}
 
-	if(!options || typeof options !== "object"){
+	if (!options || typeof options !== "object") {
 		options = {};
-	}else{
+	} else {
 		expanded = TreeUtil.getProperty(options, "expanded", true);
 		enabled = TreeUtil.getProperty(options, "enabled", true);
 		selected = TreeUtil.getProperty(options, "selected", false);
@@ -306,13 +306,13 @@ function TreeNode(userObject, options){
 	/*
 	* Methods
 	*/
-	this.addChild = function(node){
-		if(!TreeUtil.getProperty(options, "allowsChildren", true)){
+	this.addChild = function (node) {
+		if (!TreeUtil.getProperty(options, "allowsChildren", true)) {
 			console.warn("Option allowsChildren is set to false, no child added");
 			return;
 		}
 
-		if(node instanceof TreeNode){
+		if (node instanceof TreeNode) {
 			children.push(node);
 
 			//Konstante hinzufügen (workaround)
@@ -322,38 +322,38 @@ function TreeNode(userObject, options){
 				enumerable: true,
 				configurable: true
 			});
-		}else{
+		} else {
 			throw new Error("Parameter 1 must be of type TreeNode");
 		}
 	}
 
-	this.removeChildPos = function(pos){
-		if(typeof children[pos] !== "undefined"){
-			if(typeof children[pos] !== "undefined"){
+	this.removeChildPos = function (pos) {
+		if (typeof children[pos] !== "undefined") {
+			if (typeof children[pos] !== "undefined") {
 				children.splice(pos, 1);
 			}
 		}
 	}
 
-	this.removeChild = function(node){
-		if(!(node instanceof TreeNode)){
+	this.removeChild = function (node) {
+		if (!(node instanceof TreeNode)) {
 			throw new Error("Parameter 1 must be of type TreeNode");
 		}
 
 		this.removeChildPos(this.getIndexOfChild(node));
 	}
 
-	this.getChildren = function(){
+	this.getChildren = function () {
 		return children;
 	}
 
-	this.getChildCount = function(){
+	this.getChildCount = function () {
 		return children.length;
 	}
 
-	this.getIndexOfChild = function(node){
-		for(var i = 0; i < children.length; i++){
-			if(children[i].equals(node)){
+	this.getIndexOfChild = function (node) {
+		for (var i = 0; i < children.length; i++) {
+			if (children[i].equals(node)) {
 				return i;
 			}
 		}
@@ -361,61 +361,61 @@ function TreeNode(userObject, options){
 		return -1;
 	}
 
-	this.getRoot = function(){
+	this.getRoot = function () {
 		var node = this;
 
-		while(typeof node.parent !== "undefined"){
+		while (typeof node.parent !== "undefined") {
 			node = node.parent;
 		}
 
 		return node;
 	}
 
-	this.setUserObject = function(_userObject){
-		if(!(typeof _userObject === "string") || typeof _userObject.toString !== "function"){
+	this.setUserObject = function (_userObject) {
+		if (!(typeof _userObject === "string") || typeof _userObject.toString !== "function") {
 			throw new Error("Parameter 1 must be of type String or Object, where it must have the function toString()");
-		}else{
+		} else {
 			userObject = _userObject;
 		}
 	}
 
-	this.getUserObject = function(){
+	this.getUserObject = function () {
 		return userObject;
 	}
 
-	this.setOptions = function(_options){
-		if(typeof _options === "object"){
+	this.setOptions = function (_options) {
+		if (typeof _options === "object") {
 			options = _options;
 		}
 	}
 
-	this.changeOption = function(option, value){
+	this.changeOption = function (option, value) {
 		options[option] = value;
 	}
 
-	this.getOptions = function(){
+	this.getOptions = function () {
 		return options;
 	}
 
-	this.isLeaf = function(){
+	this.isLeaf = function () {
 		return (children.length == 0);
 	}
 
-	this.setExpanded = function(_expanded){
-		if(this.isLeaf()){
+	this.setExpanded = function (_expanded) {
+		if (this.isLeaf()) {
 			return;
 		}
 
-		if(typeof _expanded === "boolean"){
-			if(expanded == _expanded){
+		if (typeof _expanded === "boolean") {
+			if (expanded == _expanded) {
 				return;
 			}
 
 			expanded = _expanded;
 
-			if(_expanded){
+			if (_expanded) {
 				this.on("expand")(this);
-			}else{
+			} else {
 				this.on("collapse")(this);
 			}
 
@@ -423,33 +423,33 @@ function TreeNode(userObject, options){
 		}
 	}
 
-	this.toggleExpanded = function(){
-		if(expanded){
+	this.toggleExpanded = function () {
+		if (expanded) {
 			this.setExpanded(false);
-		}else{
+		} else {
 			this.setExpanded(true);
 		}
 	};
 
-	this.isExpanded = function(){
-		if(this.isLeaf()){
+	this.isExpanded = function () {
+		if (this.isLeaf()) {
 			return true;
-		}else{
+		} else {
 			return expanded;
 		}
 	}
 
-	this.setEnabled = function(_enabled){
-		if(typeof _enabled === "boolean"){
-			if(enabled == _enabled){
+	this.setEnabled = function (_enabled) {
+		if (typeof _enabled === "boolean") {
+			if (enabled == _enabled) {
 				return;
 			}
 
 			enabled = _enabled;
 
-			if(_enabled){
+			if (_enabled) {
 				this.on("enable")(this);
-			}else{
+			} else {
 				this.on("disable")(this);
 			}
 
@@ -457,79 +457,80 @@ function TreeNode(userObject, options){
 		}
 	}
 
-	this.toggleEnabled = function(){
-		if(enabled){
+	this.toggleEnabled = function () {
+		if (enabled) {
 			this.setEnabled(false);
-		}else{
+		} else {
 			this.setEnabled(true);
 		}
 	}
 
-	this.isEnabled = function(){
+	this.isEnabled = function () {
 		return enabled;
 	}
 
-	this.setSelected = function(_selected){
-		if(typeof _selected !== "boolean"){
+	this.setSelected = function (_selected) {
+		if (typeof _selected !== "boolean") {
 			return;
 		}
 
-		if(selected == _selected){
+		if (selected == _selected) {
 			return;
 		}
 
 		selected = _selected;
 
-		if(_selected){
+		if (_selected) {
 			this.on("select")(this);
-		}else{
+		} else {
 			this.on("deselect")(this);
 		}
 
 		this.on("toggle_selected")(this);
 	}
 
-	this.toggleSelected = function(){
-		if(selected){
+	this.toggleSelected = function () {
+		if (selected) {
 			this.setSelected(false);
-		}else{
+		} else {
 			this.setSelected(true);
 		}
 	}
 
-	this.isSelected = function(){
+	this.isSelected = function () {
 		return selected;
 	}
 
-	this.open = function(){
-		if(!this.isLeaf()){
+	this.open = function () {
+		if (!this.isLeaf()) {
 			this.on("open")(this);
 		}
 	}
 
-	this.on = function(ev, callback){
-		if(typeof callback === "undefined"){
-			if(typeof events[ev] !== "function"){
-				return function(){};
-			}else{
+	this.on = function (ev, callback) {
+		if (typeof callback === "undefined") {
+			if (typeof events[ev] !== "function") {
+				return function () {
+				};
+			} else {
 				return events[ev];
 			}
 		}
 
-		if(typeof callback !== 'function'){
+		if (typeof callback !== 'function') {
 			throw new Error("Argument 2 must be of type function");
 		}
 
 		events[ev] = callback;
 	}
 
-	this.getListener = function(ev){
+	this.getListener = function (ev) {
 		return events[ev];
 	}
 
-	this.equals = function(node){
-		if(node instanceof TreeNode){
-			if(node.getUserObject() == userObject){
+	this.equals = function (node) {
+		if (node instanceof TreeNode) {
+			if (node.getUserObject() == userObject) {
 				return true;
 			}
 		}
@@ -537,29 +538,29 @@ function TreeNode(userObject, options){
 		return false;
 	}
 
-	this.toString = function(){
-		if(typeof userObject === "string"){
+	this.toString = function () {
+		if (typeof userObject === "string") {
 			return userObject;
-		}else{
+		} else {
 			return userObject.toString();
 		}
 	}
 }
 
-function TreePath(root, node){
+function TreePath(root, node) {
 	var nodes = new Array();
 
-	this.setPath = function(root, node){
+	this.setPath = function (root, node) {
 		nodes = new Array();
 
-		while(typeof node !== "undefined" && !node.equals(root)){
+		while (typeof node !== "undefined" && !node.equals(root)) {
 			nodes.push(node);
 			node = node.parent;
 		}
 
-		if(node.equals(root)){
+		if (node.equals(root)) {
 			nodes.push(root);
-		}else{
+		} else {
 			nodes = new Array();
 			throw new Error("Node is not contained in the tree of root");
 		}
@@ -569,15 +570,15 @@ function TreePath(root, node){
 		return nodes;
 	}
 
-	this.getPath = function(){
+	this.getPath = function () {
 		return nodes;
 	}
 
-	this.toString = function(){
+	this.toString = function () {
 		return nodes.join(" - ");
 	}
 
-	if(root instanceof TreeNode && node instanceof TreeNode){
+	if (root instanceof TreeNode && node instanceof TreeNode) {
 		this.setPath(root, node);
 	}
 }
@@ -588,69 +589,68 @@ function TreePath(root, node){
 const TreeUtil = {
 	default_leaf_icon: "<span>&#128441;</span>",
 	default_parent_icon: "<span>&#128449;</span>",
-	default_open_icon: "<svg style=\"width: 15px; height: 15px\" viewBox=\"0 -2 24 24\" xmlns=\"http://www.w3.org/2000/svg\" fill-rule=\"evenodd\" clip-rule=\"evenodd\"><path d=\"M0 2h8l3 3h10v4h3l-4 13h-20v-20zm22.646 8h-17.907l-3.385 11h17.907l3.385-11zm-2.646-1v-3h-9.414l-3-3h-6.586v15.75l3-9.75h16z\"/></svg>",
-	default_close_icon: "<svg style=\"width: 15px; height: 15px;\" viewBox=\"0 -2 24 24\" xmlns=\"http://www.w3.org/2000/svg\" fill-rule=\"evenodd\" clip-rule=\"evenodd\"><path d=\"M11 5h13v17h-24v-20h8l3 3zm-10-2v18h22v-15h-12.414l-3-3h-6.586z\"/></svg>",
+	default_open_icon: "<svg width=\"22px\" height=\"22px\" viewBox=\"0 0 32 32\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\"> <path stroke=\"#535358\" stroke-linecap=\"round\" stroke-width=\"2\" d=\"M4 26V8a2 2 0 012-2h6c3 0 3 3 5 3h7a2 2 0 012 2v2M4 26l3.783-12.294A1 1 0 018.739 13H26M4 26h19.523a2 2 0 001.911-1.412l3.168-10.294A1 1 0 0027.646 13H26\"/> </svg>",
+	default_close_icon: "<svg width=\"22px\" height=\"22px\" viewBox=\"0 0 32 32\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\"> <path stroke=\"#535358\" stroke-linecap=\"round\" stroke-width=\"2\" d=\"M28 11v13a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h6c3 0 3 3 5 3h9.003C27.108 9 28 9.895 28 11z\"/> </svg>",
 
-	isDOM: function(obj){
+	isDOM: function (obj) {
 		try {
 			return obj instanceof HTMLElement;
-		}
-		catch(e){
-			return (typeof obj==="object") &&
-			(obj.nodeType===1) && (typeof obj.style === "object") &&
-			(typeof obj.ownerDocument ==="object");
+		} catch (e) {
+			return (typeof obj === "object") &&
+				(obj.nodeType === 1) && (typeof obj.style === "object") &&
+				(typeof obj.ownerDocument === "object");
 		}
 	},
 
-	getProperty: function(options, opt, def){
-		if(typeof options[opt] === "undefined"){
+	getProperty: function (options, opt, def) {
+		if (typeof options[opt] === "undefined") {
 			return def;
 		}
 
 		return options[opt];
 	},
 
-	expandNode: function(node){
+	expandNode: function (node) {
 		node.setExpanded(true);
 
-		if(!node.isLeaf()){
-			node.getChildren().forEach(function(child){
+		if (!node.isLeaf()) {
+			node.getChildren().forEach(function (child) {
 				TreeUtil.expandNode(child);
 			});
 		}
 	},
 
-	collapseNode: function(node){
+	collapseNode: function (node) {
 		node.setExpanded(false);
 
-		if(!node.isLeaf()){
-			node.getChildren().forEach(function(child){
+		if (!node.isLeaf()) {
+			node.getChildren().forEach(function (child) {
 				TreeUtil.collapseNode(child);
 			});
 		}
 	},
 
-	getSelectedNodesForNode: function(node){
-		if(!(node instanceof TreeNode)){
+	getSelectedNodesForNode: function (node) {
+		if (!(node instanceof TreeNode)) {
 			throw new Error("Parameter 1 must be of type TreeNode");
 		}
 
 		var ret = new Array();
 
-		if(node.isSelected()){
+		if (node.isSelected()) {
 			ret.push(node);
 		}
 
-		node.getChildren().forEach(function(child){
-			if(child.isSelected()){
-				if(ret.indexOf(child) == -1){
+		node.getChildren().forEach(function (child) {
+			if (child.isSelected()) {
+				if (ret.indexOf(child) == -1) {
 					ret.push(child);
 				}
 			}
 
-			if(!child.isLeaf()){
-				TreeUtil.getSelectedNodesForNode(child).forEach(function(_node){
-					if(ret.indexOf(_node) == -1){
+			if (!child.isLeaf()) {
+				TreeUtil.getSelectedNodesForNode(child).forEach(function (_node) {
+					if (ret.indexOf(_node) == -1) {
 						ret.push(_node);
 					}
 				});

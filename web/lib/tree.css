@@ -54,8 +54,7 @@
 }
 
 .tj_container li span.tj_mod_icon, .tj_container li span.tj_mod_icon *{
-	width: 1em;
-	margin-right: 5px;
+	transform: translateY(1px);
 }
 
 .tj_container ul ul li span.tj_description.tj_leaf {
