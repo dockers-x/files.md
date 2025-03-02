@@ -18,7 +18,6 @@
 let files= [];
 const supportedFileTypes = ['md', 'txt', 'png', 'jpg', 'jpeg', 'webp', 'gif',];
 const systemDirs = ["img", "archive", "_read_", "_watch_", "_shop_", "today", "later", "journal", "habits", "triggers", "places"];
-const nonTextDirs = ['img'];
 
 // HyperMD/Codemirror editor
 let editor = null;
@@ -235,7 +234,7 @@ function initEditor(el) {
 function createAutocompleteDict() {
     const dict = {};
 
-    Object.keys(excludeDirs(nonTextDirs)).forEach(dir => {
+    Object.keys(excludeDirs(systemDirs)).forEach(dir => {
         Object.keys(files[dir]).forEach(filename => {
             const key = `${filename.replace(/\.md$/, "")}`;
             const filePath = `${filename.replace(/\.md$/, "")}](${dir}/${filename})`;
@@ -446,7 +445,7 @@ function search() {
     const lowPriorityDirs = ["archive", "_read_", "_watch_", "_shop_", "habits", "triggers", "today", "later"];
 
     // Levenshtein distance
-    for (const dir in excludeDirs(nonTextDirs)) {
+    for (const dir in excludeDirs(systemDirs)) {
         for (const filename in files[dir]) {
             const potentialMatch = filename.replace(/\.md$/, "");
             let similarityScore = similarity(search, potentialMatch);
