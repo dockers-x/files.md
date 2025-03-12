@@ -1340,11 +1340,16 @@ func (b *Bot) showFile(params []string) error {
 	}
 
 	isNotesDir := len(fs.OnlyNoteDirs([]fs.File{{Name: dir}})) > 0
-	hasChannelsToPrint := len(b.cfg.Channels()) > 0
 	row := tg.NewRow()
-	if isNotesDir && hasChannelsToPrint {
-		cmd := tg.NewCmd(consts.CmdShare, []string{fs.Hash(dir), fs.Hash(filename)})
-		row = append(row, tg.NewBtn(i18n.Tr("🖨 Share"), cmd))
+	if isNotesDir {
+		inlineCmd := tg.NewCustomCmd(consts.CmdInlineQuerySearchEveryWhere, nil, tg.CmdTypeInlineQueryCurrentChat)
+		row = append(row, tg.NewBtn(i18n.Tr("🔎 Search"), inlineCmd))
+
+		hasChannelsToPrint := len(b.cfg.Channels()) > 0
+		if hasChannelsToPrint {
+			cmd := tg.NewCmd(consts.CmdShare, []string{fs.Hash(dir), fs.Hash(filename)})
+			row = append(row, tg.NewBtn(i18n.Tr("🖨 Share"), cmd))
+		}
 	}
 	row = append(row, tg.NewBtn(i18n.StrToday, tg.NewCmd(consts.CmdShowToday, nil)))
 	kb := tg.NewKeyboard([]tg.Row{row})
