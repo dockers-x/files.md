@@ -148,6 +148,8 @@ func (b *Bot) Answer(u Update) error {
 			if err != nil {
 				return fmt.Errorf("answer after plugin: %w", err)
 			}
+
+			return nil
 		}
 	}
 
