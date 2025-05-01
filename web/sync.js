@@ -72,7 +72,6 @@ async function syncWithServer() {
         const server = await response.json();
         for (const fileInfo of server.files) {
             console.log(`Syncing file: ${fileInfo.path}`);
-            // If fileInfo is empty, create a record
             const { path, content, lastModified} = fileInfo;
 
             // What about more than 2 levels nested?
@@ -90,8 +89,9 @@ async function syncWithServer() {
 
             if (!files[dir][filename] || !files[dir][filename].handle) {
                 files[dir][filename] = {
-                    content,
-                    lastModified: lastModified
+                    path: path,
+                    content: content,
+                    lastModified: lastModified,
                 };
             } else {
                 // For files with handles, we would write to the file
@@ -112,18 +112,18 @@ async function syncWithServer() {
                 }
             }
 
-            console.log("Syncing " +filename);
-            const fileHandle = await currentDirHandle.getFileHandle(filename, { create: true });
-            console.log(fileHandle);
-            const writable = await fileHandle.createWritable();
-            await writable.write(content);
-            await writable.close();
-            if (!filesMetadata['files'][dir]) filesMetadata['files'][dir] = {};
-            filesMetadata['files'][dir][filename] = {
-                hash: hash(content),
-                lastModified: lastModified,
-                path: path
-            };
+            // console.log("Syncing " +filename);
+            // const fileHandle = await currentDirHandle.getFileHandle(filename, { create: true });
+            // console.log(fileHandle);
+            // const writable = await fileHandle.createWritable();
+            // await writable.write(content);
+            // await writable.close();
+            // if (!filesMetadata['files'][dir]) filesMetadata['files'][dir] = {};
+            // filesMetadata['files'][dir][filename] = {
+            //     hash: hash(content),
+            //     lastModified: lastModified,
+            //     path: path
+            // };
         }
         filesMetadata['timestamps'] = server.timestamps;
 
