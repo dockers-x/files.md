@@ -195,6 +195,10 @@ async function syncFileWithServer(dir, filename) {
             console.log(`Server responded with ${response.status}`);
             return;
         }
+        if (response.status === 304) {
+            console.log("File not modified on server");
+            return;
+        }
 
         serverFile = await response.json();
         console.log(serverFile);

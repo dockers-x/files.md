@@ -211,9 +211,10 @@ func SyncFile(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error reading one file '%s': %v", fullPath, err)
 	}
 
+	// Return already up-todate status
 	if string(serverContent) == file.Content {
 		logSync(fmt.Sprintf("File '%s' is already up to date", file.Path))
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusNotModified)
 		return
 	}
 
