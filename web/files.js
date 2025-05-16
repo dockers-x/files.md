@@ -144,25 +144,7 @@ async function syncWithServer() {
         const {path, content, lastModified} = fileInfo;
 
         console.log("Syncing " + path);
-        let fileHandle = await getFileHandle(path);
-        if (fileHandle === null) {
-            // TODO fix once Chromium fixes the bug
-            console.log("Malformed name, skipping file...");
-            continue;
-        }
-
-        let file = await fileHandle.getFile()
-        let clientHash = hash(await file.text());
-        let serverHash = hash(content);
-        if (clientHash !== serverHash) {
-            console.log("Hashes do not match, writing file...");
-            // TODO rem
-            // const writable = await fileHandle.createWritable();
-            // await writable.write(content);
-            // await writable.close();
-        } else {
-            console.log("Hashes match, no need to write file.");
-        }
+        await write(path, content)
         setMetadata(path, content, lastModified);
     }
     filesMetadata['timestamps'] = server.timestamps;
@@ -203,7 +185,7 @@ async function syncFileWithServer(dir, filename) {
         return;
     }
     console.log(serverFile);
-    await write(path, serverFile.content);
+    await write(path, serverFile.Content);
     await showFile(dir, filename);
     console.log("File synced with server");
 }
