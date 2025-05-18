@@ -186,7 +186,7 @@ async function syncFileWithServer(dir, filename) {
     }
     console.log(serverFile);
     await write(path, serverFile.content);
-
+    console.log('showing file sync one');
     await showFile(dir, filename);
     console.log("File synced with server");
 }
@@ -318,7 +318,7 @@ async function write(path, content) {
         return;
     }
 
-    if (await isContentEqual(path, content)) {
+    if (!await isContentEqual(path, content)) {
         console.log("Hashes do not match, writing file...");
         // TODO rem
         const writable = await fileHandle.createWritable();
@@ -421,6 +421,7 @@ async function initFiles() {
             // What is this?
             // newContent = newContent.replace(/\[\[(.+?)\|.*?\]\]/g, '[[$1]]');
             // if (normNewLines(currentContent) !== normNewLines(newContent)) {
+                console.log('showing file');
                 await showFile(editor.currentDir, editor.currentFile, false);
             // }
         }
