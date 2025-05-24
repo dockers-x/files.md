@@ -151,14 +151,13 @@ async function syncAllWithServer() {
             const {path, content, lastModified} = fileInfo;
             // If it is current file, skip, because we sync it separately
             // TODO if we skip current, don't take it's timestamp? We had a bug when sync was broken for 1 file
-            if (path === `${editor.currentDir}/${editor.currentFile}`) {
+            // TODO fix missing / for root files
+            if (path === `${editor.currentDir}/${editor.currentFile}` || path === editor.currentFile) {
                 console.log("Skip current " + path);
                 continue;
             }
 
             // todo try-catch?
-            console.log("Syncing " + path);
-            await saveTextFile(path, content)
             setMetadata(path, content, lastModified);
         }
         filesMetadata['timestamps'] = server.timestamps;
