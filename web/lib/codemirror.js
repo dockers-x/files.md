@@ -3200,6 +3200,38 @@
 
   function cmpCoords(a, b) { return a.top - b.top || a.left - b.left }
 
+  // A logical line can be wrapped into a few visual lines.
+  function getVisualLines(cm, logicalLineNo) {
+    var lineObj = getLine(cm.doc, logicalLineNo);
+    var segments = [];
+    var pos = 0;
+
+    while (pos < lineObj.text.length) {
+      var extent = wrappedLineExtentChar(cm, lineObj, null, pos);
+      segments.push({
+        logicalLine: logicalLineNo,
+        startChar: extent.begin,
+        endChar: extent.end,
+        visualIndex: segments.length
+      });
+      pos = extent.end;
+      if (pos === extent.begin) break; // Safety check
+    }
+
+    return segments;
+  }
+
+  // Get coordinates with respect of word-wrapping
+  function wrapXObj(cm, lineObj, pos, dir, side) {
+    var extent = wrappedLineExtentChar(cm, lineObj, null, pos);
+    var prop = (dir === "ltr") === (side === "after") ? "left" : "right";
+    var ch = side === "after" ? extent.begin : extent.end - (/\s/.test(lineObj.text.charAt(extent.end - 1)) ? 2 : 1);
+
+    // Get character coordinates
+    var coords = charCoords(cm, Pos(lineObj.lineNo(), ch), "div");
+    return coords[prop];
+  }
+
   // Draws the given range as a highlighted selection
   function drawSelectionRange(cm, range, output) {
     var display = cm.display, doc = cm.doc;
