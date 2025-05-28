@@ -3271,32 +3271,35 @@
         var openStart = fromArg == null && from == 0, openEnd = toArg == null && to == lineLen;
         var first = i == 0, last = !order || i == order.length - 1;
         if (toPos.top - fromPos.top <= 3) { // Single line
+          // var right = openRight ? rightSide : (ltr ? toPos : fromPos).right;
+          // add(left, fromPos.top, right - left, fromPos.bottom);
           var openLeft = (docLTR ? openStart : openEnd) && first;
           var openRight = (docLTR ? openEnd : openStart) && last;
           var left = openLeft ? leftSide : (ltr ? fromPos : toPos).left;
-          var right = openRight ? rightSide : (ltr ? toPos : fromPos).right;
-          add(left, fromPos.top, right - left, fromPos.bottom);
+          var right = openRight ? (ltr ? toPos : fromPos).right : (ltr ? toPos : fromPos).right;
+          drawRect(left, fromPos.top, right - left, fromPos.bottom);
         } else { // Multiple lines
           var topLeft, topRight, botLeft, botRight;
           if (ltr) {
             topLeft = docLTR && openStart && first ? leftSide : fromPos.left;
-            topRight = docLTR ? rightSide : wrapX(from, dir, "before");
-            botLeft = docLTR ? leftSide : wrapX(to, dir, "after");
-            botRight = docLTR && openEnd && last ? rightSide : toPos.right;
+            // topRight = docLTR ? rightSide : wrapX(from, dir, "before");
+            // botLeft = docLTR ? leftSide : wrapX(to, dir, "after");
+            // botRight = docLTR && openEnd && last ? rightSide : toPos.right;
           } else {
             topLeft = !docLTR ? leftSide : wrapX(from, dir, "before");
-            topRight = !docLTR && openStart && first ? rightSide : fromPos.right;
-            botLeft = !docLTR && openEnd && last ? leftSide : toPos.left;
-            botRight = !docLTR ? rightSide : wrapX(to, dir, "after");
+            // topRight = !docLTR && openStart && first ? rightSide : fromPos.right;
+            // botLeft = !docLTR && openEnd && last ? leftSide : toPos.left;
+            // botRight = !docLTR ? rightSide : wrapX(to, dir, "after");
           }
 
-          // // Draw first line of selection
+          // Draw first line of selection
           let firstLine = cm.lineAtHeight(fromPos.top, "div")
           let firstVisualLine = getVisualLines(cm, firstLine)[0];
           let firstLineRight = wrapXObj(cm, lineObj, firstVisualLine.startChar, dir, "before");
           let firstLineLeft = wrapXObj(cm, lineObj, firstVisualLine.endChar, dir, "after");
           drawRect(fromPos.left, fromPos.top, (firstLineRight - firstLineLeft) - topLeft, fromPos.bottom);
 
+          // Draw in-between lines
           let areThereInBetweenLines = fromPos.bottom < toPos.top
           if (areThereInBetweenLines) {
             // Get the logical line range for the middle section

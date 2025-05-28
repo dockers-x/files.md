@@ -293,6 +293,11 @@ async function saveMediaFile(path, blob, lastModified) {
         const file = await fileHandle.getFile();
         const fileExists = file.size > 0;
         if (fileExists) {
+            // Is it ok that we save metadata here as well?
+            if (filesMetadata['mediaTimestamp'] === undefined || lastModified > filesMetadata['mediaTimestamp']) {
+                filesMetadata['mediaTimestamp'] = lastModified;
+                saveMetadata();
+            }
             console.log(`File ${path} already exists and is up to date, skipping...`);
             return;
         }
