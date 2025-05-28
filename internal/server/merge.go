@@ -7,6 +7,10 @@ import (
 	"github.com/rivo/uniseg"
 )
 
+const (
+	header = `^#### \d+ \w+, \w+`
+)
+
 // Merge combines two strings (s1 and s2) by identifying longest sequences of common lines.
 //
 // The algorithm:
@@ -92,17 +96,24 @@ func mergeEmojisInJournalHeaders(lines []string) []string {
 			continue
 		}
 
-		foundEmojis := ""
-		possibleEmojis := regexp.MustCompile(`[^\w\s\p{P}]+$`)
-		date := strings.TrimSpace(possibleEmojis.ReplaceAllString(group[0], ""))
+		possibleEmojis := regexp.MustCompile(` [^\w\s\p{P}]+$`)
+		date := possibleEmojis.ReplaceAllString(group[0], "")
+		prefixIsSame := true
+		for _, line := range group {
+			emojis := possibleEmojis.FindString(line)
+			if date+emojis != line {
+				prefixIsSame = false
+			}
+		}
 		// If at least one line from group doesn't start with the same date, we can't merge them.
-		if !samePrefix(group, date) {
+		if !prefixIsSame {
 			mergedLines = append(mergedLines, group...)
 			continue
 		}
 
+		foundEmojis := ""
 		for _, line := range group {
-			foundEmojis += possibleEmojis.FindString(line)
+			foundEmojis += strings.TrimSpace(possibleEmojis.FindString(line))
 		}
 		if foundEmojis != "" {
 			foundEmojis = " " + unique(foundEmojis)
@@ -114,12 +125,13 @@ func mergeEmojisInJournalHeaders(lines []string) []string {
 }
 
 func groupConsecutiveHeaders(lines []string) [][]string {
+	re := regexp.MustCompile(header)
 	var groups [][]string
 	i := 0
 	for i < len(lines) {
-		if strings.HasPrefix(lines[i], "####") {
+		if re.MatchString(lines[i]) {
 			var group []string
-			for i < len(lines) && strings.HasPrefix(lines[i], "####") {
+			for i < len(lines) && re.MatchString(lines[i]) {
 				group = append(group, lines[i])
 				i++
 			}
@@ -131,15 +143,6 @@ func groupConsecutiveHeaders(lines []string) [][]string {
 	}
 
 	return groups
-}
-
-func samePrefix(lines []string, prefix string) bool {
-	for _, line := range lines {
-		if !strings.HasPrefix(line, prefix) {
-			return false
-		}
-	}
-	return true
 }
 
 // unique returns a string containing unique unicode graphemes from both input strings.
