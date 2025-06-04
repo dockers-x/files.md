@@ -65,6 +65,9 @@ func SyncTexts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO using rename log first replace old paths in client request to new so other code will work okay
+	// and maybe include it right away for files to send
+
 	userFS, err := fs.NewUserFS(request.UserID)
 	if err != nil {
 		log.Printf("Error creating user FS: %v", err)

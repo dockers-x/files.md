@@ -353,9 +353,10 @@ function openSearchModal() {
     loadRecentFiles();
 }
 
-document.addEventListener('keydown', (event) => {
+window.addEventListener('keydown', (event) => {
     if (event.metaKey && event.key === 'p') {
         event.preventDefault();
+        event.stopPropagation();
         document.getElementById('search-input').value = ''
         openSearchModal();
     }
