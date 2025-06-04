@@ -20,6 +20,7 @@ import (
 	"github.com/spf13/afero"
 	"golang.org/x/exp/slices"
 
+	"zakirullin/stuffbot/config"
 	"zakirullin/stuffbot/pkg/txt"
 )
 
@@ -68,6 +69,13 @@ type File struct {
 	IsMultiline bool
 	IsDir       bool
 	ParentDir   string
+}
+
+func NewUserFS(userID int64) (*FS, error) {
+	userAbsPath := path.Join(config.BotCfg.StorageDir, txt.I64(userID))
+	backend := afero.NewOsFs()
+
+	return NewFS(userAbsPath, backend)
 }
 
 func NewFS(absUserRootPath string, backend afero.Fs) (*FS, error) {
@@ -135,6 +143,24 @@ func (fs FS) Exists(dir, filename string) (bool, error) {
 	}
 
 	return exists, nil
+}
+
+func (fs FS) Ctime(dir, filename string) (int64, error) {
+	filePath := fs.UnsafePath(dir, filename)
+	isSafe, err := fs.isSafe(filePath)
+	if err != nil {
+		return 0, fmt.Errorf("fs file: can't check if the file is safe to access '%s': %w", filePath, err)
+	}
+	if !isSafe {
+		return 0, fmt.Errorf("fs file: unsafe filePath '%s': %w", filePath, errUnsafePath)
+	}
+
+	info, err := fs.backend.Stat(filePath)
+	if err != nil {
+		return 0, fmt.Errorf("fs file: can't stat file '%s': %w", filePath, err)
+	}
+
+	return Ctime(info), nil
 }
 
 func (fs FS) Read(dir, filename string) (string, error) {
@@ -351,7 +377,8 @@ func (fs FS) isSafe(path string) (bool, error) {
 		return false, nil
 	}
 
-	if !strings.HasPrefix(path, fs.RootPath) {
+	outsideOfUserRoot := !strings.HasPrefix(path, fs.RootPath)
+	if outsideOfUserRoot {
 		return false, nil
 	}
 

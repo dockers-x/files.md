@@ -199,33 +199,40 @@ func SyncText(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	path := clientFile.Path
+	userFS, err := fs.NewUserFS(clientFile.UserID)
+	if err != nil {
+		log.Printf("Error creating user FS: %v", err)
+		http.Error(w, "Error creating user FS", http.StatusInternalServerError)
+		return
+	}
+
 	// 1) Save client-modified file to the server
 	// 2) In case of conflict (server has a newer modification), merge the clientFile and include them in the response
 
-	// Save client-modified clientFile to the server
-	fullPath := filepath.Join(StorageDir, clientFile.Path)
-
-	serverModTime := int64(0)
-	// Check for any .../ attacks
-	info, err := os.Stat(fullPath)
-	if err == nil {
-		serverModTime = info.ModTime().Unix()
-	}
-
 	// TODO if no clientFile, severContent = ""
-	serverContent, err := ioutil.ReadFile(fullPath)
+	serverContent, err := userFS.Read("", path)
 	if err != nil && !os.IsNotExist(err) {
-		log.Printf("Error reading one clientFile '%s': %v", fullPath, err)
+		log.Printf("Error reading one clientFile '%s': %v", path, err)
 		http.Error(w, "Error reading server clientFile", http.StatusBadRequest)
 		return
 	}
 
+	ctime, err := userFS.Ctime("", path)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			log.Printf("Error getting ctime for clientFile '%s': %v", path, err)
+			http.Error(w, "Error getting ctime for clientFile", http.StatusBadRequest)
+			return
+		}
+	}
+
 	// TODO when clientFile does not exist the content is empty, which is implicit
 	// Return already up-to-date status
-	if string(serverContent) == clientFile.Content {
+	if serverContent == clientFile.Content {
 		response := map[string]interface{}{
 			"status":       StatusNotModified,
-			"lastModified": serverModTime,
+			"lastModified": ctime,
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotModified)
@@ -239,9 +246,9 @@ func SyncText(w http.ResponseWriter, r *http.Request) {
 		logSync(fmt.Sprintf("Creating one clientFile: '%s'", clientFile.Path))
 		content = clientFile.Content
 	} else {
-		fileWasModifiedOnServer = serverModTime > clientFile.LastModified
+		fileWasModifiedOnServer = ctime > clientFile.LastModified
 		if fileWasModifiedOnServer {
-			logSync(fmt.Sprintf("Server one clientFile '%s' was modified at %d, client timestamp is %d", fullPath, serverModTime, clientFile.LastModified))
+			logSync(fmt.Sprintf("Server one clientFile '%s' was modified at %d, client timestamp is %d", path, ctime, clientFile.LastModified))
 			logSync(fmt.Sprintf("Merging and writing one clientFile: '%s'", clientFile.Path))
 			content = Merge(string(serverContent), clientFile.Content)
 		} else {
@@ -253,43 +260,34 @@ func SyncText(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err := os.MkdirAll(filepath.Dir(fullPath), 0755); err != nil {
-		log.Printf("Error creating directory for clientFile '%s': %v", fullPath, err)
-		logSync(fmt.Sprintf("Error creating directory for clientFile '%s': %v", fullPath, err))
-		http.Error(w, "Error creating directory", http.StatusInternalServerError)
-		return
-	}
+	// TODO makde dirs
+	//if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+	//	log.Printf("Error creating directory for clientFile '%s': %v", fullPath, err)
+	//	logSync(fmt.Sprintf("Error creating directory for clientFile '%s': %v", fullPath, err))
+	//	http.Error(w, "Error creating directory", http.StatusInternalServerError)
+	//	return
+	//}
 
 	// Write the content to the server at path
-	err = os.WriteFile(fullPath, []byte(content), 0644)
+	err = userFS.Write("", path, content)
 	if err != nil {
-		log.Printf("Error writing clientFile '%s': %v", fullPath, err)
-		logSync(fmt.Sprintf("Error writing clientFile '%s': %v", fullPath, err))
+		log.Printf("Error writing clientFile '%s': %v", path, err)
+		logSync(fmt.Sprintf("Error writing clientFile '%s': %v", path, err))
 		http.Error(w, "Error writing clientFile", http.StatusInternalServerError)
 		return
 	}
-	info, err = os.Stat(fullPath)
-	if err == nil {
-		serverModTime = info.ModTime().Unix()
-	}
-	logSync(fmt.Sprintf("Server timestamp for '%s': %d", fullPath, serverModTime))
+
+	ctime, err = userFS.Ctime("", path)
+	// TODO what if 0?
+	logSync(fmt.Sprintf("Server timestamp for '%s': %d", path, ctime))
 
 	if !fileWasModifiedOnServer {
 		response := map[string]interface{}{
 			"status":       StatusUpdatedOnServer,
-			"lastModified": serverModTime,
+			"lastModified": ctime,
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response)
-		return
-	}
-
-	// Get clientFile timestamp
-	info, err = os.Stat(fullPath)
-	if err != nil {
-		log.Printf("Error getting one clientFile '%s' timestamp: %v", fullPath, err)
-		logSync(fmt.Sprintf("Error getting one clientFile '%s' timestamp: %v", fullPath, err))
-		http.Error(w, "Error getting clientFile timestamp", http.StatusInternalServerError)
 		return
 	}
 
@@ -297,7 +295,7 @@ func SyncText(w http.ResponseWriter, r *http.Request) {
 		Status:       StatusOK,
 		Content:      content,
 		Path:         clientFile.Path,
-		LastModified: serverModTime,
+		LastModified: ctime,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
