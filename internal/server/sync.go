@@ -260,14 +260,6 @@ func SyncText(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// TODO makde dirs
-	//if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-	//	log.Printf("Error creating directory for clientFile '%s': %v", fullPath, err)
-	//	logSync(fmt.Sprintf("Error creating directory for clientFile '%s': %v", fullPath, err))
-	//	http.Error(w, "Error creating directory", http.StatusInternalServerError)
-	//	return
-	//}
-
 	// Write the content to the server at path
 	err = userFS.Write("", path, content)
 	if err != nil {
