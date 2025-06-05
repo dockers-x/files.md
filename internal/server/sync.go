@@ -74,6 +74,7 @@ func SyncTexts(w http.ResponseWriter, r *http.Request) {
 			lastSync = ts
 		}
 	}
+	// TODO if a file was changed on client on oldPath, merge it with the new path
 	renames := ReadLog(request.UserID, lastSync)
 
 	userFS, err := fs.NewUserFS(request.UserID)
