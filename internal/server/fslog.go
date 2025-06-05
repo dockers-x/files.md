@@ -47,7 +47,7 @@ func ReadLog(userID, afterTimestamp int64) map[string]string {
 
 	logEntries := make(map[string]string)
 	scanner := bufio.NewScanner(file)
-	userPathPrefix := path.Join(config.BotCfg.StorageDir, fmt.Sprintf("%d", userID))
+	userPathPrefix := path.Join(config.BotCfg.StorageDir, fmt.Sprintf("%d", userID)) + "/"
 	for scanner.Scan() {
 		line := scanner.Text()
 		var timestamp int64
@@ -70,6 +70,8 @@ func ReadLog(userID, afterTimestamp int64) map[string]string {
 		if !strings.HasPrefix(oldPath, userPathPrefix) || !strings.HasPrefix(newPath, userPathPrefix) {
 			continue
 		}
+		oldPath = strings.TrimPrefix(oldPath, userPathPrefix)
+		newPath = strings.TrimPrefix(newPath, userPathPrefix)
 
 		logEntries[oldPath] = newPath
 	}
