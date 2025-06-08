@@ -56,6 +56,10 @@ let defaultFiles = {
                 "#### Inline Code\n" +
                 "Use `console.log()` for debugging.\n" +
                 "\n" +
+                "#### Blockquotes\n" +
+                "\n" +
+                ">This is a blockquote. It can span multiple lines and is great for highlighting important information or quotes from other sources.\n" +
+                "\n" +
                 "#### Tables\n" +
                 "| Title | Main Character |\n" +
                 "| ------- | --------------- |\n" +
@@ -66,10 +70,8 @@ let defaultFiles = {
                 "| The Mysterious Island | Cyrus Harding |\n" +
                 "| Five Weeks in a Balloon | Dr. Samuel Fergusson | \n" +
                 "\n" +
-                "#### Blockquotes\n" +
-                "\n" +
-                ">This is a blockquote. It can span multiple lines and is great for highlighting important information or quotes from other sources.\n" +
-                "\n" +
+                "#### Links\n" +
+                "You can insert your own links by typing `[`.\n\n" +
                 "[Welcome](/Welcome.md)\n" +
                 "[My amazing project](/My amazing project.md)"
         },
