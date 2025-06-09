@@ -303,11 +303,9 @@ async function openFile(dir, filename, saveToHistory = true) {
     initEditor(document.getElementById('editor'));
     editor.currentDir = dir;
     editor.currentFile = filename;
-
     editor.getDoc().setValue(content);
     editor.clearHistory();
     editor.markClean();
-    editor.focus();
 
     if (cursorPos !== null) {
         console.log('cursor not null');
@@ -316,13 +314,6 @@ async function openFile(dir, filename, saveToHistory = true) {
         // TODO only focus if there's no quick dialogue
         editor.focus();
     } else {
-        // Focus last line if we have short content
-        const cmScroller = document.querySelector('.CodeMirror-scroll')
-        const hasVerticalScroll = cmScroller.scrollHeight > cmScroller.clientHeight
-        if (hasVerticalScroll) {
-            focusLastLine();
-            return;
-        }
         focusLastLine();
     }
 }
@@ -335,7 +326,6 @@ function focusLastLine() {
         const lineContent = editor.getLine(i).trim();
         if (!lineContent.startsWith("[") && (!lineContent.endsWith("]") || !lineContent.endsWith(")"))) {
             targetLine = i;
-            console.log('found links');
             break;
         }
     }
@@ -344,7 +334,6 @@ function focusLastLine() {
     // Cursor at the end, but scroll the doc to top
     editor.scrollTo(null, 0);
     // TODO only focus if there's no quick dialogue
-    console.log('focusing last line');
     editor.focus();
 }
 
