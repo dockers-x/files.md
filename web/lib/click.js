@@ -30,8 +30,8 @@
             }
             // PATCHED add meta key
             else if ((info.ctrlKey || info.altKey || info.metaKey) && url) {
-                // just open URL
-                window.open(url, "_blank");
+                // PATCHED, I believe we don't need it?
+                // window.open(url, "_blank");
             }
         }
         if (type === 'todo') {
@@ -199,7 +199,8 @@
                     var type = null;
                     var text, url;
                     // PATCHED, don't follow if we click on text inside ()
-                    if (token.type === "string url") {
+                    let noMetaIsPressed = !metaKey && !ctrlKey && !altKey;
+                    if (noMetaIsPressed && token.type === "string url") {
                        return;
                     }
                     if (mat = styles.match(/\s(image|link|url)\s/)) {
@@ -230,7 +231,7 @@
                             // PATCHED, ignore click if the link is unfolded
                             var target = ev.target;
                             var parent = target.parentElement;
-                            if (parent) {
+                            if (noMetaIsPressed && parent) {
                                 // Check all sibling elements for cm-string cm-url without hmd-hidden-token
                                 var siblings = parent.children;
                                 let isUnfolded = false;
