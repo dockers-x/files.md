@@ -268,6 +268,7 @@ async function showRandomFile() {
 }
 
 async function openFile(dir, filename, saveToHistory = true) {
+    const start = performance.now();
     filename = filename.normalize("NFC");
     const fileData = files[dir][filename];
 
@@ -320,6 +321,9 @@ async function openFile(dir, filename, saveToHistory = true) {
     } else {
         focusLastLine();
     }
+
+    const end = performance.now();
+    console.log(`File opened in: ${(end - start).toFixed(3)} milliseconds`);
 }
 
 async function newFile() {
