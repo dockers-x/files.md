@@ -792,7 +792,6 @@ async function openDir() {
     let dirHandle = await window.showDirectoryPicker();
     document.getElementById('open-folder').style.display = 'none';
     document.getElementById('new-file').style.display = 'inline';
-    document.getElementById('new-folder').style.display = 'inline';
     await saveDirectoryHandle(dirHandle);
     files = await loadLocalFiles(dirHandle)
     buildSidebar();
