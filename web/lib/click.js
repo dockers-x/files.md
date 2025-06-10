@@ -203,7 +203,8 @@
                     // PATCHED, don't follow if we click on text inside ()
                     let noMetaIsPressed = !metaKey && !ctrlKey && !altKey;
                     console.log(token.type);
-                    if (noMetaIsPressed && (token.type === "string url" || token.type === "formatting formatting-link-string string url")) {
+                    let shouldIgnoreClick = (token.type === "string url" || token.type === "formatting formatting-link-string string url" || token.type === "string url hmd-barelink";
+                    if (noMetaIsPressed && shouldIgnoreClick) {
                        return;
                     }
                     if (mat = styles.match(/\s(image|link|url)\s/)) {

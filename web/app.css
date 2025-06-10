@@ -247,8 +247,7 @@ a:hover {
     cursor: pointer;
     color: var(--color-link-hover) !important;
     text-decoration: none !important;
-    font-weight: 550;
-    border-bottom:0.04em solid var(--color-link-hover);
+    border-bottom:0.08em solid var(--color-link-hover);
 }
 
 #welcome {
