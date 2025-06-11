@@ -278,13 +278,13 @@
     /*PATCHED*/
     /*color: #666;*/
     color: var(--color-tx-alt);
-    padding-left: 4px;
+    padding-left: 3px;
     text-indent: 0;
     /*margin-left: 4px;*/
 }
 /*PATCHED*/
 .cm-s-hypermd-light pre.HyperMD-quote-1 {
-    padding-left: 24px;
+    padding-left: 22px;
 }
 .cm-s-hypermd-light pre.HyperMD-quote-1:before {
     width: 2px;
