@@ -197,14 +197,8 @@ input.addEventListener('keydown', (event) => {
     }
 
     if (event.key === 'Enter') {
-        if (event.shiftKey) {
-            event.preventDefault();
-            input.value += '\n';
-            input.rows += 1;
-        } else {
-            event.preventDefault();
-            sendMessage();
-        }
+        event.preventDefault();
+        sendMessage();
     }
 });
 
@@ -474,7 +468,7 @@ inputField.addEventListener('paste', async (event) => {
     const items = event.clipboardData.items;
     for (const item of items) {
         if (item.kind === 'file' && item.type.startsWith('image/')) {
-            event.preventDefault(); // Prevent default paste behavior
+            event.preventDefault();
             const file = item.getAsFile();
             const fileName = `${new Date().toISOString().replace(/[:.]/g, '-')}.${getImageExtension(item.type)}`;
             try {
