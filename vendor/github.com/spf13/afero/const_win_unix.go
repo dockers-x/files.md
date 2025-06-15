@@ -15,12 +15,8 @@
 
 package afero
 
+import (
+	"syscall"
+)
 
-type Errno uintptr
-
-func (e Errno) Error() string {
-	return ""
-}
-
-
-const BADFD Errno = 9
+const BADFD = syscall.EBADFD
