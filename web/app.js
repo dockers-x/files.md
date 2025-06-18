@@ -806,17 +806,17 @@ function openChat() {
         return;
     }
 
-    let cmd = {
-        n: 'today',
-        t: "cmd"
-    }
-    replyCmd(JSON.stringify(cmd));
-
     sidebarContainer.style.display = 'none';
     content.style.display = 'none';
     chatContainer.style.display = 'flex';
     input.focus();
     isChat = true;
+
+    let cmd = {
+        n: 'today',
+        t: "cmd"
+    }
+    replyCmd(JSON.stringify(cmd));
 
     window.resizeTo(520, 530);
     const left = (screen.availWidth - 500) / 2;
