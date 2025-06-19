@@ -824,7 +824,11 @@ const TreeUtil = {
 window.handleNodeMove = async function(sourceDir, sourceFile, targetDir) {
     console.log(`Moving ${sourceDir}/${sourceFile} to ${targetDir}/`);
 
-    await moveFile(`${sourceDir}/${sourceFile}`, `${targetDir}/${sourceFile}`);
+    if (sourceDir === editor.currentDir && sourceFile === editor.currentFile) {
+       await moveCurrentFile(targetDir);
+    } else {
+        await moveFile(`${sourceDir}/${sourceFile}`, `${targetDir}/${sourceFile}`);
+    }
 };
 
 // WHEN?
