@@ -199,6 +199,7 @@ async function syncTextsWithServer() {
 
             try {
                 await saveTextFile(path, content)
+                console.log('SYNC texsts: write file: ', path);
                 setServerFile(path, content, lastModified);
                 // Unfortunately rename is not working, so we have to delete the old file
                 const shouldRemoveOldFile = path in server.renames;
@@ -235,8 +236,6 @@ async function syncTextsWithServer() {
     console.log("Sync completed in " + (performance.now() - startTime) + "ms");
 
     isSyncing = false;
-
-    await updateSidebar();
 }
 
 async function syncLocalFileWithServer(dir, filename) {

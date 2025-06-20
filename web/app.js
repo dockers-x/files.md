@@ -58,6 +58,7 @@ async function init(el) {
 
     perf = performance.now();
     await syncTextsWithServer();
+    await updateSidebar();
     await syncMedia();
     console.log(`Files initialized in: ${(performance.now() - perf).toFixed(3)} milliseconds`);
 }
@@ -1102,6 +1103,7 @@ window.addEventListener('focus', async () => {
     const end = performance.now();
     console.log(`Files loaded in: ${(end - start).toFixed(3)} milliseconds`);
     await syncTextsWithServer()
+    await updateSidebar();
     console.log("Sync completed");
 });
 
@@ -1124,6 +1126,7 @@ window.addEventListener('blur', async function() {
     const end = performance.now();
     console.log(`Files loaded in: ${(end - start).toFixed(3)} milliseconds`);
     await syncTextsWithServer()
+    await updateSidebar();
     console.log("Sync completed");
 });
 
