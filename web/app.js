@@ -1324,9 +1324,10 @@ document.addEventListener('keydown', (e) => {
         const lastLine = editor.lastLine();
         const lastLineLength = editor.getLine(lastLine).length;
 
-        editor.setSelection(
-            { line: 1, ch: 0 },  // Start from line 1
-            { line: lastLine, ch: lastLineLength }
+        editor.getDoc().setSelection(
+            { line: 1, ch: 0 },                    // anchor
+            { line: lastLine, ch: lastLineLength }, // head
+            { scroll: false }  // don't scroll to cursor
         );
     }
 }, true);
