@@ -1310,9 +1310,18 @@ document.addEventListener('keydown', (e) => {
     if (isChat) {
         return;
     }
+
     if (isMetaKey(e) && e.key === 'a') {
         e.preventDefault();
         e.stopPropagation();
-        editor.execCommand('selectAll');
+
+        // Select all except the first line
+        const lastLine = editor.lastLine();
+        const lastLineLength = editor.getLine(lastLine).length;
+
+        editor.setSelection(
+            { line: 1, ch: 0 },  // Start from line 1
+            { line: lastLine, ch: lastLineLength }
+        );
     }
 }, true);

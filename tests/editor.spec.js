@@ -85,7 +85,7 @@ test.describe('Files.md Text Editor Sync Tests', () => {
         expect(count).toEqual(4);
 
         const expectedSelections = [
-            { left: 2, width: 177, right: 179 },
+            { left: 2, width: 143, right: 145 },
             { left: 2, width: 97, right: 99 },
             { left: 2, width: 196, right: 198 },
             { left: 2, width: 229, right: 231 },
@@ -134,7 +134,7 @@ test.describe('Files.md Text Editor Sync Tests', () => {
         expect(count).toEqual(10);
 
         const expectedSelections = [
-            { left: 2, width: 315, right: 317 },
+            { left: 2, width: 142, right: 144 },
             { left: 2, width: 741, right: 743 },
             { left: 2, width: 728, right: 730 },
             { left: 2, width: 752, right: 754 },
