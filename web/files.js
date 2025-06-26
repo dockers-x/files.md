@@ -671,6 +671,8 @@ async function isContentEqual(path, content) {
             }
         }
 
+        console.log(diff);
+
         return false;
     } else {
         return true;
@@ -884,14 +886,8 @@ function saveServerFiles() {
 // TODO add hash of last read file comparison, merge on conflict (in which scenarious in can happen tho?)
 // TODO add lock / RC for currentFile change
 async function syncCurrentFile(syncWithServer = true) {
-    if (files === undefined) {
+    if (files === undefined || isWelcome || debug || editor.currentFile === undefined) {
         return;
-    }
-    if (debug) {
-        return;
-    }
-    if (editor.currentFile === undefined) {
-        return
     }
 
     /// TODO detect welcome mode separately
@@ -980,6 +976,7 @@ async function syncCurrentFile(syncWithServer = true) {
     // Sync with server.
 
     if (contentWasModifiedLocally && editor.isClean()) {
+        console.log(contentWasModifiedLocally, editor.isClean());
         console.log('WAS MODIFIED LOCALLY', editor.currentFile);
         // Changes only from local system
         try {

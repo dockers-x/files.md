@@ -54,7 +54,7 @@ async function init(el) {
         document.getElementById('new-file').style.display = 'none';
         document.getElementById('new-folder').style.display = 'none';
         document.getElementById('chat').style.display = 'none';
-        files = defaultFiles;
+        files = DEFAULT_FILES;
         updateSidebar();
         await openFile('', 'Welcome.md');
         isWelcome = true;
@@ -189,7 +189,7 @@ function initEditor(el) {
     })
 
     // Force '# ' to remain at first line.
-    editor.on('change', function(cm, change) {
+    editor.on('change', function (cm, change) {
         if (change.from.line === 0) {
             const line = cm.getLine(0);
             if (!line.startsWith('# ')) {
@@ -266,14 +266,14 @@ function initEditor(el) {
             if (isBold) {
                 cm.replaceSelection(prefix + trimmedSelection.slice(2, -2) + suffix);
                 cm.setSelection(
-                    { line: start.line, ch: start.ch + prefix.length },
-                    { line: end.line, ch: end.ch - suffix.length - 4 }
+                    {line: start.line, ch: start.ch + prefix.length},
+                    {line: end.line, ch: end.ch - suffix.length - 4}
                 );
             } else {
                 cm.replaceSelection(prefix + `**${trimmedSelection}**` + suffix);
                 cm.setSelection(
-                    { line: start.line, ch: start.ch + prefix.length },
-                    { line: end.line, ch: end.ch - suffix.length + 4 }
+                    {line: start.line, ch: start.ch + prefix.length},
+                    {line: end.line, ch: end.ch - suffix.length + 4}
                 );
             }
             cm.focus();
@@ -292,21 +292,21 @@ function initEditor(el) {
             if (isItalic) {
                 cm.replaceSelection(prefix + trimmedSelection.slice(1, -1) + suffix);
                 cm.setSelection(
-                    { line: start.line, ch: start.ch + prefix.length },
-                    { line: end.line, ch: end.ch - suffix.length - 2 }
+                    {line: start.line, ch: start.ch + prefix.length},
+                    {line: end.line, ch: end.ch - suffix.length - 2}
                 );
             } else {
                 cm.replaceSelection(prefix + `*${trimmedSelection}*` + suffix);
                 cm.setSelection(
-                    { line: start.line, ch: start.ch + prefix.length },
-                    { line: end.line, ch: end.ch - suffix.length + 2 }
+                    {line: start.line, ch: start.ch + prefix.length},
+                    {line: end.line, ch: end.ch - suffix.length + 2}
                 );
             }
             cm.focus();
         }
     });
 
-    editor.getWrapperElement().addEventListener('mousedown', function(e) {
+    editor.getWrapperElement().addEventListener('mousedown', function (e) {
         if (!isMetaKey(e)) return;
 
         e.preventDefault();
@@ -542,8 +542,7 @@ async function newFile() {
     if (selectedDirs.length > 0 &&
         selectedDirs[0].getOptions &&
         typeof selectedDirs[0].getOptions === 'function' &&
-        selectedDirs[0].getOptions()['dir'] === true)
-    {
+        selectedDirs[0].getOptions()['dir'] === true) {
         dir = selectedDirs[0].toString();
     }
     // TODO don't create on disk?
@@ -1145,9 +1144,33 @@ async function openDir() {
     document.getElementById('new-file').style.display = 'inline';
     document.getElementById('new-folder').style.display = 'inline';
     document.getElementById('chat').style.display = 'inline';
-    isWelcome = false;
+
     await saveDirectoryHandle(dirHandle);
     files = await loadLocalFiles(dirHandle)
+
+    // Create welcome markdown file if empty
+    if (Object.keys(files).length === 0) {
+        const hotkeysFilename = '🎛️ Hotkeys.md';
+        await saveTextFile(hotkeysFilename, HOTKEYS_CONTENT);
+        files[''] = {};
+        files[''][hotkeysFilename] = {
+            lastModified: 0,
+            handle: await getFileHandle(hotkeysFilename),
+        }
+
+        const welcomeFilename = '🪴 Welcome.md';
+        await saveTextFile(welcomeFilename, WELCOME_CONTENT);
+        files[''][welcomeFilename] = {
+            lastModified: 0,
+            handle: await getFileHandle(welcomeFilename),
+        }
+        await openFile('', welcomeFilename);
+        isWelcome = false;
+        updateSidebar();
+        return;
+    }
+
+    isWelcome = false;
     updateSidebar();
     await showRandomFile();
 }
@@ -1157,9 +1180,7 @@ function getCurrentContent() {
     const header = toHeader(editor.currentFile);
     if (content.toLowerCase().startsWith(`${header}`.toLowerCase())) {
         content = content.slice(`${header}\n`.length);
-    }
-
-    if (content.toLowerCase().startsWith('# ')) {
+    } else if (content.toLowerCase().startsWith('# ')) {
         content = content.slice(`$# `.length);
     }
 
@@ -1264,7 +1285,7 @@ window.addEventListener('focus', async () => {
 });
 
 // Sync files on chat focus lose.
-window.addEventListener('blur', async function() {
+window.addEventListener('blur', async function () {
     console.log('Window lost focus');
     if (!isChat) {
         return;
@@ -1336,9 +1357,9 @@ document.addEventListener('keydown', (e) => {
         const lastLineLength = editor.getLine(lastLine).length;
 
         editor.getDoc().setSelection(
-            { line: 1, ch: 0 },                    // anchor
-            { line: lastLine, ch: lastLineLength }, // head
-            { scroll: false }  // don't scroll to cursor
+            {line: 1, ch: 0},                    // anchor
+            {line: lastLine, ch: lastLineLength}, // head
+            {scroll: false}  // don't scroll to cursor
         );
     }
 }, true);

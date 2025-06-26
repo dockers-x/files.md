@@ -1,4 +1,4 @@
-let defaultFiles = {
+const DEFAULT_FILES = {
     "brain": {
         "We think that we understand, but in reality we just know.md": {
             "content": "# We think that we understand, but in reality we just know.\nReading and rereading can easily fool us into believing that we understand a text. Rereading is especially dangerous because of the mere-exposure effect: The moment we become familiar with something, we start believing we also understand it. On top of that, we also tend to like it it more.\n\n[Brain is the most complex object in known universe](brain/Brain is the most complex object in known universe.md)"
@@ -21,8 +21,8 @@ let defaultFiles = {
     "": {
         "Welcome.md": {
             "content": "# 🪴 Welcome\nOnly essential features. No distractions.\n\n" +
-            "You don't need fancy tools to take notes...\n\n"
-            + "[Links](Links.md)\n[Markdown Guide](/Markdown Guide.md)\n[Hotkeys](Hotkeys.md)\n[Why using links](Links.md)"
+                "You don't need fancy tools to take notes...\n\n"
+                + "[Links](Links.md)\n[Markdown Guide](/Markdown Guide.md)\n[Hotkeys](Hotkeys.md)\n[Why using links](Links.md)"
         },
         "Links.md": {
             "content": "# Links\nLinks are important\n" +
@@ -59,7 +59,7 @@ let defaultFiles = {
                 "\n" +
                 "#### Code Blocks\n" +
                 "```\n" +
-                "Here is some code.\n"+
+                "Here is some code.\n" +
                 "```\n" +
                 "\n" +
                 "#### Images\n" +
@@ -110,3 +110,72 @@ let defaultFiles = {
     }
 }
 
+const WELCOME_CONTENT = "Only essential features. No distractions.\n\n" +
+    "You don't need fancy tools to take notes...\n\n" +
+    "#### Headers\n" +
+    "Use `#` for headers. More `#` symbols create smaller headers.\n" +
+    "\n" +
+    "#### Text Formatting\n" +
+    "- **Bold text** using `**bold**` or `__bold__`\n" +
+    "- *Italic text* using `*italic*` or `_italic_`\n" +
+    "- ***Bold and italic*** using `***text***`\n" +
+    "- ~~Strikethrough~~ using `~~text~~`\n" +
+    "- `Inline code` using backticks\n" +
+    "\n" +
+    "#### Lists\n" +
+    "- First item\n" +
+    "- Second item\n" +
+    "  - Third item\n\n" +
+    "1. First item\n" +
+    "2. Second item\n" +
+    "   1. Third item\n" +
+    "\n" +
+    "#### Checklist\n" +
+    "- [x] Completed task\n" +
+    "- [ ] Incomplete task\n" +
+    "- [ ] Another incomplete task\n" +
+    "\n" +
+    "#### Blockquotes\n" +
+    ">This is a blockquote. It can span multiple lines and is great for highlighting important information or quotes from other sources.\n" +
+    "\n" +
+    "#### Code Blocks\n" +
+    "```\n" +
+    "Here is some code.\n" +
+    "```\n" +
+    "\n" +
+    "#### Images\n" +
+    "![Why taking notes](https://app.files.md/lib/notes.jpg)\n" +
+    "\n" +
+    "*You can paste your own images via `Cmd/Ctrl + V`*\n\n" +
+    "#### Links\n" +
+    "You can insert your own links by typing `[`.\n\n" +
+    "[🎛️ Hotkeys](/🎛️ Hotkeys.md)\n";
+
+const HOTKEYS_CONTENT = "#### File Navigation\n" +
+    "\n" +
+    "| Hotkey | Action |\n" +
+    "| -------- |-------- |\n" +
+    "| `Cmd+K` / `Ctrl+K` | Open file search modal |\n" +
+    "| `Cmd+N` / `Ctrl+N` | New file |\n" +
+    "| `Cmd+M` / `Ctrl+M` | Move file |\n" +
+    "| `Cmd+D` / `Ctrl+D` | Delete file |\n" +
+    "| `Cmd+Enter` / `Ctrl+Enter` | Toggle chat mode |\n" +
+    "| `Cmd+[` / `Ctrl+[`  | Go to previous file   |\n" +
+    "| `Cmd+]` / `Ctrl+]`  | Go to next file  |\n" +
+    "\n" +
+    "#### Text Formatting\n" +
+    "\n" +
+    "| Hotkey | Action |\n" +
+    "| -------- | -------- |\n" +
+    "| `Cmd+B` / `Ctrl+B` | Toggle **bold** formatting |\n" +
+    "| `Cmd+I` / `Ctrl+I` | Toggle *italic* formatting |\n" +
+    "| `Cmd+Y` / `Ctrl+Y`| Insert ✅ checkbox at line start |\n" +
+    "| `Cmd` / `Ctrl`+`Click`| Copy text from `inline` element |\n" +
+    "\n" +
+    "#### Editor Functions\n" +
+    "\n" +
+    "| Hotkey | Action |\n" +
+    "| -------- | -------- |\n" +
+    "| `[` | Trigger file link autocomplete |\n" +
+    "\n" +
+    "[🪴 Welcome](/🪴 Welcome.md)\n";
