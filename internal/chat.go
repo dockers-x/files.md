@@ -39,11 +39,10 @@ func (b *Bot) saveToChat(content string, timezone *time.Location) (int, error) {
 		}
 	}
 
-	// Count existing records before adding new one
-	blocks := readMessages(md)
+	messages := readMessages(md)
 	headerRegex := regexp.MustCompile(`^#### `)
 	recordCount := 0
-	for _, block := range blocks {
+	for _, block := range messages {
 		if !headerRegex.MatchString(block) {
 			recordCount++
 		}
@@ -75,8 +74,7 @@ func (b *Bot) saveToChat(content string, timezone *time.Location) (int, error) {
 		return 0, fmt.Errorf("saveToChat: %w", err)
 	}
 
-	// Return index of the newly added record (1-based)
-	return recordCount + 1, nil
+	return recordCount, nil
 }
 
 func (b *Bot) MoveFromChat(callback func(content string, timestamp time.Time) error, indices ...int) error {
@@ -252,7 +250,7 @@ func readMessages(content string) []string {
 }
 
 func todayHeader(timezone *time.Location) string {
-	nowTZ := time.Now().In(timezone)
+	nowTZ := now().In(timezone)
 	return fmt.Sprintf("#### %d %s, %s", nowTZ.Day(), nowTZ.Format("January"), nowTZ.Weekday())
 }
 

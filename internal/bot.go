@@ -1741,42 +1741,53 @@ func (b *Bot) moveToShop(params []string) error {
 
 // TODO test
 func (b *Bot) moveToNewFile(params []string) error {
-	existingFilenameHash := params[0]
+	hashOrIndex, err := strconv.Atoi(params[0])
+	if err != nil {
+		return fmt.Errorf("move to new file: can't parse hash or index from params: %w", err)
+	}
+	hashOrIndex = -hashOrIndex
 	newFilenameFromUserInput := fs.Filename(params[1])
 
-	filename, err := b.fs.Unhash(fs.DirRoot, existingFilenameHash)
+	//filename, err := b.fs.Unhash(fs.DirRoot, hashOrIndex)
+	//if err != nil {
+	//	return fmt.Errorf("move to new file: can't unhash existing file '%s': %w", hashOrIndex, err)
+	//}
+	//
+	//// Save existing filename to content in case the content of new file is empty (i.e. not multiline)
+	//content, err := b.fs.Read(fs.DirRoot, filename)
+	//if err != nil {
+	//	return fmt.Errorf("move to new file: can't read file '%s': %w", filename, err)
+	//}
+	err = b.MoveFromChat(func(content string, t time.Time) error {
+		content = strings.TrimSpace(content)
+		//if len(content) == 0 {
+		//	content = fs.Title(filename)
+		//	err = b.fs.Write(fs.DirRoot, filename, content)
+		//	if err != nil {
+		//		return fmt.Errorf("move to new file: can't write content of '%s': %w", filename, err)
+		//	}
+		//}
+
+		// TODO check for safety
+		// TODO won't we lost some text here in case of multiline?
+		//err = b.fs.Rename(fs.DirRoot, filename, fs.DirRoot, newFilenameFromUserInput)
+		//if err != nil {
+		//	return fmt.Errorf("move to new file: can't create empty file: %w", err)
+		//}
+
+		// We can tolerate this
+		//_ = journal.AddRecord(b.fs, fmt.Sprintf("📄 %s", fs.Title(filename)), b.cfg.Timezone())
+
+		// TODO test
+		b.db.SetRecentCommand(consts.CmdMoveToExistingFile)
+		b.db.SetRecentCommandParams([]string{fs.ShortHash(newFilenameFromUserInput), fs.ShortHash(fs.DirToday)})
+
+		// TODO add if exists
+		return b.fs.Write(fs.DirRoot, newFilenameFromUserInput, content)
+	}, hashOrIndex)
 	if err != nil {
-		return fmt.Errorf("move to new file: can't unhash existing file '%s': %w", existingFilenameHash, err)
+		return fmt.Errorf("move to new file: can't read content from chat: %w", err)
 	}
-
-	// Save existing filename to content in case the content of new file is empty (i.e. not multiline)
-	content, err := b.fs.Read(fs.DirRoot, filename)
-	if err != nil {
-		return fmt.Errorf("move to new file: can't read file '%s': %w", filename, err)
-	}
-
-	content = strings.TrimSpace(content)
-	if len(content) == 0 {
-		content = fs.Title(filename)
-		err = b.fs.Write(fs.DirRoot, filename, content)
-		if err != nil {
-			return fmt.Errorf("move to new file: can't write content of '%s': %w", filename, err)
-		}
-	}
-
-	// TODO check for safety
-	// TODO won't we lost some text here in case of multiline?
-	err = b.fs.Rename(fs.DirRoot, filename, fs.DirRoot, newFilenameFromUserInput)
-	if err != nil {
-		return fmt.Errorf("move to new file: can't create empty file: %w", err)
-	}
-
-	// We can tolerate this
-	_ = journal.AddRecord(b.fs, fmt.Sprintf("📄 %s", fs.Title(filename)), b.cfg.Timezone())
-
-	// TODO test
-	b.db.SetRecentCommand(consts.CmdMoveToExistingFile)
-	b.db.SetRecentCommandParams([]string{fs.ShortHash(newFilenameFromUserInput), fs.ShortHash(fs.DirToday)})
 
 	msg := txt.Emoji(i18n.Emoji("file"), fmt.Sprintf(i18n.Tr("Saved to <b>%s</b>"), fs.Title(newFilenameFromUserInput)))
 	_, _ = b.tg.Send(b.userID, msg, nil, tg.MarkupHTML)
@@ -2152,25 +2163,26 @@ func (b *Bot) showMoveToFileOrDir(params []string) error {
 	if userWantedAllBtns {
 		maxRecentBtns = maxBtns
 		var err error
+		// TODO fix unhash
 		filename, err = b.fs.Unhash(fs.DirRoot, filenameHash)
 		if err != nil {
 			return fmt.Errorf("to file dialog: %w", err)
 		}
 	} else {
 		// For the first time we have to move file to the root directory, as this is not a task anymore
-		var err error
-		filename, err = b.fs.Unhash(fs.DirToday, filenameHash)
-		if err != nil {
-			return fmt.Errorf("to file dialog: %w", err)
-		}
+		//var err error
+		//filename, err = b.fs.Unhash(fs.DirToday, filenameHash)
+		//if err != nil {
+		//	return fmt.Errorf("to file dialog: %w", err)
+		//}
+		//
+		//err = b.fs.Rename(fs.DirToday, filename, fs.DirRoot, filename)
+		//if err != nil {
+		//	return fmt.Errorf("to file dialog: %w", err)
+		//}
 
-		err = b.fs.Rename(fs.DirToday, filename, fs.DirRoot, filename)
-		if err != nil {
-			return fmt.Errorf("to file dialog: %w", err)
-		}
-
-		b.db.SetRecentCommand(consts.CmdMoveToExistingFile)
-		b.db.SetRecentCommandParams([]string{fs.ShortHash(filename), fs.ShortHash(fs.DirToday)})
+		//b.db.SetRecentCommand(consts.CmdMoveToExistingFile)
+		//b.db.SetRecentCommandParams([]string{fs.ShortHash(filename), fs.ShortHash(fs.DirToday)})
 	}
 
 	kb := tg.NewKeyboard(nil)
@@ -2210,11 +2222,11 @@ func (b *Bot) showMoveToFileOrDir(params []string) error {
 	btn := tg.NewBtn("🗂 New Dir", tg.NewCmd(consts.CmdRequestNewDir, []string{filenameHash}))
 	dirBtns = append(dirBtns, btn)
 
-	shouldAddSeparator := len(fileBtns) > 0
-	if shouldAddSeparator {
-		searchCMD := tg.NewCustomCmd(consts.CmdInlineQuerySearchEveryWhere, nil, tg.CmdTypeInlineQueryCurrentChat)
-		kb.AddRow(tg.NewBtn(i18n.Tr("Search"), searchCMD))
-	}
+	//shouldAddSeparator := len(fileBtns) > 0
+	//if shouldAddSeparator {
+	searchCMD := tg.NewCustomCmd(consts.CmdInlineQuerySearchEveryWhere, nil, tg.CmdTypeInlineQueryCurrentChat)
+	kb.AddRow(tg.NewBtn(i18n.Tr("Search"), searchCMD))
+	//}
 	dirBtnsByRows := slice.Chunk(dirBtns, btnsPerRow)
 	for _, row := range dirBtnsByRows {
 		kb.AddRow(row)
@@ -2266,7 +2278,8 @@ func (b *Bot) moveToFileBtns(newFilenameShortHash string) ([]tg.Btn, error) {
 	var buttons []tg.Btn
 	newBtn := func(title, existingFilenameHash string) tg.Btn {
 		title = fmt.Sprintf("%s", title)
-		params := []string{existingFilenameHash, fs.DirRoot, newFilenameShortHash}
+		//params := []string{existingFilenameHash, fs.DirRoot, newFilenameShortHash}
+		params := []string{existingFilenameHash}
 		return tg.NewBtn(title, tg.NewCmd(consts.CmdMoveToExistingFile, params))
 	}
 	for _, file := range files {
@@ -2279,7 +2292,8 @@ func (b *Bot) moveToFileBtns(newFilenameShortHash string) ([]tg.Btn, error) {
 func (b *Bot) moveToDirBtns(filenameHash string) ([]tg.Btn, error) {
 	newBtn := func(dir string) tg.Btn {
 		emojifiedDir := fmt.Sprintf("%s %s", i18n.Emoji("dir"), txt.Ucfirst(dir))
-		return tg.NewBtn(emojifiedDir, tg.NewCmd(consts.CmdMoveToExistingDir, []string{fs.ShortHash(dir), fs.DirRoot, filenameHash}))
+		//return tg.NewBtn(emojifiedDir, tg.NewCmd(consts.CmdMoveToExistingDir, []string{fs.ShortHash(dir), fs.DirRoot, filenameHash}))
+		return tg.NewBtn(emojifiedDir, tg.NewCmd(consts.CmdMoveToExistingDir, []string{fs.ShortHash(dir), filenameHash}))
 	}
 
 	dirs, err := b.fs.FilesAndDirs(fs.DirRoot)

@@ -2477,7 +2477,7 @@ func TestSaveToExistingFile(t *testing.T) {
 	r.Equal(3, tgram.LastSentMessageID)
 }
 
-func TestSaveToNewFileIntegration(t *testing.T) {
+func TestSaveToNewFile(t *testing.T) {
 	r := require.New(t)
 
 	savedNow := now
@@ -2489,12 +2489,14 @@ func TestSaveToNewFileIntegration(t *testing.T) {
 	}
 
 	mode := userconfig.DefaultConfig.Mode
-	userconfig.DefaultConfig.Mode = userconfig.ModeTasks
+	userconfig.DefaultConfig.Mode = userconfig.ModeFull
 	defer func() {
 		userconfig.DefaultConfig.Mode = mode
 	}()
 
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+	err = userFS.Write("/", "Chat.txt", "#### 1 January, Thursday\n`01:01` New\ncontent")
 	r.NoError(err)
 	err = userFS.CreateDirsIfNotExist()
 	r.NoError(err)
@@ -2515,49 +2517,50 @@ func TestSaveToNewFileIntegration(t *testing.T) {
 	err = bot.Reply(tg.NewUpd(-1, "Text"))
 	r.NoError(err)
 
+	content, err := userFS.Read("/", "Chat.txt")
+	r.NoError(err)
+	r.Equal("#### 1 January, Thursday\n`01:01` New\ncontent\n`00:00` Text\n", content)
+
 	kb := tg.NewKeyboard([]tg.Row{
 		tg.NewRow(
-			tg.NewBtn("🌚 To tmrw", tg.NewCmd("sc_tmrw", []string{"232004794e5"})),
-			tg.NewBtn("⏳ To later", tg.NewCmd("mv_later", []string{"232004794e5"})),
-			tg.NewBtn("📆 To a day", tg.NewCmd("sc_day", []string{"232004794e5"})),
+			tg.NewBtn("🌚 To tmrw", tg.NewCmd("sc_tmrw", []string{"-1"})),
+			tg.NewBtn("⏳ To later", tg.NewCmd("mv_later", []string{"-1"})),
+			tg.NewBtn("📆 To a day", tg.NewCmd("sc_day", []string{"-1"})),
 		),
 		tg.NewRow(
-			tg.NewBtn("📄 To File", tg.NewCmd("to_file", []string{"232004794e5"})),
-			tg.NewBtn("💚 To Journal", tg.NewCmd("mv_to_journal", []string{"232004794e5"})),
+			tg.NewBtn("📄 To File", tg.NewCmd("to_file", []string{"-1"})),
+			tg.NewBtn("💚 To Journal", tg.NewCmd("mv_to_journal", []string{"-1"})),
 			tg.NewBtn("➡️ Today", tg.NewCmd("today", nil)),
 		),
 	})
 	r.Equal(kb, tgram.LastSentKeyboard)
 
-	err = bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("to_file", []string{"232004794e5"})))
+	err = bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("to_file", []string{"-1"})))
 	r.NoError(err)
 
 	selectFileKB := tg.NewKeyboard([]tg.Row{
-		tg.NewRow(
-			tg.NewBtn("Text", tg.NewCmd("mf", []string{"23200", "/", "23200"})),
-		),
 		tg.NewBtn("Search", tg.NewCustomCmd("search", nil, "iq")),
 		tg.NewRow(
-			tg.NewBtn("🗂️ Habits", tg.NewCmd("mv", []string{"51fc0", "/", "232004794e5"})),
-			tg.NewBtn("🗂 New Dir", tg.NewCmd("new_dir", []string{"232004794e5"})),
+			tg.NewBtn("🗂️ Habits", tg.NewCmd("mv", []string{"51fc0", "-1"})),
+			tg.NewBtn("🗂 New Dir", tg.NewCmd("new_dir", []string{"-1"})),
 		),
 	})
 	r.Equal(selectFileKB, tgram.LastEditedKeyboard)
 
-	err = bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("mf", []string{"23200", "", "23200"})))
+	//err = bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("mf", []string{"23200", "0"})))
+	//r.NoError(err)
+	err = bot.Reply(tg.NewUpd(-1, "Myfile"))
 	r.NoError(err)
 
-	r.Empty(tgram.LastEditedKeyboard)
-
-	content, err := userFS.Read("", "Text.md")
+	content, err = userFS.Read("/", "Myfile.md")
 	r.NoError(err)
-	r.Equal("", content)
+	r.Equal("Text", content)
 
 	r.Nil(database.InputExpectation())
 	msgID, ok := database.LastKeyboardMsgID()
 	r.True(ok)
-	r.Equal(3, msgID)
-	r.Equal(msgID, tgram.LastSentMessageID)
+	r.Equal(1, msgID)
+	r.Equal(2, tgram.LastSentMessageID)
 }
 
 func TestSaveToNewDirIntegration(t *testing.T) {
