@@ -269,7 +269,7 @@ function attachEventListeners() {
     chatContainer.querySelectorAll('.to-file-btn').forEach(btn => {
         btn.addEventListener('click', function (e) {
             e.stopPropagation();
-            searchModal.open('', -btn.dataset.index, e.target)
+            searchModal.open('', btn.dataset.index, e.target)
         });
     });
 
@@ -280,11 +280,11 @@ function attachEventListeners() {
 
             let messagesToRemove;
             if (selectedMessages.length > 0) {
-                const indices = Array.from(selectedMessages).map(msg => -msg.dataset.index);
+                const indices = Array.from(selectedMessages).map(msg => msg.dataset.index);
                 sendCmd('mv_to_journal', indices);
                 messagesToRemove = selectedMessages;
             } else {
-                sendCmd('mv_to_journal', [-btn.dataset.index]);
+                sendCmd('mv_to_journal', [btn.dataset.index]);
                 messagesToRemove = [btn.closest('.message')];
             }
 

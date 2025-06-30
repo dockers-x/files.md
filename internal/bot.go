@@ -1547,7 +1547,6 @@ func (b *Bot) moveToDirFromChat(params []string) error {
 	if err != nil {
 		return fmt.Errorf("move to dir: can't parse msgIndex from params: %w", err)
 	}
-	msgIndex = -msgIndex
 
 	toDir, err := b.fs.Unhash(fs.DirRoot, toDirHash)
 	if err != nil {
@@ -1629,7 +1628,6 @@ func (b *Bot) moveToExistingFile(params []string) error {
 	if err != nil {
 		return fmt.Errorf("move to file: can't parse index from params: %w", err)
 	}
-	index = -index
 
 	//fromDirHash := params[1]
 	//fromFilenameHash := params[2]
@@ -1694,35 +1692,29 @@ func (b *Bot) moveToExistingFile(params []string) error {
 func (b *Bot) moveToExistingNote(params []string) error {
 	toFilenameHash := params[0]
 	toDirHash := params[1]
-	fromFilenameHash := params[2]
-
-	toDir, err := b.fs.Unhash(fs.DirRoot, toDirHash)
+	msgIndex, err := strconv.Atoi(params[2])
 	if err != nil {
-		return fmt.Errorf("move to exsiting note: %w", err)
+		return fmt.Errorf("move to existing note: can't parse hash or index from params: %w", err)
 	}
 
-	toFilename, err := b.fs.Unhash(toDir, toFilenameHash)
-	if err != nil {
-		return fmt.Errorf("move to exsiting note:: %w", err)
-	}
+	err = b.moveFromChat(func(content string, t time.Time) error {
+		toDir, err := b.fs.Unhash(fs.DirRoot, toDirHash)
+		if err != nil {
+			return fmt.Errorf("move to exsiting note: %w", err)
+		}
 
-	fromFilename, err := b.fs.Unhash(fs.DirToday, fromFilenameHash)
-	if err != nil {
-		return fmt.Errorf("move to existing note:: %w", err)
-	}
+		toFilename, err := b.fs.Unhash(toDir, toFilenameHash)
+		if err != nil {
+			return fmt.Errorf("move to exsiting note:: %w", err)
+		}
 
-	content, err := b.restoreMsg(fs.DirToday, fromFilename)
-	if err != nil {
-		return fmt.Errorf("move to existing note: can't read file %s: %w", fromFilename, err)
-	}
+		err = b.addToFile(toDir, toFilename, content)
+		if err != nil {
+			return fmt.Errorf("move to existing note: can't add to file %s: %w", toFilename, err)
+		}
 
-	err = b.addToFile(toDir, toFilename, content)
-	if err != nil {
-		return fmt.Errorf("move to existing note: can't add to file %s: %w", toFilename, err)
-	}
-
-	// No worries if we can't delete - we'll have a redundant file
-	_ = b.fs.Del(fs.DirToday, fromFilename)
+		return nil
+	}, msgIndex)
 
 	return b.ShowToday(nil)
 }
@@ -1732,7 +1724,6 @@ func (b *Bot) moveToChecklist(params []string) error {
 	if err != nil {
 		return fmt.Errorf("move to checklistDir: can't parse hash or index from params: %w", err)
 	}
-	msgIndex = -msgIndex
 	checklistHash := params[1]
 
 	//filename, err := b.fs.Unhash(fs.DirToday, msgIndex)
@@ -1808,7 +1799,6 @@ func (b *Bot) moveToNewFile(params []string) error {
 	if err != nil {
 		return fmt.Errorf("move to new file: can't parse hash or index from params: %w", err)
 	}
-	msgIndex = -msgIndex
 	newFilenameFromUserInput := fs.Filename(params[1])
 
 	//filename, err := b.fs.Unhash(fs.DirRoot, msgIndex)
@@ -1879,30 +1869,19 @@ func (b *Bot) moveToNewChecklist(params []string) error {
 
 // TODO support both indexes and hashes
 func (b *Bot) moveToJournal(params []string) error {
-	//index, _ := strconv.Atoi(params[0])
-	var indices []int
+	var msgIndicies []int
 	for _, indexStr := range params {
 		index, err := strconv.Atoi(indexStr)
 		if err != nil {
 			return fmt.Errorf("move to journal: can't convert index '%s' to int: %w", indexStr, err)
 		}
-		indices = append(indices, -index)
+		msgIndicies = append(msgIndicies, -index)
 	}
-
-	//fromFilename, err := b.fs.Unhash(fs.DirToday, index)
-	//if err != nil {
-	//	return fmt.Errorf("move to journal: can't unhash filename: %w", err)
-	//}
-	//
-	//content, err := b.restoreMsg(fs.DirToday, fromFilename)
-	//if err != nil {
-	//	return fmt.Errorf("move to journal: can't read content of '%s': %w", fromFilename, err)
-	//}
 
 	err := b.moveFromChat(func(content string, t time.Time) error {
 		// TODO take into account time
 		return journal.AddRecord(b.fs, content, b.cfg.Timezone())
-	}, indices...)
+	}, msgIndicies...)
 	if err != nil {
 		return fmt.Errorf("failed to move to journal: can't add record: %w", err)
 	}
@@ -2138,7 +2117,6 @@ func (b *Bot) scheduleForTmrw(params []string) error {
 	if err != nil {
 		return fmt.Errorf("schedule for tomorrow from chat: can't parse msgIndex from params: %w", err)
 	}
-	msgIndex = -msgIndex
 
 	var filenameHash string
 	err = b.moveFromChat(func(content string, timestamp time.Time) error {
