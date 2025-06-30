@@ -217,18 +217,19 @@ func (b *Bot) handlers() map[string]func([]string) error {
 		consts.CmdShowChecklists: b.showChecklists,
 		consts.CmdShowPostpone:   b.showPostpone,
 		//consts.CmdShowMoveFromToday:  b.showMoveFromToday,
-		consts.CmdShowMoveTo:         b.showMoveTo,
-		consts.CmdShowRename:         b.showRename,
-		consts.CmdShowStats:          b.showStats,
-		consts.CmdShowReadChecklist:  b.showRead,
-		consts.CmdShowWatchChecklist: b.showWatch,
-		consts.CmdShowShopChecklist:  b.showShop,
-		consts.CmdShowSchedule:       b.showSchedule,
-		consts.CmdShowMoveFromToday:  b.showMoveFromToday,
-		consts.CmdShowSettings:       b.showSettings,
-		consts.CmdOpenInApp:          b.openInApp,
-		consts.CmdShowHelp:           b.showHelp,
-		consts.CmdDownload:           b.download,
+		consts.CmdShowMoveTo:          b.showMoveTo,
+		consts.CmdShowMoveToFromToday: b.showMoveToFromToday,
+		consts.CmdShowRename:          b.showRename,
+		consts.CmdShowStats:           b.showStats,
+		consts.CmdShowReadChecklist:   b.showRead,
+		consts.CmdShowWatchChecklist:  b.showWatch,
+		consts.CmdShowShopChecklist:   b.showShop,
+		consts.CmdShowSchedule:        b.showSchedule,
+		consts.CmdShowMoveFromToday:   b.showMoveFromToday,
+		consts.CmdShowSettings:        b.showSettings,
+		consts.CmdOpenInApp:           b.openInApp,
+		consts.CmdShowHelp:            b.showHelp,
+		consts.CmdDownload:            b.download,
 		// Button's commands (callbacks)
 		consts.CmdShowRenameFile:              b.showRenameFile,
 		consts.CmdShowMultilineTask:           b.showMultilineTask,
@@ -240,6 +241,7 @@ func (b *Bot) handlers() map[string]func([]string) error {
 		consts.CmdShowMoveToDirOrFile:         b.showMoveToFileOrDir,
 		consts.CmdShowMoveToChecklist:         b.showToChecklist,
 		consts.CmdMoveToExistingDir:           b.moveToDirFromChat,
+		consts.CmdMoveToExistingDirFromToday:  b.moveToDirFromToday,
 		consts.CmdRequestNewDir:               b.requestNewDirName,
 		consts.CmdMoveToNewDir:                b.moveToNewDir,
 		consts.CmdMoveToExistingFile:          b.moveToExistingFile,
@@ -841,12 +843,36 @@ func (b *Bot) showMoveTo(params []string) error {
 
 	b.delAllKeyboards()
 
-	err = b.showHTML(b.tr("Task added for <b>today</b>!"), &kb)
+	err = b.showHTML(b.tr("Saved!"), &kb)
 	if err != nil {
 		return fmt.Errorf("move: %w", err)
 	}
 
 	return nil
+}
+
+func (b *Bot) showMoveToFromToday(params []string) error {
+	fromFilenameHash := params[0]
+
+	filename, err := b.fs.Unhash(fs.DirToday, fromFilenameHash)
+	if err != nil {
+		return fmt.Errorf("move to from today: can't unhash filename %s: %w", fromFilenameHash, err)
+	}
+
+	content, err := b.restoreMsg(fs.DirToday, filename)
+	if err != nil {
+		return fmt.Errorf("move to from today: can't restore msg %s: %w", filename, err)
+	}
+
+	msgIndex, err := b.saveToChat(content, b.cfg.Timezone())
+	if err != nil {
+		return fmt.Errorf("move to from today: can't save to chat: %w", err)
+	}
+
+	// We can't tolerate duplicates
+	_ = b.fs.Del(fs.DirToday, filename)
+
+	return b.showMoveTo([]string{strconv.Itoa(msgIndex)})
 }
 
 func (b *Bot) recentCmdBtn(msgIndex int) *tg.Btn {
@@ -1152,8 +1178,7 @@ func (b *Bot) showMoveFromToday(_ []string) error {
 
 	var kb tg.Keyboard
 	for _, file := range files {
-		// TODO first move to chat.md
-		cmd := tg.NewCmd(consts.CmdShowMoveTo, []string{fs.Hash(file.Name)})
+		cmd := tg.NewCmd(consts.CmdShowMoveToFromToday, []string{fs.Hash(file.Name)})
 		kb.AddRow(tg.NewBtn(file.Title, cmd))
 	}
 
@@ -1332,11 +1357,11 @@ func (b *Bot) showMultilineTask(params []string) error {
 		btnLabel = i18n.StrToToday
 		toDir = fs.DirToday
 	}
-	moveToLaterBtn = tg.NewBtn(btnLabel, tg.NewCmd(consts.CmdMoveToExistingDir, []string{toDir, dir, filenameHash}))
+	moveToLaterBtn = tg.NewBtn(btnLabel, tg.NewCmd(consts.CmdMoveToExistingDirFromToday, []string{toDir, dir, filenameHash}))
 
 	moveBtn := tg.NewBtn(
 		txt.Emoji(i18n.Emoji("right arrow"), b.tr("Move to")),
-		tg.NewCmd(consts.CmdShowMoveTo, []string{filenameHash}),
+		tg.NewCmd(consts.CmdShowMoveToFromToday, []string{filenameHash}),
 	)
 
 	kb := tg.NewKeyboard([]tg.Row{
@@ -1486,7 +1511,7 @@ func (b *Bot) showStart(params []string) error {
 	return b.showHTML("Welcome 👋! What do you need?", kb)
 }
 
-func (b *Bot) moveToDir(params []string) error {
+func (b *Bot) moveToDirFromToday(params []string) error {
 	// TODO Remove input expectations if dir is not today
 	toDirHash := params[0]
 	fromDirHash := params[1]
@@ -1579,9 +1604,11 @@ func (b *Bot) moveToDirFromChat(params []string) error {
 	}
 
 	b.delAllKeyboards()
-	msg := txt.Emoji(i18n.Emoji("dir"), fmt.Sprintf(i18n.Tr("Moved to <b>%s</b>"), fs.Title(toDir)))
-	// Just an informative messages
-	_, _ = b.tg.Send(b.userID, msg, nil, tg.MarkupHTML)
+	if toDir != fs.DirToday {
+		msg := txt.Emoji(i18n.Emoji("dir"), fmt.Sprintf(i18n.Tr("Moved to <b>%s</b>"), fs.Title(toDir)))
+		// Just an informative messages
+		_, _ = b.tg.Send(b.userID, msg, nil, tg.MarkupHTML)
+	}
 
 	return b.ShowToday(nil)
 }
