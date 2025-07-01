@@ -265,9 +265,13 @@
     border: none;
 }
 
+#open-chat svg {
+    stroke: var(--color-bg-alt);
+}
+
 #open-chat:hover svg {
     cursor: pointer;
-    stroke: var(--color-tx) !important;
+    stroke: var(--color-link) !important;
     border-radius: 50%;
 }
 
