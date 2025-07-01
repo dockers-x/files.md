@@ -6,13 +6,19 @@ const CHAT_FILENAME = 'Chat.txt';
 let chatIsClean = true; // Are there any unsaved changes?
 
 async function openChat() {
+    if (editor.currentFile !== CHAT_FILENAME) {
+        const state = {dir: editor.currentDir, file: editor.currentFile};
+        history.pushState(state, '');
+    }
+
     editor.currentDir = "";
     editor.currentFile = CHAT_FILENAME;
 
     chatInput.focus();
-    // if (isChat) {
-    //     return;
-    // }
+    if (isChat) {
+        history.back();
+        return;
+    }
 
     const codemirror = document.querySelector('.CodeMirror-wrap');
     codemirror.style.display = 'none';
