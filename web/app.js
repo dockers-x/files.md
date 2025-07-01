@@ -496,6 +496,7 @@ async function openFile(dir, filename, saveToHistory = true) {
     }
     chatButton.classList.remove('hidden');
     chatContainer.style.display = 'none';
+    closeChatModal();
 
 
     const start = performance.now();
