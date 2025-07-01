@@ -287,7 +287,7 @@
     border: none;
     font-size: 24px;
     cursor: pointer;
-    color: #666;
+    color: var(--color-link);
     z-index: 1001;
     width: 30px;
     height: 30px;
