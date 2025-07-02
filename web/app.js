@@ -708,6 +708,13 @@ document.addEventListener('keydown', (event) => {
         moveModal.close();
         closeChatModal();
         editor.focus();
+
+        const allMessages = chat.querySelectorAll('.message');
+        allMessages.forEach(message => message.classList.remove('selected'));
+        // If in chat, focus chat input
+        if (isChat) {
+            chatInput.focus();
+        }
     }
 });
 

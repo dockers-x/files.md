@@ -54,9 +54,10 @@ async function openChatModal() {
     scrollToBottom();
 }
 
+// Clicking outside the modal will close the modal.
 document.addEventListener('click', (event) => {
     let isChatModal = chatContainer.classList.contains('modal');
-    if (isChatModal && !chatContainer.contains(event.target)) {
+    if (isChatModal && !chatContainer.contains(event.target) && !chatButton.contains(event.target)) {
         closeChatModal();
     }
 });
@@ -286,6 +287,7 @@ function renderMessages() {
                  contenteditable="true" 
                  data-index="${message.index}"
                  spellcheck="false">${escapeHtml(message.text)}</div>
+            <div class="message-hover-zone"></div>
             <div class="message-footer">
                 <span class="message-time">${message.timestamp}</span>
                 <div class="message-actions">
