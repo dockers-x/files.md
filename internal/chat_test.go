@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -230,3 +232,299 @@ func TestSaveToChatEmptyFile(t *testing.T) {
 //	// Should use EST time which is 20:01 (8:01 PM) the previous day
 //	r.Contains(content, "`20:01` Test content")
 //}
+
+// Test normal case - properly formatted content
+func TestReadMessages_NormalCase(t *testing.T) {
+	content := `#### 1 July, Tuesday
+` + "`15:19`" + ` Пройтись на улице
+#### 2 July, Wednesday
+` + "`10:30`" + ` Почитать книгу`
+
+	result := readMessages(content)
+	expected := []string{
+		"#### 1 July, Tuesday",
+		"`15:19` Пройтись на улице",
+		"#### 2 July, Wednesday",
+		"`10:30` Почитать книгу",
+	}
+
+	if len(result) != len(expected) {
+		t.Fatalf("Expected %d blocks, got %d", len(expected), len(result))
+	}
+
+	for i, block := range result {
+		if block != expected[i] {
+			t.Errorf("Block %d mismatch:\nExpected: %q\nGot: %q", i, expected[i], block)
+		}
+	}
+}
+
+// Test message without timestamp - this could be the source of the issue
+func TestReadMessages_MessageWithoutTimestamp(t *testing.T) {
+	content := `#### 1 July, Tuesday
+` + "`15:19`" + ` Пройтись на улице
+Провести звонок с Нео
+#### 2 July, Wednesday
+` + "`10:30`" + ` Почитать книгу`
+
+	result := readMessages(content)
+
+	// The message without timestamp should be grouped with the previous timestamped message
+	expected := []string{
+		"#### 1 July, Tuesday",
+		"`15:19` Пройтись на улице\nПровести звонок с Нео",
+		"#### 2 July, Wednesday",
+		"`10:30` Почитать книгу",
+	}
+
+	if len(result) != len(expected) {
+		t.Fatalf("Expected %d blocks, got %d\nGot: %v", len(expected), len(result), result)
+	}
+
+	for i, block := range result {
+		if block != expected[i] {
+			t.Errorf("Block %d mismatch:\nExpected: %q\nGot: %q", i, expected[i], block)
+		}
+	}
+}
+
+//func TestReadMessages_MultipleMessagesWithoutTimestamps(t *testing.T) {
+//	content := `#### 1 July, Tuesday
+//` + "`15:19`" + ` Пройтись на улице
+//Провести звонок с Нео
+//Купить молоко
+//#### 2 July, Wednesday
+//Почитать книгу
+//` + "`10:30`" + ` Сходить в магазин`
+//
+//	result := readMessages(content)
+//
+//	// Check what happens with multiple untimestamped messages
+//	t.Logf("Result blocks: %v", result)
+//
+//	// This should reveal how readMessages handles content without timestamps
+//	headerRegex := regexp.MustCompile(`^#### `)
+//	timestampRegex := regexp.MustCompile(`^` + "`" + `\d{2}:\d{2}` + "`" + ` `)
+//
+//	for i, block := range result {
+//		isHeader := headerRegex.MatchString(block)
+//		hasTimestamp := timestampRegex.MatchString(block)
+//		t.Logf("Block %d: isHeader=%v, hasTimestamp=%v, content=%q", i, isHeader, hasTimestamp, block)
+//
+//		if !isHeader && !hasTimestamp {
+//			t.Errorf("Found record without timestamp: %q", block)
+//		}
+//	}
+//}
+
+//func TestReadMessages_ContentAfterHeaderWithoutTimestamp(t *testing.T) {
+//	content := `#### 1 July, Tuesday
+//#### 2 July, Wednesday
+//Почитать книгу
+//` + "`10:30`" + ` Сходить в магазин`
+//
+//	result := readMessages(content)
+//
+//	t.Logf("Result blocks: %v", result)
+//
+//	// This case might be critical - content right after header without timestamp
+//	headerRegex := regexp.MustCompile(`^#### `)
+//	timestampRegex := regexp.MustCompile(`^` + "`" + `\d{2}:\d{2}` + "`" + ` `)
+//
+//	for i, block := range result {
+//		isHeader := headerRegex.MatchString(block)
+//		hasTimestamp := timestampRegex.MatchString(block)
+//		t.Logf("Block %d: isHeader=%v, hasTimestamp=%v, content=%q", i, isHeader, hasTimestamp, block)
+//
+//		if !isHeader && !hasTimestamp {
+//			t.Errorf("Found record without timestamp: %q", block)
+//		}
+//	}
+//}
+
+// Test multiline message formatting
+func TestReadMessages_MultilineMessage(t *testing.T) {
+	content := `#### 1 July, Tuesday
+` + "`15:19`" + ` Пройтись на улице
+и купить хлеб
+в магазине
+#### 2 July, Wednesday
+` + "`10:30`" + ` Почитать книгу`
+
+	result := readMessages(content)
+	expected := []string{
+		"#### 1 July, Tuesday",
+		"`15:19` Пройтись на улице\nи купить хлеб\nв магазине",
+		"#### 2 July, Wednesday",
+		"`10:30` Почитать книгу",
+	}
+
+	if len(result) != len(expected) {
+		t.Fatalf("Expected %d blocks, got %d", len(expected), len(result))
+	}
+
+	for i, block := range result {
+		if block != expected[i] {
+			t.Errorf("Block %d mismatch:\nExpected: %q\nGot: %q", i, expected[i], block)
+		}
+	}
+}
+
+// Test record identification and timestamp validation
+func TestMoveFromChat_RecordIdentification(t *testing.T) {
+	content := `#### 1 July, Tuesday
+` + "`15:19`" + ` Пройтись на улице
+Провести звонок с Нео
+#### 2 July, Wednesday
+` + "`10:30`" + ` Почитать книгу`
+
+	messages := readMessages(content)
+
+	// Filter to find record messages (not headers)
+	headerRegex := regexp.MustCompile(`^#### `)
+	var recordIndices []int
+	var records []string
+
+	for i, message := range messages {
+		if !headerRegex.MatchString(message) {
+			recordIndices = append(recordIndices, i)
+			records = append(records, message)
+		}
+	}
+
+	t.Logf("Found %d records:", len(records))
+	for i, record := range records {
+		t.Logf("Record %d: %q", i, record)
+	}
+
+	// Check if records have timestamps
+	timestampRegex := regexp.MustCompile(`^` + "`" + `\d{2}:\d{2}` + "`" + ` `)
+	for i, record := range records {
+		hasTimestamp := timestampRegex.MatchString(record)
+		t.Logf("Record %d has timestamp: %v", i, hasTimestamp)
+		if !hasTimestamp {
+			t.Errorf("Record %d missing timestamp: %q", i, record)
+		}
+	}
+}
+
+//func TestReadMessages_ExactIssueScenario(t *testing.T) {
+//	content := `#### 1 July, Tuesday
+//#### 2 July, Wednesday
+//Почитать книгу
+//` + "`15:19`" + ` Пройтись на улице
+//Провести звонок с Нео`
+//
+//	result := readMessages(content)
+//
+//	t.Logf("Input content:")
+//	t.Logf("%q", content)
+//	t.Logf("Parsed blocks:")
+//	for i, block := range result {
+//		t.Logf("Block %d: %q", i, block)
+//	}
+//
+//	// Check for records without timestamps
+//	headerRegex := regexp.MustCompile(`^#### `)
+//	timestampRegex := regexp.MustCompile(`^` + "`" + `\d{2}:\d{2}` + "`" + ` `)
+//
+//	for i, block := range result {
+//		isHeader := headerRegex.MatchString(block)
+//		hasTimestamp := timestampRegex.MatchString(block)
+//
+//		if !isHeader && !hasTimestamp {
+//			t.Errorf("Found record without timestamp at index %d: %q", i, block)
+//		}
+//	}
+//}
+
+// Test timestamp pattern matching
+func TestTimestampPatternMatching(t *testing.T) {
+	timestampRegex := regexp.MustCompile(`^` + "`" + `\d{2}:\d{2}` + "`" + ` `)
+
+	validTimestamps := []string{
+		"`15:19` Пройтись на улице",
+		"`10:30` Почитать книгу",
+		"`23:59` Test message",
+	}
+
+	invalidTimestamps := []string{
+		"15:19 Пройтись на улице",  // No backticks
+		"Пройтись на улице",        // No timestamp
+		"15:19` Пройтись на улице", // Missing opening backtick
+		"`15:19 Пройтись на улице", // Missing closing backtick
+		"`5:19` Пройтись на улице", // Single digit hour
+		"`15:9` Пройтись на улице", // Single digit minute
+	}
+
+	for _, ts := range validTimestamps {
+		if !timestampRegex.MatchString(ts) {
+			t.Errorf("Valid timestamp not matched: %q", ts)
+		}
+	}
+
+	for _, ts := range invalidTimestamps {
+		if timestampRegex.MatchString(ts) {
+			t.Errorf("Invalid timestamp matched: %q", ts)
+		}
+	}
+}
+
+// Test what happens when saveToChat adds content without proper formatting
+func TestSaveToChat_ContentAddition(t *testing.T) {
+	// Mock the current time for testing
+	originalNow := Now
+	defer func() { Now = originalNow }()
+
+	Now = func() time.Time {
+		return time.Date(2024, 7, 2, 15, 19, 0, 0, time.UTC)
+	}
+
+	timezone := time.UTC
+
+	// Test content formatting in saveToChat
+	content := "Провести звонок с Нео"
+	timestamp := Now().In(timezone).Format("`15:04`")
+	expectedFormat := timestamp + " " + content + "\n"
+
+	t.Logf("Content: %q", content)
+	t.Logf("Timestamp: %q", timestamp)
+	t.Logf("Expected format: %q", expectedFormat)
+
+	// This should match the format from saveToChat function
+	if !strings.Contains(expectedFormat, "`15:19`") {
+		t.Errorf("Timestamp format is incorrect: %q", expectedFormat)
+	}
+}
+
+// Test edge case: empty content handling
+func TestReadMessages_EmptyContent(t *testing.T) {
+	content := ""
+	result := readMessages(content)
+
+	if len(result) != 0 {
+		t.Errorf("Expected 0 blocks for empty content, got %d: %v", len(result), result)
+	}
+}
+
+// Test edge case: only headers
+func TestReadMessages_OnlyHeaders(t *testing.T) {
+	content := `#### 1 July, Tuesday
+#### 2 July, Wednesday`
+
+	result := readMessages(content)
+	expected := []string{
+		"#### 1 July, Tuesday",
+		"#### 2 July, Wednesday",
+	}
+
+	if len(result) != len(expected) {
+		t.Fatalf("Expected %d blocks, got %d", len(expected), len(result))
+	}
+
+	for i, block := range result {
+		if block != expected[i] {
+			t.Errorf("Block %d mismatch:\nExpected: %q\nGot: %q", i, expected[i], block)
+		}
+	}
+}

@@ -379,9 +379,9 @@ func (b *Bot) saveFromTextMsg(u Update) error {
 		}
 	}
 
-	if b.cfg.OneFileOnlyMode() {
-		return b.createOrAdd(fs.DirRoot, fs.ChatFilename, msg)
-	}
+	//if b.cfg.OneFileOnlyMode() {
+	//	return b.createOrAdd(fs.DirRoot, fs.ChatFilename, msg)
+	//}
 
 	// Adding to an existing file
 	if replyMsgID, ok := u.ReplyToMsgID(); ok {
