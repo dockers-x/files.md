@@ -101,6 +101,8 @@
                     modal.addEventListener("click", closeModal);
                     const handleKeyDown = (event) => {
                         if (event.key === "Escape") {
+                            event.stopPropagation();
+                            event.preventDefault();
                             closeModal();
                         }
                     };
