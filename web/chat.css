@@ -398,7 +398,7 @@
 }
 
 #open-chat-modal:not(.hidden) {
-    display: block !important;
+    display: block;
 }
 
 #open-chat-modal:not(.hidden) svg {
