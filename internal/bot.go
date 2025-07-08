@@ -2236,21 +2236,21 @@ func (b *Bot) scheduleForTmrw(params []string) error {
 		return fmt.Errorf("schedule for tomorrow from chat: can't parse msgIndex from params: %w", err)
 	}
 
-	var filenameHash string
-	err = b.moveFromChat(func(content string, timestamp time.Time) error {
-		title, content, err := b.extractTitleAndContent(content, maxTitleLengthForMobile)
-		if err != nil {
-			return fmt.Errorf("schedule for tomorrow from chat: %w", err)
-		}
-		filename := fs.Filename(title)
-		filenameHash = fs.ShortHash(filename)
-		return b.fs.Write(fs.DirToday, filename, content)
-	}, false, msgIndex)
-	if err != nil {
-		return fmt.Errorf("schedule for tomorrow from chat: can't read content from chat: %w", err)
-	}
+	//var filenameHash string
+	//err = b.moveFromChat(func(content string, timestamp time.Time) error {
+	//	title, content, err := b.extractTitleAndContent(content, maxTitleLengthForMobile)
+	//	if err != nil {
+	//		return fmt.Errorf("schedule for tomorrow from chat: %w", err)
+	//	}
+	//	filename := fs.Filename(title)
+	//	filenameHash = fs.ShortHash(filename)
+	//	return b.fs.Write(fs.DirToday, filename, content)
+	//}, false, msgIndex)
+	//if err != nil {
+	//	return fmt.Errorf("schedule for tomorrow from chat: can't read content from chat: %w", err)
+	//}
 
-	return b.schedule([]string{filenameHash, txt.I64(sched.Tomorrow()), ""})
+	return b.schedule([]string{strconv.Itoa(msgIndex), txt.I64(sched.Tomorrow()), ""})
 }
 
 func (b *Bot) delAllKeyboards() {
