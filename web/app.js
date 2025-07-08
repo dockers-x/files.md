@@ -469,7 +469,7 @@ function createAutocompleteDict() {
     // Collect all files with their metadata
     Object.keys(excludeDirs(SYSTEM_DIRS)).forEach(dir => {
         Object.keys(files[dir]).forEach(filename => {
-            if (filename === CONFIG_FILENAME || filename === CHAT_FILENAME) {
+            if (filename === CONFIG_PATH || filename === CHAT_PATH) {
                 return;
             }
             const key = `${filename.replace(/\.md$/, '')}`;
@@ -494,7 +494,7 @@ function createAutocompleteDict() {
     let lowPriorityEntries = [];
     ['_read_', '_watch_', '_shop_', 'today', 'later', 'journal'].forEach(dir => {
         Object.keys(files[dir]).forEach(filename => {
-            if (filename === CONFIG_FILENAME || filename === CHAT_FILENAME) {
+            if (filename === CONFIG_PATH || filename === CHAT_PATH) {
                 return;
             }
             const key = `${filename.replace(/\.md$/, '')}`;
@@ -515,27 +515,6 @@ function createAutocompleteDict() {
     });
 
     return dict;
-}
-
-function walk(obj, callback, path = '') {
-    for (const key in obj) {
-        const item = obj[key];
-        const fullPath = path + key;
-
-        if (item.isFile) {
-            callback(fullPath, item, true);
-        } else {
-            callback(fullPath, item, false);
-            walk(item, callback, fullPath + '/');
-        }
-    }
-}
-
-function toDirAndFilename(path) {
-    const pathParts = path.split('/');
-    const filename = pathParts.pop();
-    const dirPath = pathParts.join('/');
-    return { dirPath, filename };
 }
 
 function renderSidebar(focusDir = '') {
@@ -601,12 +580,11 @@ function renderSidebar(focusDir = '') {
     //         if (selectedNodes.has(dir)) dirNode.setSelected(true);
     //     }
     // }
-    let dirNodes = {};
-    dirNodes[''] = root; // Root is empty path
+    let dirNodes = {'/': root};
 
     // First pass: create all directories
     walk(files, (path, item, isFile) => {
-        if (path === 'media' || path.startsWith('media/')) {
+        if (path === '/media' || path.startsWith('/media/')) {
             return;
         }
 
@@ -614,24 +592,22 @@ function renderSidebar(focusDir = '') {
             return;
         }
 
-        let dirNode = new TreeNode(path, {expanded: false, dir: true});
+        let dirNode = new TreeNode(toFilename(path), {expanded: false, dir: true});
         dirNodes[path] = dirNode;
 
-        // Find parent directory
-        const pathParts = path.split('/');
-        pathParts.pop(); // Remove current directory name
-        const parentPath = pathParts.join('/');
-        const parentNode = dirNodes[parentPath] || root;
+        // Add to parent
+        const {dirPath, _ } = toDirAndFilename(path);
+        const parentNode = dirNodes[dirPath] || root;
         parentNode.addChild(dirNode);
     });
 
     // Second pass: add all files
     walk(files, (path, item, isFile) => {
-        if (path === 'media' || path.startsWith('media/')) {
+        if (path === '/media' || path.startsWith('/media/')) {
             return;
         }
 
-        if (path === CONFIG_FILENAME || path === CHAT_FILENAME) {
+        if (path === CONFIG_PATH || path === CHAT_PATH) {
             return;
         }
 
@@ -675,7 +651,7 @@ function renderSidebar(focusDir = '') {
 
     const groupedDirs = new Set(['_read_', '_watch_', '_shop_', 'journal', 'habits', 'insights', 'archive', 'today', 'later']);
     for (const dir in dirNodes) {
-        if (dir === '' || dir === 'media' || groupedDirs.has(dir)) continue;
+        if (dir === '/' || dir === 'media' || groupedDirs.has(dir)) continue;
 
         const dirNode = dirNodes[dir];
         if (dirNode && dirNode.parent === root) {
@@ -738,7 +714,7 @@ async function showRandomFile() {
     const allFiles = [];
     for (let dir in excludeDirs(SYSTEM_DIRS)) {
         for (let file in files[dir]) {
-            if (file === CONFIG_FILENAME) {
+            if (file === CONFIG_PATH) {
                 continue;
             }
 
@@ -890,7 +866,7 @@ window.addEventListener('keydown', async (event) => {
 
         let dir = currentEditor.currentDir;
         let filename = currentEditor.currentFile;
-        if (filename === CHAT_FILENAME) {
+        if (filename === CHAT_PATH) {
             return;
         }
 
@@ -1049,15 +1025,19 @@ async function openDir() {
     if (Object.keys(files).length === 0) {
         const hotkeysFilename = '🎹 Hotkeys.md';
         await saveTextFile(hotkeysFilename, HOTKEYS_CONTENT);
-        files[''] = {};
-        files[''][hotkeysFilename] = {
+        files = {};
+        files[hotkeysFilename] = {
+            path: hotkeysFilename,
+            isFile: true,
             lastModified: 0,
             handle: await getFileHandle(hotkeysFilename),
         }
 
         const welcomeFilename = '🪴 Welcome.md';
         await saveTextFile(welcomeFilename, WELCOME_CONTENT);
-        files[''][welcomeFilename] = {
+        files[welcomeFilename] = {
+            path: welcomeFilename,
+            isFile: true,
             lastModified: 0,
             handle: await getFileHandle(welcomeFilename),
         }
@@ -1281,7 +1261,7 @@ function findNextFile(currentDir, currentFilename) {
     // Collect all files except system files
     for (let dir in files) {
         for (let file in files[dir]) {
-            if (file === CONFIG_FILENAME || file === CHAT_FILENAME) {
+            if (file === CONFIG_PATH || file === CHAT_PATH) {
                 continue;
             }
             allFiles.push({dir, filename: file});

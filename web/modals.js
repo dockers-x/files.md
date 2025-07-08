@@ -244,10 +244,10 @@ class SearchModal {
         list.innerHTML = '';
 
         results.forEach(({dir, filename}, index) => {
-            if (filename === CONFIG_FILENAME) {
+            if (filename === CONFIG_PATH) {
                 return;
             }
-            if (this.messageIndex !== null && filename === CHAT_FILENAME) {
+            if (this.messageIndex !== null && filename === CHAT_PATH) {
                 return;
             }
 
@@ -346,7 +346,7 @@ class SearchModal {
     showRootFiles() {
         let results = [];
         for (const filename of Object.keys(files[''])) {
-            if (filename === CONFIG_FILENAME) {
+            if (filename === CONFIG_PATH) {
                 continue;
             }
             results.push({

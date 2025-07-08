@@ -1,6 +1,6 @@
 // Global variables
 let messages = [];
-const CHAT_FILENAME = 'Chat.txt';
+const CHAT_PATH = '/Chat.txt';
 let chatIsClean = true; // Are there any unsaved changes?
 
 const chat = document.getElementById('chat');
@@ -13,13 +13,14 @@ async function openChat() {
     chatContainer.style.display = 'flex';
     chatButton.classList.add('hidden');
 
-    if (editor.currentFile !== CHAT_FILENAME) {
-        const state = {dir: editor.currentDir, file: editor.currentFile};
+    if (editor.path !== CHAT_PATH) {
+        const state = {path: editor.path};
         history.pushState(state, '');
     }
 
     editor.currentDir = "";
-    editor.currentFile = CHAT_FILENAME;
+    editor.currentFile = CHAT_PATH;
+    editor.path = CHAT_PATH;
 
     const codemirror = document.querySelector('.CodeMirror-wrap');
     codemirror.style.display = 'none';
@@ -185,13 +186,13 @@ function formatFileContent(messages) {
 
 async function loadData() {
     try {
-        const file = await ((await getFileHandle(CHAT_FILENAME, true)).getFile());
+        const file = await ((await getFileHandle(CHAT_PATH, true)).getFile());
         const content = await file.text();
 
         // Parse the content and load messages
         messages = parseFileContent(content);
 
-        console.log(`Loaded ${messages.length} messages from ${CHAT_FILENAME}`);
+        console.log(`Loaded ${messages.length} messages from ${CHAT_PATH}`);
     } catch (error) {
         console.error('Error loading data:', error);
         // Initialize with empty data if file doesn't exist or can't be read
@@ -249,7 +250,7 @@ async function send() {
 
 async function receive(val) {
     let isChatModal = document.getElementById('chat-container').classList.contains('modal');
-    if (!isChatModal && editor.currentFile !== CHAT_FILENAME) {
+    if (!isChatModal && editor.currentFile !== CHAT_PATH) {
         return;
     }
 
@@ -257,9 +258,9 @@ async function receive(val) {
     renderMessages();
     scrollToBottom();
 
-    let file = await ((await getFileHandle(CHAT_FILENAME)).getFile());
+    let file = await ((await getFileHandle(CHAT_PATH)).getFile());
     // TODO inmemory lastmodified should be reloaded
-    if (currentEditor !== null && currentEditor.currentFile === CHAT_FILENAME) {
+    if (currentEditor !== null && currentEditor.path === CHAT_PATH) {
         files[currentEditor.currentDir][currentEditor.currentFile].lastModified = file.lastModified;
     }
     chatIsClean = true;
@@ -768,7 +769,7 @@ function getRecentlyModifiedFiles() {
     if (!files || typeof files !== 'object') return [];
 
     return Object.entries(files)
-        .filter(([filename, content]) => filename && content && filename !== CHAT_FILENAME && filename !== CONFIG_FILENAME)
+        .filter(([filename, content]) => filename && content && filename !== CHAT_PATH && filename !== CONFIG_PATH)
         .sort(([, a], [, b]) => {
             return new Date(b.lastModified || 0) - new Date(a.lastModified || 0);
         })

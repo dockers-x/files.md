@@ -13,7 +13,7 @@ let isLoadingLocalFiles = false;
 
 // In-memory mapping of local file system:
 // {
-//   'dir': [
+//   'dir/': [
 //     {
 //       'filename': [
 //         {
@@ -33,7 +33,7 @@ let serverFiles = {files: {}, media: {}, timestamps: {}, mediaTimestamp: 0};
 const SERVER_STORAGE_KEY = 'files';
 const SUPPORTED_EXTENSIONS = ['md', 'txt', 'png', 'jpg', 'jpeg', 'webp', 'gif',];
 const SYSTEM_DIRS = ['media', 'archive', '_read_', '_watch_', '_shop_', 'today', 'later', 'journal', 'habits', 'triggers', 'places', 'insights'];
-const CONFIG_FILENAME = 'config.json';
+const CONFIG_PATH = '/config.json';
 
 // Returns files in flattened structure:
 // {
@@ -59,7 +59,7 @@ async function loadLocalFiles(rootDirHandle) {
     let newFiles = {};
 
     // Loads files recursively
-    async function loadDir(dirHandle, path = '', depth = 3) {
+    async function loadDir(dirHandle, path = '/', depth = 3) {
         const entries = [];
         for await (const entry of dirHandle.values()) {
             entries.push(entry);
@@ -71,12 +71,12 @@ async function loadLocalFiles(rootDirHandle) {
             const filename = entry.name.normalize('NFC');
 
             let isSupportedExtension = SUPPORTED_EXTENSIONS.includes(filename.split('.').pop());
-            let isConfig = filename === CONFIG_FILENAME;
+            let isConfig = filename === CONFIG_PATH;
             if (entry.kind === 'directory') {
                 if (filename.startsWith('.') || depth >= 5) continue;
 
                 const dir = `${path}${filename}/`;
-                newFiles[filename] = {};
+                newFiles[filename + '/'] = {};
                 dirPromises.push({handle: entry, dir, depth: depth + 1});
             } else if (entry.kind === 'file' && (isSupportedExtension || isConfig)) {
                 let dirs = path.split('/');
@@ -911,7 +911,7 @@ function saveServerFiles() {
 }
 
 // TODO save old file
-async function openFile(dir, filename, saveToHistory = true, el = 'editor-textarea') {
+async function openFile(path, saveToHistory = true, el = 'editor-textarea') {
     if (el === 'editor-textarea') {
         currentEditor = editor;
     } else if (el === 'editor2-textarea') {
@@ -920,7 +920,7 @@ async function openFile(dir, filename, saveToHistory = true, el = 'editor-textar
 
     await syncCurrentFile(false);
 
-    if (dir === '' && filename === CHAT_FILENAME) {
+    if (path === CHAT_PATH) {
         openChat();
         return;
     } else {
@@ -958,6 +958,7 @@ async function openFile(dir, filename, saveToHistory = true, el = 'editor-textar
 
     currentEditor.currentDir = dir;
     currentEditor.currentFile = filename;
+    currentEditor.path = path;
     // TODO disable when syncing?
     if (saveToHistory) {
         const state = {dir: dir, file: filename};
@@ -974,8 +975,8 @@ async function openFile(dir, filename, saveToHistory = true, el = 'editor-textar
         showEditor2();
     }
 
-    currentEditor.currentDir = dir;
-    currentEditor.currentFile = filename;
+    // currentEditor.currentDir = dir;
+    // currentEditor.currentFile = filename;
     currentEditor.getDoc().setValue(content);
     currentEditor.clearHistory();
     currentEditor.markClean();
@@ -1008,7 +1009,6 @@ async function openFile(dir, filename, saveToHistory = true, el = 'editor-textar
 // 2) Sync it with the server
 // TODO add hash of last read file comparison, merge on conflict (in which scenarious in can happen tho?)
 async function syncCurrentFile(syncWithServer = true) {
-    // TODO rem
     return;
     if (files === undefined || isWelcome || debug || currentEditor.currentFile === undefined) {
         return;
@@ -1037,7 +1037,7 @@ async function syncCurrentFile(syncWithServer = true) {
     }
 
     // Track in-editor renaming.
-    if (filename !== CHAT_FILENAME) {
+    if (filename !== CHAT_PATH) {
         try {
             // TODO track if no first line?
             const firstLine = currentEditor.getValue().split('\n')[0];
@@ -1111,12 +1111,12 @@ async function syncCurrentFile(syncWithServer = true) {
         }
     }
 
-    if (filename === CHAT_FILENAME) {
+    if (filename === CHAT_PATH) {
         // Try to load local changes.
         if (chatIsClean) {
             try {
                 let inMemoryLastModified = files[dir]?.[filename]?.lastModified;
-                let file = await ((await getFileHandle(CHAT_FILENAME)).getFile());
+                let file = await ((await getFileHandle(CHAT_PATH)).getFile());
                 let localLastModified = file.lastModified;
                 // TODO inmemory lastmodified should be reloaded
                 files[dir][filename].lastModified = localLastModified;
@@ -1289,6 +1289,58 @@ async function post(endpoint, data) {
         return null;
     }
 }
+
+function walk(obj, callback, path = '/') {
+    for (const key in obj) {
+        const item = obj[key];
+        const fullPath = path + key;
+
+        if (item.isFile) {
+            callback(fullPath, item, true);
+        } else {
+            callback(fullPath, item, false);
+            walk(item, callback, fullPath + '/');
+        }
+    }
+}
+
+function toDirAndFilename(path) {
+    let parts = path.split('/');
+    parts = parts.filter(p => p !== '');
+
+    const filename = parts.pop();
+    let dirPath = '/' + parts.join('/');
+    return { dirPath, filename };
+}
+
+function toFilename(path) {
+    let parts = path.split('/');
+    parts = parts.filter(p => p !== '');
+
+    return parts.pop();
+}
+
+// Gets a file from memory by its path.
+function getMemFile(path) {
+    if (files === undefined) {
+        return null;
+    }
+
+    let dirs = path.split('/');
+    dirs = dirs.filter(d => d !== '');
+    const filename = dirs.pop();
+
+    let currentDir = files['/'];
+    for (const dir of dirs) {
+        if (!currentDir[dir]) {
+            return null;
+        }
+        currentDir = currentDir[dir];
+    }
+
+    return currentDir[filename] || null;
+}
+
 
 window.addEventListener('beforeunload', function () {
     // clearInterval(window.loader);
