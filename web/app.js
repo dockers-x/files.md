@@ -782,8 +782,8 @@ window.addEventListener('keydown', async (event) => {
         event.preventDefault();
         event.stopPropagation();
 
-        let dir = editor.currentDir;
-        let filename = editor.currentFile;
+        let dir = currentEditor.currentDir;
+        let filename = currentEditor.currentFile;
         if (filename === CHAT_FILENAME) {
             return;
         }
@@ -793,7 +793,11 @@ window.addEventListener('keydown', async (event) => {
         let oldPath = toPath(dir, filename);
         let newPath = toPath('archive', filename);
 
-        await moveFile(oldPath, newPath);
+        if (dir === 'archive') {
+            await removeFile(oldPath);
+        } else {
+            await moveFile(oldPath, newPath);
+        }
 
         await renderSidebar();
         if (nextFile) {
