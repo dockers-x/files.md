@@ -8,6 +8,14 @@ test.beforeEach(async ({page}) => {
 });
 
 test('send message to chat', async ({ page }) => {
+    const consoleMessages = [];
+    page.on('console', msg => {
+        consoleMessages.push({
+            type: msg.type(),
+            text: msg.text()
+        });
+    });
+
     await page.evaluate(() => {
         window.getRootDirHandle = async function() {
             const root = await navigator.storage.getDirectory();
@@ -22,14 +30,17 @@ test('send message to chat', async ({ page }) => {
     });
 
     await page.waitForSelector('#chat');
-    await page.waitForTimeout(300);
-
     await page.keyboard.type('My message');
+    // TODO I believe chat is reloaded 2 times for some reason, it blinks, and thus removes previous message
+    // Or wait for timeout before typing message doesn't help hmm
+    await page.waitForTimeout(1300);
     await page.keyboard.press('Enter');
+
 
     await page.waitForSelector('.message');
     let content = await page.textContent('.message-content')
     expect(content).toBe('My message');
+
 });
 
 test('send message to chat and move to recent file', async ({ page }) => {
@@ -51,6 +62,9 @@ test('send message to chat and move to recent file', async ({ page }) => {
     await page.waitForTimeout(300);
 
     await page.keyboard.type('My message');
+    // TODO I believe chat is reloaded 2 times for some reason, it blinks, and thus removes previous message
+    // Or wait for timeout before typing message doesn't help hmm
+    await page.waitForTimeout(1300);
     await page.keyboard.press('Enter');
 
     await page.waitForSelector('.message');

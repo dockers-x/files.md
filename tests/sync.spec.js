@@ -245,6 +245,8 @@ test('delete files on client will propagate to server as well', async ({ page })
 
     await setup(page);
 
+    await page.waitForTimeout(300);
+
     await clickAndExpectContent(page, 'Notes', '# Notes\nSome Text');
     await clickAndExpectContent(page, 'README', '# README\nHello world');
 
