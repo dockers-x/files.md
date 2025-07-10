@@ -188,7 +188,7 @@ class SearchModal {
         const uniqueResultsMap = new Map();
         for (let i = 0; i < results.length; i++) {
             const item = results[i];
-            const key = `${item.filename}-${item.dir}`;
+            const key = item.path;
 
             if (!uniqueResultsMap.has(key) || uniqueResultsMap.get(key).score < item.score) {
                 uniqueResultsMap.set(key, item);
@@ -289,7 +289,6 @@ class SearchModal {
             }
             listItem.setAttribute('data-path', path);
             listItem.setAttribute('data-index', index);
-
             listItem.onclick = () => this.handleClick(path);
 
             listItem.onmouseenter = () => {
@@ -318,7 +317,7 @@ class SearchModal {
                 messagesToRemove = [btn.closest('.message')];
             }
 
-            const {dirPath, filename} = toDirPathAndFilename()
+            const {dirPath, filename} = toDirPathAndFilename(path)
             // TODO multidir check dirPath
             sendCmd('mvn', [filename, dirPath, indices.join(',')]);
             messagesToRemove.forEach(message => {
@@ -339,8 +338,8 @@ class SearchModal {
     handleEnterKey() {
         const resultsList = document.getElementById('search-results').querySelectorAll('li');
         if (resultsList[this.focusedIndex]) {
-            const [dir, filename] = resultsList[this.focusedIndex].getAttribute('data-path').split('/');
-            this.handleClick(dir, filename);
+            const path = resultsList[this.focusedIndex].getAttribute('data-path');
+            this.handleClick(path);
         }
     }
 
@@ -375,12 +374,17 @@ class SearchModal {
 
     showRootFiles() {
         let results = [];
-        for (const filename of Object.keys(files[''])) {
-            if (filename === CONFIG_PATH) {
+        for (const filename of Object.keys(files)) {
+            if (filename.endsWith('/')) {
                 continue;
             }
+
+            if (filename === toFilename(CONFIG_PATH)) {
+                continue;
+            }
+
             results.push({
-                dir: '', filename, lastModified: files[''][filename].lastModified,
+                path: '/' + filename, lastModified: files[filename].lastModified,
             });
         }
 
