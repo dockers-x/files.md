@@ -134,11 +134,11 @@ function renderSidebar(focusDir = '') {
 
     for (let i = 0; i < groups.length; i++) {
         const dirList = groups[i];
-        const existingDirs = dirList.filter(dir => dirNodes[dir]);
+        const existingDirs = dirList.filter(dir => dirNodes['/' + dir]);
         if (existingDirs.length === 0) continue;
 
         existingDirs.forEach((dir, index) => {
-            const dirNode = dirNodes[dir];
+            const dirNode = dirNodes['/' + dir];
             if (dirNode && dirNode.parent === root) {
                 root.removeChild(dirNode);
                 if (index === existingDirs.length - 1) {
