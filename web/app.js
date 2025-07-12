@@ -808,7 +808,14 @@ window.addEventListener('popstate', (event) => {
 });
 
 async function openDir() {
-    let dirHandle = await window.showDirectoryPicker({'mode': 'readwrite'});
+    let dirHandle = null;
+    try {
+        dirHandle = await window.showDirectoryPicker({'mode': 'readwrite'});
+    } catch (error) {
+        if (error instanceof TypeError) {
+            alert('Only works in Chrome!');
+        }
+    }
     document.getElementById('open-folder').style.display = 'none';
 
     // TODO check that permissions are given?
