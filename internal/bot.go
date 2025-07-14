@@ -990,7 +990,7 @@ func (b *Bot) ShowToday(_ []string) error {
 		}
 
 		cmd := tg.NewCmd(consts.CmdCompleteFromChat, []string{strconv.Itoa(msgIndex)})
-		btn := tg.NewBtn(txt.Emoji(i18n.Emoji(block), block), cmd)
+		btn := tg.NewBtn(txt.Emoji(i18n.Emoji("chat"), block), cmd)
 		kb.AddRow(btn)
 
 		msgIndex++
