@@ -716,15 +716,19 @@ body.dragging * {
 }
 
 .sidebar-blink {
-    animation: sidebar-highlight 2.5s ease-out;
+    animation: sidebar-highlight 4s ease-out;
 }
 
 @keyframes sidebar-highlight {
-    0% { color: var(--col-link); background-color: var(--col-bg-active); opacity: 0.8; }
-    25% { color: var(--col-link); background-color: var(--col-bg-active); opacity: 0.4; }
-    50% { color: var(--col-link);  background-color: var(--col-bg-active); opacity: 0.8; }
-    75% { color: var(--col-link);  background-color: var(--col-bg-active); opacity: 0.4; }
-    100% { color: var(--col-link); background-color: transparent; opacity: 1; }
+    0% { color: var(--col-link); background-color: var(--col-bg-active); opacity: 1; }
+    20% { color: var(--col-link); background-color: var(--col-bg-active); opacity: 0.7; }
+    25% { color: var(--col-link); background-color: var(--col-bg-active); opacity: 0.5; }
+    30% { color: var(--col-link); background-color: var(--col-bg-active); opacity: 0.7; }
+    45% { color: var(--col-link); background-color: var(--col-bg-active); opacity: 1; }
+    50% { color: var(--col-link); background-color: var(--col-bg-active); opacity: 0.5; }
+    55% { color: var(--col-link); background-color: var(--col-bg-active); opacity: 0.7; }
+    75% { color: var(--col-link); background-color: var(--col-bg-active); opacity: 1; }
+    100% { color: var(--col-link); background-color: var(--col-bg-active); opacity: 1; }
 }
 
 /*.tj_container li ul li ul li .tj_description {*/
