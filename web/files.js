@@ -570,6 +570,7 @@ async function collectModifiedAndDeletedFiles() {
             .then(result => {
                 if (result.status === 'modified' || result.status === 'new') {
                     modifiedFiles.push(result);
+                    existingFiles[result.path] = true;
                 }
 
                 if (result.status !== 'error') {
