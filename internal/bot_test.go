@@ -1568,6 +1568,7 @@ func TestShowMoveTo(t *testing.T) {
 			{Name: "💚 To Journal", Cmd: tg.Cmd{Name: "mv_to_journal", Params: []string{"0"}, Type: "cmd"}},
 			{Name: "➡️ To Today", Cmd: tg.Cmd{Name: "mv", Params: []string{"c5e7dfaf771", "0"}, Type: "cmd"}},
 		},
+		[]tg.Btn{{Name: "👌", Cmd: tg.Cmd{Name: "today", Params: []string{}, Type: "cmd"}}},
 	},
 	)
 	r.Equal(kb, tgram.LastSentKeyboard)
@@ -2516,6 +2517,9 @@ func TestSaveToNewTask(t *testing.T) {
 			tg.NewBtn("💚 To Journal", tg.NewCmd("mv_to_journal", []string{"0"})),
 			tg.NewBtn("➡️ To Today", tg.NewCmd("mv", []string{"c5e7dfaf771", "0"})),
 		),
+		tg.NewRow(
+			tg.NewBtn("👌", tg.NewCmd("today", []string{})),
+		),
 	})
 	r.Equal(kb, tgram.LastSentKeyboard)
 
@@ -2586,6 +2590,9 @@ func TestSaveToExistingFile(t *testing.T) {
 			tg.NewBtn("📄 To File", tg.NewCmd("to_file", []string{"1"})),
 			tg.NewBtn("💚 To Journal", tg.NewCmd("mv_to_journal", []string{"1"})),
 			tg.NewBtn("➡️ To Today", tg.NewCmd("mv", []string{"c5e7dfaf771", "1"})),
+		),
+		tg.NewRow(
+			tg.NewBtn("👌", tg.NewCmd("today", []string{})),
 		),
 	})
 	r.Equal(kb, tgram.LastSentKeyboard)
@@ -2674,6 +2681,9 @@ func TestSaveToExistingFileModeTasks(t *testing.T) {
 			tg.NewBtn("📄 To File", tg.NewCmd("to_file", []string{"1"})),
 			tg.NewBtn("💚 To Journal", tg.NewCmd("mv_to_journal", []string{"1"})),
 			tg.NewBtn("➡️ To Today", tg.NewCmd("mv", []string{"c5e7dfaf771", "1"})),
+		),
+		tg.NewRow(
+			tg.NewBtn("👌", tg.NewCmd("today", []string{})),
 		),
 	})
 	r.Equal(kb, tgram.LastSentKeyboard)
@@ -2764,6 +2774,9 @@ func TestSaveToNewFile(t *testing.T) {
 			tg.NewBtn("💚 To Journal", tg.NewCmd("mv_to_journal", []string{"1"})),
 			tg.NewBtn("➡️ To Today", tg.NewCmd("mv", []string{"c5e7dfaf771", "1"})),
 		),
+		tg.NewRow(
+			tg.NewBtn("👌", tg.NewCmd("today", []string{})),
+		),
 	})
 	r.Equal(kb, tgram.LastSentKeyboard)
 
@@ -2845,6 +2858,9 @@ func TestSaveToNewDirFull(t *testing.T) {
 			tg.NewBtn("📄 To File", tg.NewCmd("to_file", []string{"0"})),
 			tg.NewBtn("💚 To Journal", tg.NewCmd("mv_to_journal", []string{"0"})),
 			tg.NewBtn("➡️ To Today", tg.NewCmd("mv", []string{"c5e7dfaf771", "0"})),
+		),
+		tg.NewRow(
+			tg.NewBtn("👌", tg.NewCmd("today", []string{})),
 		),
 	})
 	r.Equal(kb, tgram.LastSentKeyboard)
@@ -2932,6 +2948,9 @@ func TestSaveToNewDir(t *testing.T) {
 			tg.NewBtn("📄 To File", tg.NewCmd("to_file", []string{"0"})),
 			tg.NewBtn("💚 To Journal", tg.NewCmd("mv_to_journal", []string{"0"})),
 			tg.NewBtn("➡️ To Today", tg.NewCmd("mv", []string{"c5e7dfaf771", "0"})),
+		),
+		tg.NewRow(
+			tg.NewBtn("👌", tg.NewCmd("today", []string{})),
 		),
 	})
 	r.Equal(kb, tgram.LastSentKeyboard)
@@ -3022,6 +3041,9 @@ func TestSaveToNewMultilineFile(t *testing.T) {
 			tg.NewBtn("💚 To Journal", tg.NewCmd("mv_to_journal", []string{"0"})),
 			tg.NewBtn("➡️ To Today", tg.NewCmd("mv", []string{"c5e7dfaf771", "0"})),
 		),
+		tg.NewRow(
+			tg.NewBtn("👌", tg.NewCmd("today", []string{})),
+		),
 	})
 	r.Equal(kb, tgram.LastSentKeyboard)
 
@@ -3105,6 +3127,9 @@ func TestSaveToNewCustomFile(t *testing.T) {
 			tg.NewBtn("💚 To Journal", tg.NewCmd("mv_to_journal", []string{"0"})),
 			tg.NewBtn("➡️ To Today", tg.NewCmd("mv", []string{"c5e7dfaf771", "0"})),
 		),
+		tg.NewRow(
+			tg.NewBtn("👌", tg.NewCmd("today", []string{})),
+		),
 	})
 	r.Equal(kb, tgram.LastSentKeyboard)
 
@@ -3187,6 +3212,9 @@ func TestSaveToRecentFile(t *testing.T) {
 			tg.NewBtn("💚 To Journal", tg.NewCmd("mv_to_journal", []string{"0"})),
 			tg.NewBtn("➡️ To Today", tg.NewCmd("mv", []string{"c5e7dfaf771", "0"})),
 		),
+		tg.NewRow(
+			tg.NewBtn("👌", tg.NewCmd("today", []string{})),
+		),
 	})
 	r.Equal(kb, tgram.LastSentKeyboard)
 
@@ -3234,6 +3262,7 @@ func TestSaveToRecentFile(t *testing.T) {
 		),
 		tg.NewRow(
 			tg.NewBtn("➡️ To Today", tg.NewCmd("mv", []string{"c5e7dfaf771", "0"})),
+			tg.NewBtn("👌", tg.NewCmd("today", []string{})),
 		),
 	})
 	r.Equal(kb, tgram.LastSentKeyboard)

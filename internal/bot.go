@@ -876,9 +876,13 @@ func (b *Bot) showMoveTo(params []string) error {
 		userMoveToBtns = append(userMoveToBtns, *recentBtn)
 	}
 
-	cmd := tg.NewCmd(consts.CmdMoveToExistingDir, []string{fs.Hash(fs.DirToday), msgIndexStr})
-	label := txt.Emoji(i18n.Emoji("move"), i18n.Tr("To Today"))
-	userMoveToBtns = append(userMoveToBtns, tg.NewBtn(label, cmd))
+	toTodayCmd := tg.NewCmd(consts.CmdMoveToExistingDir, []string{fs.Hash(fs.DirToday), msgIndexStr})
+	toTodayLabel := txt.Emoji(i18n.Emoji("move"), i18n.Tr("To Today"))
+	userMoveToBtns = append(userMoveToBtns, tg.NewBtn(toTodayLabel, toTodayCmd))
+
+	showTodayCmd := tg.NewCmd(consts.CmdShowToday, []string{})
+	showTodayLabel := "👌"
+	userMoveToBtns = append(userMoveToBtns, tg.NewBtn(showTodayLabel, showTodayCmd))
 
 	userBtnsByRows := slice.Chunk(userMoveToBtns, btnsPerRow)
 	for _, row := range userBtnsByRows {
