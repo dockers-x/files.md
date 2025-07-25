@@ -25,8 +25,9 @@ func LoadEmojiFile() {
 	}
 }
 
+// AddEmoji adds auto emoji to a string based on keywords.
 // TODO add split to spaces etc
-func Emojify(str string) string {
+func AddEmoji(str string) string {
 	emoji := Emoji(str)
 	if len(emoji) == 0 {
 		return str

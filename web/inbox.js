@@ -642,7 +642,7 @@ function attachEventListeners() {
                 messagesToRemove = [btn.closest('.message')];
             }
 
-            sendCmd('mv', ['today', indices.join(',')]);
+            sendCmd('add_item', [toFilename(TODAY_PATH), indices.join(',')]);
             messagesToRemove.forEach(message => {
                 message.classList.add('removing');
                 setTimeout(() => {

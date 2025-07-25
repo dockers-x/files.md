@@ -250,13 +250,14 @@ func (b *Bot) handlers() map[string]func([]string) error {
 		consts.CmdShowMultilineTask:           b.showMultilineTask,
 		consts.CmdShowFile:                    b.showFile,
 		consts.CmdShowChecklist:               b.showChecklist,
-		consts.CmdCompleteChecklistItem:       b.completeChecklistItem,
+		consts.CmdCompleteListItem:            b.completeListItem,
 		consts.CmdShowChecklistItem:           b.showChecklistItem,
 		consts.CmdShowScheduleForDay:          b.showToADay,
 		consts.CmdShowMoveToDirOrFile:         b.showMoveToFileOrDir,
 		consts.CmdShowMoveToChecklist:         b.showToChecklist,
 		consts.CmdMoveToExistingDir:           b.moveToDir,
 		consts.CmdMoveToChecklist:             b.moveToChecklist,
+		consts.CmdCompleteChecklistItem:       b.completeChecklistItem,
 		consts.CmdMoveToExistingDirFromToday:  b.moveToDirFromToday,
 		consts.CmdRequestNewDir:               b.requestNewDirName,
 		consts.CmdMoveToNewDir:                b.moveToNewDir,
@@ -1006,7 +1007,7 @@ func (b *Bot) ShowToday(_ []string) error {
 		kb.AddRow(btn)
 	}
 
-	// Adding tasks from today.txt
+	// Adding tasks from Today.txt
 	todayChecklistMD, err := b.fs.Read(fs.DirRoot, fs.TodayFilename)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("show today: can't read today file: %w", err)
@@ -1018,8 +1019,8 @@ func (b *Bot) ShowToday(_ []string) error {
 				continue
 			}
 
-			cmd := tg.NewCmd(consts.CmdComplete, []string{fs.Hash(item)})
-			btn := tg.NewBtn(txt.Emoji(i18n.Emoji("check"), item), cmd)
+			cmd := tg.NewCmd(consts.CmdCompleteChecklistItem, []string{fs.Hash(fs.TodayFilename), fs.Hash(item)})
+			btn := tg.NewBtn(i18n.AddEmoji(item), cmd)
 			kb.AddRow(btn)
 		}
 	}
@@ -1098,7 +1099,7 @@ func (b *Bot) showLaterTasks(_ []string) error {
 	var kb tg.Keyboard
 	for _, file := range files {
 		var btn tg.Btn
-		name := i18n.Emojify(fs.UnsanitizeFilename(file.Title))
+		name := i18n.AddEmoji(fs.UnsanitizeFilename(file.Title))
 		if file.IsMultiline {
 			cmd := tg.NewCmd(consts.CmdShowMultilineTask, []string{fs.DirLater, fs.Hash(file.Name)})
 			btn = tg.NewBtn(txt.Emoji(i18n.Emoji("eyes"), fs.UnsanitizeFilename(file.Title)), cmd)
@@ -1231,7 +1232,7 @@ func (b *Bot) showChecklists(_ []string) error {
 	var kb tg.Keyboard
 	for _, checklist := range checklists {
 		cmd := tg.NewCmd(consts.CmdShowChecklist, []string{fs.Hash(checklist.Name)})
-		btn := tg.NewBtn(i18n.Emojify(checklistTitle(checklist.Name)), cmd)
+		btn := tg.NewBtn(i18n.AddEmoji(checklistTitle(checklist.Name)), cmd)
 
 		kb.AddRow(btn)
 	}
@@ -1563,19 +1564,19 @@ func (b *Bot) showChecklist(params []string) error {
 			title := txt.Emoji(i18n.Emoji("eyes"), fs.UnsanitizeFilename(item.Title))
 			kb.AddRow(tg.NewBtn(title, tg.NewCmd(consts.CmdShowChecklistItem, []string{dirHash, item.Hash})))
 		} else {
-			title := i18n.Emojify(fs.UnsanitizeFilename(item.Title))
-			kb.AddRow(tg.NewBtn(title, tg.NewCmd(consts.CmdCompleteChecklistItem, []string{dirHash, item.Hash})))
+			title := i18n.AddEmoji(fs.UnsanitizeFilename(item.Title))
+			kb.AddRow(tg.NewBtn(title, tg.NewCmd(consts.CmdCompleteListItem, []string{dirHash, item.Hash})))
 		}
 	}
 	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(consts.CmdShowToday, nil)))
 
 	title := checklistTitle(checklist)
 	if checklist == fs.DirRead {
-		title = i18n.Tr(i18n.Emojify("Reading List"))
+		title = i18n.Tr(i18n.AddEmoji("Reading List"))
 	} else if checklist == fs.DirWatch {
-		title = i18n.Tr(i18n.Emojify("Watchlist"))
+		title = i18n.Tr(i18n.AddEmoji("Watchlist"))
 	} else if checklist == fs.DirShop {
-		title = i18n.Tr(i18n.Emojify("Shopping List"))
+		title = i18n.Tr(i18n.AddEmoji("Shopping List"))
 	}
 	err = b.showHTML(title+wideSpacer, kb)
 	if err != nil {
@@ -1738,13 +1739,13 @@ func (b *Bot) moveToChecklist(params []string) error {
 	checklist, err := b.fs.Unhash(fs.DirRoot, toChecklistHash)
 	// Create known checklist if it doesn't exist
 	if err != nil {
-		if fs.Hash(fs.TodayFilename) == toChecklistHash {
+		if fs.Hash(fs.TodayFilename) == toChecklistHash || fs.TodayFilename == toChecklistHash {
 			checklist = fs.TodayFilename
 			err = b.fs.Write(fs.DirRoot, checklist, "")
 			if err != nil {
 				return fmt.Errorf("move to checklist: can't create today checklist: %w", err)
 			}
-		} else if fs.Hash(fs.LaterFilename) == toChecklistHash {
+		} else if fs.Hash(fs.LaterFilename) == toChecklistHash || fs.LaterFilename == toChecklistHash {
 			checklist = fs.LaterFilename
 			err = b.fs.Write(fs.DirRoot, checklist, "")
 			if err != nil {
@@ -1765,6 +1766,30 @@ func (b *Bot) moveToChecklist(params []string) error {
 	}, true, msgIndices...)
 	if err != nil {
 		return fmt.Errorf("move to checklist: can't move from chat: %w", err)
+	}
+
+	return b.ShowToday(nil)
+}
+
+func (b *Bot) completeChecklistItem(params []string) error {
+	checklistHash := params[0]
+	itemHash := params[1]
+
+	checklist, err := b.fs.Unhash(fs.DirRoot, checklistHash)
+	if err != nil {
+		return fmt.Errorf("complete checklist item: can't unhash checklist %s: %w", checklistHash, err)
+	}
+
+	checklistMD, err := b.fs.Read(fs.DirRoot, checklist)
+	if err != nil {
+		return fmt.Errorf("complete checklist item: can't read checklist %s: %w", checklist, err)
+	}
+
+	md := txt.CompleteChecklistItem(checklistMD, itemHash)
+	err = b.fs.Write(fs.DirRoot, checklist, md)
+
+	if err != nil {
+		return fmt.Errorf("complete checklist item: can't complete item from chat: %w", err)
 	}
 
 	return b.ShowToday(nil)
@@ -2222,7 +2247,7 @@ func (b *Bot) completeFromChat(params []string) error {
 	return b.ShowToday(nil)
 }
 
-func (b *Bot) completeChecklistItem(params []string) error {
+func (b *Bot) completeListItem(params []string) error {
 	dirHash := params[0]
 	filenameHash := params[1]
 
@@ -2277,7 +2302,7 @@ func (b *Bot) showChecklistItem(params []string) error {
 	kb := tg.NewKeyboard([]tg.Row{
 		tg.NewRow(
 			tg.NewBtn(i18n.StrBack, tg.NewCmd(consts.CmdShowChecklist, []string{dirHash})),
-			tg.NewBtn(i18n.StrComplete, tg.NewCmd(consts.CmdCompleteChecklistItem, []string{dirHash, filenameHash})),
+			tg.NewBtn(i18n.StrComplete, tg.NewCmd(consts.CmdCompleteListItem, []string{dirHash, filenameHash})),
 		),
 	})
 

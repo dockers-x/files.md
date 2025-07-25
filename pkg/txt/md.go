@@ -1,6 +1,8 @@
 package txt
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"regexp"
 	"strings"
 )
@@ -50,7 +52,20 @@ func AddChecklistItem(md, item string, checked bool) string {
 	} else {
 		md += "\n- [ ] " + item
 	}
-	return md
+
+	return strings.TrimSpace(md)
+}
+
+func CompleteChecklistItem(md, itemHash string) string {
+	lines := strings.Split(md, "\n")
+	for i, line := range lines {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "- [ ] ") && Hash(line[6:]) == itemHash {
+			lines[i] = "- [x] " + line[6:]
+		}
+	}
+
+	return strings.Join(lines, "\n")
 }
 
 func RemoveChecklistItem(md, item string) string {
@@ -247,4 +262,9 @@ func notMarkdown() parser {
 		}
 		return nil
 	}
+}
+
+func Hash(filename string) string {
+	hash := md5.Sum([]byte(filename))
+	return hex.EncodeToString(hash[:])[:11]
 }

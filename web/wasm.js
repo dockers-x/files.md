@@ -167,6 +167,7 @@ document.body.addEventListener('click', function (e) {
 
 async function read(args) {
     let path = args[0];
+
     let fileHandle = await getFileHandle(path)
     let file = await fileHandle.getFile();
 

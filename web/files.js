@@ -1101,12 +1101,13 @@ async function openFile(path, saveToHistory = true, el = 'editor-textarea') {
     }
 
     let filename = toFilename(path);
-    const header = filename.replace(/\.md$/, '').replace(/^\w/, (c) => c.toUpperCase());
+    // const header = filename.replace(/\.md$/, '').replace(/^\w/, (c) => c.toUpperCase());
+    const header = toHeader(filename)
     let content = '';
     if (memFile.handle !== undefined) {
         const file = await memFile.handle.getFile();
         content = await file.text();
-        content = `# ${header}\n${content}`;
+        content = `${header}\n${content}`;
     } else {
         // We use welcome's files
         content = memFile.content;
@@ -1205,6 +1206,7 @@ async function syncCurrentFile(syncWithServer = true) {
             let newFilename = ucfirst(fromHeaderToFilename(firstLine));
             // If filename is empty, generate an available "Untitled" name
             // TODO check for forbidden filename chars
+            // TODO We don't handle txt renaming here
             let hasEmptyName = newFilename.trim() === '.md';
             if (hasEmptyName) {
                 let hasOldName = !filename.startsWith('Untitled');

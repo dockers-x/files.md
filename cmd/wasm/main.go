@@ -4,9 +4,12 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
+	"os"
 	"runtime/debug"
+	"strings"
 	"syscall/js"
 	_ "time/tzdata" // for was env we need timezone database
 
@@ -88,7 +91,20 @@ func callAsync(funcName string, callback func(js.Value, error), args ...any) {
 	errorFunc = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		defer successFunc.Release()
 		defer errorFunc.Release()
-		callback(js.Undefined(), fmt.Errorf("error: %v", args[0]))
+
+		var err error
+		if len(args) > 0 && !args[0].IsUndefined() {
+			errorMsg := args[0].Get("message").String()
+			if strings.Contains(errorMsg, "could not be found") {
+				err = os.ErrNotExist
+			} else {
+				err = errors.New(errorMsg)
+			}
+		} else {
+			err = errors.New("unknown error")
+		}
+
+		callback(js.Undefined(), err)
 		return nil
 	})
 

@@ -8,6 +8,9 @@ const sidebar = document.getElementById('sidebar');
 const sidebarContainer = document.getElementById('sidebar-container');
 const content = document.getElementById('content')
 
+const TODAY_PATH = '/Today.txt';
+const LATER_PATH = '/Later.txt';
+
 async function init(el) {
     // Authorize if we have one-time token in URL.
     const urlParams = new URLSearchParams(window.location.search);
@@ -857,11 +860,23 @@ function getCurrentContent() {
 }
 
 function toHeader(filename) {
-    const title = ucfirst(filename.replace(/\.md$/, ''));
-    return `# ${title}`;
+    let header = filename;
+    if (filename.endsWith('.md')) {
+        header = trimPostfix(filename, '.md');
+    } else if (filename.endsWith('.txt')) {
+        header = trimPostfix(filename, '.txt');
+    }
+    return `# ${header}`;
 }
 
 function fromHeaderToFilename(header) {
+    // Kinda tricky, but what can we do if Chromium is very slow with md files
+    if (header === '# Today') {
+        return toFilename(TODAY_PATH);
+    }
+    if (header === '# Later') {
+        return toFilename(LATER_PATH);
+    }
     if (header.startsWith('# ')) {
         return header.slice(2).trim() + '.md';
     }
