@@ -150,6 +150,11 @@ function renderSidebar(focusDir = '', modifiedPaths) {
             return;
         }
 
+        // If is not root
+        if (toRootPath(path) !== '/') {
+            return;
+        }
+
         if (!isChecklist(toFilename(path))) {
             return;
         }
