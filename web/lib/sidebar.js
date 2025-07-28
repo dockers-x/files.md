@@ -122,26 +122,6 @@ function renderSidebar(focusDir = '', modifiedPaths) {
     });
 
     const groupedDirs = new Set(['_read_', '_watch_', '_shop_', 'journal', 'habits', 'insights', 'archive', 'today', 'later']);
-    const underscoreDirs = [];
-    // Group all checklists
-    // for (const file in fileNodes) {
-    //     const filename = toFilename(dir);
-    //     if (filename.endsWith('_')) {
-    //         underscoreDirs.push(dir);
-    //         groupedDirs.add(filename);
-    //     }
-    // }
-    // underscoreDirs.forEach((dir, index) => {
-    //     const dirNode = dirNodes[dir];
-    //     if (dirNode && dirNode.parent === root) {
-    //         root.removeChild(dirNode);
-    //         if (index === underscoreDirs.length - 1) {
-    //             dirNode.isGroupEnd = true;
-    //         }
-    //         root.addChild(dirNode);
-    //     }
-    // });
-    //
 
     // Step 0: Lists group
     let lastListNode = null;
@@ -935,7 +915,7 @@ function TreeView(root, container, options) {
         // TODO dirty hack, for some reason expanded is set for leaf nodes
         if (node.isExpanded() &&
             node.toString() !== 'today' && node.toString() !== 'later' &&
-            node.toString() !== 'watch_' && node.toString() !== 'shop_' && node.toString() !== 'read_') {
+            node.toString() !== 'watch' && node.toString() !== 'shop' && node.toString() !== 'read') {
             span_desc.classList.add("expanded");
         }
 
