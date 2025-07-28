@@ -29,6 +29,18 @@ var closeTags = map[string]string{
 	"__": "</b>",
 }
 
+func IncompleteChecklistItems(md string) []string {
+	items, isCompleted := ChecklistItems(md)
+	var incomplete []string
+	for _, item := range items {
+		if !isCompleted[item] {
+			incomplete = append(incomplete, item)
+		}
+	}
+
+	return incomplete
+}
+
 func ChecklistItems(md string) ([]string, map[string]bool) {
 	var items []string
 	isCompleted := make(map[string]bool)
@@ -63,6 +75,8 @@ func AddChecklistItem(md, item string, checked bool) string {
 	return strings.TrimSpace(md)
 }
 
+// CompleteChecklistItem marks given item as completed.
+// Returns newMarkdown, foundItem.
 func CompleteChecklistItem(md, itemHash string) (string, string) {
 	foundItem := ""
 	lines := strings.Split(md, "\n")

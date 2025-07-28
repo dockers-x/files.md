@@ -981,12 +981,8 @@ func (b *Bot) ShowToday(_ []string) error {
 		return fmt.Errorf("show today: can't read today file: %w", err)
 	}
 	if len(todayChecklistMD) != 0 {
-		tasks, isCompleted := txt.ChecklistItems(todayChecklistMD)
+		tasks := txt.IncompleteChecklistItems(todayChecklistMD)
 		for _, task := range tasks {
-			if isCompleted[task] {
-				continue
-			}
-
 			if len(task) >= maxTitleLengthForMobile {
 				cmd := tg.NewCmd(consts.CmdShowLongItem, []string{fs.Hash(fs.TodayFilename), fs.Hash(task)})
 				btn := tg.NewBtn(txt.Emoji(i18n.Emoji("eyes"), task), cmd)
@@ -1091,12 +1087,8 @@ func (b *Bot) showLaterTasks(_ []string) error {
 		return fmt.Errorf("show later: can't read later file: %w", err)
 	}
 	if len(laterChecklistMD) != 0 {
-		tasks, isCompleted := txt.ChecklistItems(laterChecklistMD)
+		tasks := txt.IncompleteChecklistItems(laterChecklistMD)
 		for _, task := range tasks {
-			if isCompleted[task] {
-				continue
-			}
-
 			cmd := tg.NewCmd(consts.CmdCompleteChecklistItem, []string{fs.Hash(fs.LaterFilename), fs.Hash(task)})
 			btn := tg.NewBtn(i18n.AddEmoji(task), cmd)
 			kb.AddRow(btn)
@@ -1128,12 +1120,9 @@ func (b *Bot) todayLabel(msgsCount ...int) string {
 		statusBar = i18n.Emoji(fs.Title(fs.PomodoroTask))
 	}
 
-	tasks, isCompleted := txt.ChecklistItems(todayMD)
+	tasks := txt.IncompleteChecklistItems(todayMD)
 	tasksCount := 0
 	for _, task := range tasks {
-		if isCompleted[task] {
-			continue
-		}
 		if task == fs.PomodoroTask {
 			continue
 		}
@@ -1430,15 +1419,15 @@ func (b *Bot) showSchedule(_ []string) error {
 }
 
 func (b *Bot) showRead(_ []string) error {
-	return b.showChecklist([]string{fs.Hash(fs.DirRead)})
+	return b.showChecklist([]string{fs.Hash(fs.ReadFilename)})
 }
 
 func (b *Bot) showWatch(_ []string) error {
-	return b.showChecklist([]string{fs.Hash(fs.DirWatch)})
+	return b.showChecklist([]string{fs.Hash(fs.WatchFilename)})
 }
 
 func (b *Bot) showShop(_ []string) error {
-	return b.showChecklist([]string{fs.Hash(fs.DirShop)})
+	return b.showChecklist([]string{fs.Hash(fs.ShopFilename)})
 }
 
 // TODO today.txt
@@ -1592,23 +1581,23 @@ func (b *Bot) showChecklist(params []string) error {
 		return fmt.Errorf("show checklist: %w", err)
 	}
 
-	tasks, _ := txt.ChecklistItems(md)
+	items := txt.IncompleteChecklistItems(md)
 	// TODO check that we're showing last buttons
 	maxButtons := maxBtns
 	if checklist == fs.DirRead || checklist == fs.DirWatch {
 		maxButtons = maxBtnsInChecklist
 	}
-	md = md[max(0, len(md)-maxButtons):]
+	items = items[max(0, len(items)-maxButtons):]
 
 	kb := tg.NewKeyboard(nil)
-	for _, task := range tasks {
-		if len(task) >= maxTitleLengthForMobile {
-			cmd := tg.NewCmd(consts.CmdShowLongItem, []string{fs.Hash(checklist), fs.Hash(task)})
-			btn := tg.NewBtn(txt.Emoji(i18n.Emoji("eyes"), task), cmd)
+	for _, item := range items {
+		if len(item) >= maxTitleLengthForMobile {
+			cmd := tg.NewCmd(consts.CmdShowLongItem, []string{fs.Hash(checklist), fs.Hash(item)})
+			btn := tg.NewBtn(txt.Emoji(i18n.Emoji("eyes"), item), cmd)
 			kb.AddRow(btn)
 		} else {
-			cmd := tg.NewCmd(consts.CmdCompleteChecklistItem, []string{fs.Hash(checklist), fs.Hash(task)})
-			btn := tg.NewBtn(i18n.AddEmoji(task), cmd)
+			cmd := tg.NewCmd(consts.CmdCompleteChecklistItem, []string{checklistHash, fs.Hash(item)})
+			btn := tg.NewBtn(i18n.AddEmoji(item), cmd)
 			kb.AddRow(btn)
 		}
 	}
@@ -1798,19 +1787,28 @@ func (b *Bot) addToChecklist(checklistHash string, msgIndex int) (string, error)
 	checklist, err := b.fs.Unhash(fs.DirRoot, checklistHash)
 	// Create known checklist if it doesn't exist
 	if err != nil {
-		if fs.Hash(fs.TodayFilename) == checklistHash || fs.TodayFilename == checklistHash {
-			checklist = fs.TodayFilename
-			err = b.fs.Write(fs.DirRoot, checklist, "")
-			if err != nil {
-				return "", fmt.Errorf("add to checklist: can't create today checklist: %w", err)
+		supportedChecklists := []string{
+			fs.TodayFilename,
+			fs.LaterFilename,
+			fs.DirRead,
+			fs.DirWatch,
+			fs.DirShop,
+		}
+
+		created := false
+		for _, supportedChecklist := range supportedChecklists {
+			if fs.Hash(supportedChecklist) == checklistHash || supportedChecklist == checklistHash {
+				checklist = supportedChecklist
+				err = b.fs.Write(fs.DirRoot, checklist, "")
+				if err != nil {
+					return "", fmt.Errorf("add to checklist: can't create checklist %s: %w", checklist, err)
+				}
+				created = true
+				break
 			}
-		} else if fs.Hash(fs.LaterFilename) == checklistHash || fs.LaterFilename == checklistHash {
-			checklist = fs.LaterFilename
-			err = b.fs.Write(fs.DirRoot, checklist, "")
-			if err != nil {
-				return "", fmt.Errorf("add to checklist: can't create later checklist: %w", err)
-			}
-		} else {
+		}
+
+		if !created {
 			return "", fmt.Errorf("add to checklist: can't unhash checklist %s: %w", checklistHash, err)
 		}
 	}
@@ -1849,7 +1847,6 @@ func (b *Bot) completeChecklistItem(params []string) error {
 
 	md, item := txt.CompleteChecklistItem(checklistMD, itemHash)
 	err = b.fs.Write(fs.DirRoot, checklist, md)
-
 	if err != nil {
 		return fmt.Errorf("complete checklist item: can't complete item from chat: %w", err)
 	}
@@ -1862,6 +1859,12 @@ func (b *Bot) completeChecklistItem(params []string) error {
 	} else {
 		// We can tolerate failure of writing to journal, since that's not single source of truth
 		_ = journal.AddRecord(b.fs, fmt.Sprintf("✅ %s", fs.Title(item)), b.cfg.Timezone())
+	}
+
+	if checklist == fs.LaterFilename {
+		return b.showLaterTasks(nil)
+	} else if checklist != fs.TodayFilename {
+		return b.showChecklist([]string{checklist})
 	}
 
 	return b.ShowToday(nil)
@@ -2047,21 +2050,21 @@ func (b *Bot) moveToDirChecklist(params []string) error {
 }
 
 func (b *Bot) moveToRead(params []string) error {
-	filenameHash := params[0]
+	msgIndices := params[0]
 
-	return b.moveToDirChecklist([]string{filenameHash, fs.Hash(fs.DirRead)})
+	return b.moveToChecklist([]string{fs.Hash(fs.ReadFilename), msgIndices})
 }
 
 func (b *Bot) moveToWatch(params []string) error {
-	filenameHash := params[0]
+	msgIndices := params[0]
 
-	return b.moveToDirChecklist([]string{filenameHash, fs.Hash(fs.DirWatch)})
+	return b.moveToChecklist([]string{fs.Hash(fs.WatchFilename), msgIndices})
 }
 
 func (b *Bot) moveToShop(params []string) error {
-	filenameHash := params[0]
+	msgIndices := params[0]
 
-	return b.moveToDirChecklist([]string{filenameHash, fs.Hash(fs.DirShop)})
+	return b.moveToChecklist([]string{fs.Hash(fs.ShopFilename), msgIndices})
 }
 
 func (b *Bot) moveToNewFile(params []string) error {
