@@ -863,7 +863,7 @@ function TreeView(root, container, options) {
 
             if (needsGroupHeader) {
                 let nodeStr = node.toString();
-                if (nodeStr.endsWith('_')) {
+                if (nodeStr.endsWith('_') || nodeStr === 'read' || nodeStr === 'watch' || nodeStr === 'shop') {
                     groupHeaderText = "Lists";
                     groupHeaderClass = "lists";
                 } else if (['today', 'later'].includes(nodeStr)) {
