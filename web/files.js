@@ -575,6 +575,8 @@ async function collectModifiedAndDeletedFiles() {
 
                 if (result.status !== 'error') {
                     existingFiles[result.path] = true;
+                } else {
+                    console.warn(`Error getting status for file ${path}:`, result);
                 }
             });
         promises.push(promise);
@@ -617,6 +619,7 @@ async function collectModifiedAndDeletedFiles() {
 
         if (existingFiles[path] === undefined) {
             console.log('DELETED because not in existing or modified files:', path);
+            console.log('Current editors paths:', editor.path, editor2.path);
             deleted.push(path);
         }
     });
@@ -665,7 +668,7 @@ async function getFileStatus(path) {
         const file = await memFile.handle.getFile();
         content = await file.text();
     } catch (error) {
-        console.error('Error processing', path, error);
+        console.error('Error while getting status for file', path, error);
         return {
             status: 'error',
         }
