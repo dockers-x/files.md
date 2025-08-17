@@ -296,7 +296,7 @@ class SearchModal {
             listItem.setAttribute('data-index', index);
             listItem.onclick = () => this.handleClick(path);
 
-            listItem.onmouseenter = () => {
+            listItem.onmousemove = () => {
                 document.querySelectorAll('#search-results li').forEach(li => li.classList.remove('focused'));
                 listItem.classList.add('focused');
                 this.focusedIndex = index;
@@ -565,8 +565,8 @@ class MoveModal {
 
             listItem.onclick = () => this.handleClick(dir);
 
-            listItem.onmouseenter = () => {
-                document.querySelectorAll('#move-results li').forEach(li => li.classList.remove('focused'));
+            listItem.onmousemove = () => {
+                document.querySelectorAll('#search-results li').forEach(li => li.classList.remove('focused'));
                 listItem.classList.add('focused');
                 this.focusedIndex = index;
             };
