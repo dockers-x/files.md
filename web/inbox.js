@@ -235,8 +235,7 @@ function initChat() {
 
 async function initWasm() {
     window.wasmReady = () => {
-        console.log('WASM ready, wasmReplyCmd is available');
-        window.wasmReplyCmd = wasmReplyCmd;
+        console.log('WASM is ready');
     };
 
     console.log('Init wasm inbox');
