@@ -8,7 +8,7 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
-func certServer(logger *log.Logger, certDir string, hosts ...string) autocert.Manager {
+func certServer(logger *log.Logger, certDir string, hosts ...string) *autocert.Manager {
 	autocertManager := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist(hosts...),
@@ -35,5 +35,5 @@ func certServer(logger *log.Logger, certDir string, hosts ...string) autocert.Ma
 		}
 	}()
 
-	return autocertManager
+	return &autocertManager
 }
