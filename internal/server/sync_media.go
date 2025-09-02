@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 
@@ -89,8 +90,15 @@ func SyncMedia(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var clientMedia media
-	if err := json.NewDecoder(r.Body).Decode(&clientMedia); err != nil {
-		http.Error(w, "Invalid syncMedia Request JSON", http.StatusBadRequest)
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Cannot read request body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	if err := json.Unmarshal(body, &clientMedia); err != nil {
+		http.Error(w, fmt.Sprintf("Invalid syncMedia Request JSON: %s", body), http.StatusBadRequest)
 		return
 	}
 
