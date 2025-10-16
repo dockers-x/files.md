@@ -141,7 +141,7 @@ const DEFAULT_FILES = {
     "🪴 Welcome.md": {
         "content": "Only essential features. No distractions.\n\n" +
             "You don't need fancy tools to take notes...\n\n"
-            + "[Markdown Guide]\n[Hotkeys]\n[Why using links]",
+            + "[Markdown Guide]\n[Hotkeys]\n[Links]",
         isFile: true,
     },
     "Links.md": {
@@ -191,7 +191,7 @@ const DEFAULT_FILES = {
             "*You can paste your own images via `Cmd/Ctrl + V`*\n\n" +
             "#### Links\n" +
             "You can insert your own links by typing `[`.\n\n" +
-            "[Why using links]\n" +
+            "[Links]\n" +
             "[My project]",
         isFile: true,
     },
