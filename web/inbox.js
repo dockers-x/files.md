@@ -576,7 +576,8 @@ function attachEventListeners() {
             if (searchModalElement.style.display !== 'none' && searchModalElement.style.display !== '') {
                 searchModal.close();
             } else {
-                searchModal.open('', btn.closest('.message').querySelector('.message-content'), e.target);
+                const text = btn.closest('.message').querySelector('.message-content').textContent;
+                searchModal.open('', text, e.target);
             }
         });
     });

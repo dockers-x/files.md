@@ -298,9 +298,11 @@ class SearchModal {
                 msgs = Array.from(selectedMessages).map(msg => msg.querySelector('.message-content').textContent);
                 messagesToRemove = selectedMessages;
             } else {
-                const btn = document.querySelector(`.message[data-text="${this.selectedMsgText}"] button`);
+                const message = Array.from(document.querySelectorAll('.message'))
+                    .find(el => el.dataset.text === this.selectedMsgText);
+                const btn = message?.querySelector('button').textContent;
                 msgs = [this.selectedMsgText];
-                messagesToRemove = [btn.closest('.message')];
+                messagesToRemove = [message];
             }
 
             let callback = async text => await addHeaderAndText(path, todayHeader(), text, true);
