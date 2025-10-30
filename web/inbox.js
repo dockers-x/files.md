@@ -22,7 +22,7 @@ async function addToInbox() {
     if (!text) return;
 
     if (text.toLowerCase().endsWith(' jj') || text.toLowerCase().endsWith(' жж')) {
-        await addToJournal(text.slice(0, -3).trim(););
+        await addToJournal(text.slice(0, -3).trim());
         chatInput.value = '';
         chatIsClean = false;
         return;
