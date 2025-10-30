@@ -21,6 +21,13 @@ async function addToInbox() {
     const text = chatInput.value.trim();
     if (!text) return;
 
+    if (text.toLowerCase().endsWith('jj') || text.toLowerCase().endsWith('жж')) {
+        await addToJournal(text);
+        chatInput.value = '';
+        chatIsClean = false;
+        return;
+    }
+
     const now = new Date();
     const timestamp = now.toLocaleTimeString('en-US', {
         hour12: false,
