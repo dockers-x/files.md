@@ -1,4 +1,4 @@
-<img src="https://github.com/zakirullin/files.md/raw/main/web/icon.png" alt="Files.md Bot logo" title="Files.md Bot" align="right" height="80" />
+<img src="https://github.com/zakirullin/files.md/raw/main/web/icon.png" alt="Files.md Bot logo" title="Files.md Bot" align="right" height="76" />
 
 # files.md
 
