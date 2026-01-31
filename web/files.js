@@ -38,7 +38,7 @@ let isLoadingLocalFiles = false;
 // }
 // TODO multidir rename to memFiles?
 let files = {}; // In-memory representation of local files
-let server = {files: {}, media: {}, timestamps: {}, mediaTimestamp: 0}; // In-memory representation of server
+let server = { files: {}, media: {}, timestamps: {}, mediaTimestamp: 0 }; // In-memory representation of server
 
 const SERVER_STORAGE_KEY = 'server'; // If scheme is migrated, I believe it's better to introduce a new key, because for now old keys aren't removed.
 const SUPPORTED_EXTENSIONS = ['md', 'txt', 'png', 'jpg', 'jpeg', 'webp', 'gif',];
@@ -87,7 +87,7 @@ async function loadLocalFiles(rootDirHandle) {
 
                 currentDir[filename + '/'] = {};
                 const dir = `${path}${filename}/`;
-                dirPromises.push({handle: entry, path: dir, depth: depth + 1});
+                dirPromises.push({ handle: entry, path: dir, depth: depth + 1 });
             } else if (entry.kind === 'file' && (isSupportedExtension || isConfig)) {
                 // Reuse existing file handle if it exists
                 let existingDir = files;
@@ -104,7 +104,7 @@ async function loadLocalFiles(rootDirHandle) {
                     continue;
                 }
 
-                currentDir[filename] = {path: `${path}${filename}`, isFile: true, handle: entry};
+                currentDir[filename] = { path: `${path}${filename}`, isFile: true, handle: entry };
                 entry.getFile().then(file => {
                     currentDir[filename].lastModified = file.lastModified;
                 });
@@ -128,7 +128,7 @@ async function loadLocalFiles(rootDirHandle) {
             return;
         }
 
-        await Promise.all(dirPromises.map(({handle, path, depth}) =>
+        await Promise.all(dirPromises.map(({ handle, path, depth }) =>
             loadDir(handle, path, depth)
         ));
     }
@@ -179,7 +179,7 @@ async function syncTextsWithServer() {
     let hasFullySyncedFilesAtLeastOnce = server['timestamps'] !== undefined && Object.keys(server['timestamps']).length > 0;;
     if (hasFullySyncedFilesAtLeastOnce) {
         log('SYNCED AT LEAST ONCE, collecting local files', server['timestamps']);
-        ({modified, deleted} = await collectModifiedAndDeletedFiles());
+        ({ modified, deleted } = await collectModifiedAndDeletedFiles());
     } else {
         log('NEVER SYNCED BEFORE');
     }
@@ -202,7 +202,7 @@ async function syncTextsWithServer() {
         // Write files received from the server
         let failedAtLeastOnce = false;
         for (const fileInfo of response.files) {
-            let {path, content, lastModified} = fileInfo;
+            let { path, content, lastModified } = fileInfo;
             // We get relative paths from server, and in our app we use absolute paths
             const relPath = path;
             path = joinPath('/', relPath);
@@ -425,7 +425,7 @@ async function syncMedia() {
 
         let filesProcessed = 0;
         for (const fileInfo of serverData.files) {
-            const {filename, lastModified} = fileInfo;
+            const { filename, lastModified } = fileInfo;
             log(`Downloading media file: ${filename}`);
 
             try {
@@ -508,7 +508,7 @@ async function saveMediaFile(path, blob, lastModified) {
         saveServerFiles();
 
         // Load file handle into files
-        files['media/'][filename] = {isFile: true, handle: fileHandle};
+        files['media/'][filename] = { isFile: true, handle: fileHandle };
         fileHandle.getFile().then(file => {
             files['media/'][filename].lastModified = file.lastModified;
         });
@@ -592,10 +592,12 @@ async function collectModifiedAndDeletedFiles() {
     // If there are too many deleted files, prob something is wrong, throw an alert
     if (deleted.length > 10) {
         alert(`Trying to delete more than 10 deleted files during sync (${deleted.length}). I won't proceed, please resolve the issue manually. Probably "files" is empty in local stroage for some reason, but there are actual files on the disk.`);
-+        // Show first 10 files
-+        alert('First 10 files: \n' + deleted.slice(0, 10).join('\n'));
+        // Show first 10 files
+        alert('First 10 files: \n' + deleted.slice(0, 10).join('\n'));
+        localStorage.removeItem("server");
+        throw new Error('Too many deleted files during sync, aborting.');
         deleted = [];
-    } 
+    }
 
     return {
         modified: modifiedFiles,
@@ -1104,7 +1106,7 @@ async function syncCurrentEditor(syncWithServer = true) {
         }
 
         isMessingWithCurrentEditor = false;
-        
+
         if (syncWithServer) {
             try {
                 await syncLocalFileWithServer(INBOX_PATH);
@@ -1338,12 +1340,12 @@ async function post(endpoint, data) {
 // Return false from callback to stop walking.
 function walk(obj, callback, path = '/') {
     // Chromium's callstack limit is 11K, so we iterate.
-    const stack = [{obj, path}];
+    const stack = [{ obj, path }];
 
     const maxAllowedIterations = 100000;
     let iterations = 0;
     while (stack.length > 0) {
-        const {obj: currentObj, path: currentPath} = stack.pop();
+        const { obj: currentObj, path: currentPath } = stack.pop();
 
         // Normally that would never happen.
         // But in case of an error, a watchdog like that can prevent freezing.
@@ -1397,7 +1399,7 @@ function walk(obj, callback, path = '/') {
             if (callback(fullPath, false) === false) {
                 return;
             }
-            stack.push({obj: item, path: fullPath});
+            stack.push({ obj: item, path: fullPath });
         }
     }
 }
@@ -1422,7 +1424,7 @@ function toFilename(path) {
         return '/';
     }
 
-    const {filename} = toDirPathAndFilename(path);
+    const { filename } = toDirPathAndFilename(path);
 
     return filename;
 }
@@ -1430,7 +1432,7 @@ function toFilename(path) {
 // Dir with no slash at the end.
 // For '/' it returns '/'.
 function toDirPath(path) {
-    const {dirPath} = toDirPathAndFilename(path);
+    const { dirPath } = toDirPathAndFilename(path);
 
     return dirPath;
 }
@@ -1467,7 +1469,7 @@ function toDirPathAndFilename(path) {
 
     const filename = parts.pop();
     let dirPath = '/' + parts.join('/');
-    return {dirPath, filename};
+    return { dirPath, filename };
 }
 
 function excludeDirs(excludedDirs) {
@@ -1571,7 +1573,7 @@ function findSiblingPath(path) {
         if (foundDesiredPath && nextPath === null) {
             log('NEXT path', filePath);
             nextPath = filePath;
-            return ;
+            return;
         }
 
         if (filePath === path) {
@@ -1611,7 +1613,7 @@ async function removeCurrentFile() {
     }
 }
 
-window.addEventListener('beforeunload', function () {
+window.addEventListener('beforeunload', function() {
     // clearInterval(window.loader);
     clearInterval(window.saver);
 });
