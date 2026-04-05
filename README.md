@@ -1,20 +1,32 @@
 <img src="https://github.com/zakirullin/files.md/raw/main/web/icon.png" alt="Files.md Bot logo" title="Files.md Bot" align="right" height="76" />
 
-# files.md
+# What is it?
+A simple application for your personal Second Brain/Zettelkasten.
 
-A web application for your personal stuff:
+Just enough functionality for you to do the actual work.
+
+You can store whole your life in `.md` files:
 - 📝 Notes, Files
 - ✅ Tasks, Checklists
 - 💚 Journal, Habits
 
-**Everything is stored as plain local `*.md` files.**  
+## What is this for?
+I used files.md to grow my knowledge base about Software Development and Brain.  
+I added new notes to the knowledge base. One idea per note.  
+I made connections between notes.    
+I spend time travelling through notes and thinking it through.  
 
-[files.md](https://files.md)  
-[Tasks management via bot](https://club.mnogosdelal.ru/post/180/)  
-[Notes taking via bot](https://vas3k.club/post/18815/)
+After some time I've got the insight.  
+Software Development and brain related notes suddenly connected.  
+I wrote an article on [Cogitnive Load in Software Development](github.com/zakirullin/cognitive-load).  
+Many considered it a good write-up.  
+That's the final goal - to **think deeply**, **to connect knowledge across domains** and **to write texts**.
+
+Anything else is entertainment.  
+You don't need fancy views or advanced workflows. Start with one folder.  
 
 ## Repository structure
-`/cmd/tgbot` - entrypoint for telegram bot (stable release)  
+`/cmd/server` - entrypoint for telegram bot (stable release)  
 `/cmd/bot` - entrypoint for local standalone bot (beta version)  
 `/internal` - bot's code (reused for both telegram/local bots)  
 `/pkg` - various packages   
