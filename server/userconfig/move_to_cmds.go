@@ -3,9 +3,9 @@ package userconfig
 import (
 	"fmt"
 
-	"github.com/zakirullin/files.md/i18n"
 	"github.com/zakirullin/files.md/pkg/tg"
 	"github.com/zakirullin/files.md/server/consts"
+	"github.com/zakirullin/files.md/server/i18n"
 )
 
 var AvailableMoveToBtns = []tg.Btn{
