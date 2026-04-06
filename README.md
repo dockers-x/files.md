@@ -1,9 +1,9 @@
 <img src="https://github.com/zakirullin/files.md/raw/main/web/icon.png" alt="Files.md logo" title="Files.md" align="right" height="76" />
 
-# What is it?
+# Files.md 
 A simple application for your `.md` files.
 
-<img src="https://github.com/zakirullin/files.md/raw/main/web/files.md.png" alt="Files.md screenshot" title="Files.md"/>
+<img src="https://github.com/zakirullin/files.md/raw/main/web/app.png" alt="Files.md screenshot" title="Files.md"/>
 
 You can store whole your life:
 - 📝 Notes, Projects
@@ -19,31 +19,26 @@ All in plain `.md` files, locally.
 4) I spend time travelling through notes and thinking it through.
 5) Software development and brain-related notes suddenly appeared to be very related.
 6) I got the insight.
-7) I wrote an article about [Cogitnive Load in Software Development](github.com/zakirullin/cognitive-load).
+7) I wrote an article about [Cogitnive Load in Software Development](https://github.com/zakirullin/cognitive).
 
 Many considered it a great write-up.  
 
-The process helped me to:
-- **think deeply**  
-- **write insightful texts**
-- **connect knowledge across domains**  
+The app helped me to:
+- **Think deeply**  
+- **Write insightful texts**
+- **Connect knowledge across domains**  
 
 To achieve all that, **you'll have to use your brain**. Not advanced workflows or AI automations.  
 
-## Init Server
-```bash
-TOKENS_SALT=your-secret-salt-here (TODO salt)
-$ make init_server host=<YOUR_SSH_HOST>
-```
+## How? 
+<img src="https://github.com/zakirullin/files.md/raw/main/web/bot.png" alt="Telegram Bot screenshot" title="Telegram Bot"/>
 
-## Repository structure
-`/cmd/server` - entrypoint for telegram bot (stable release)  
-`/cmd/bot` - entrypoint for local standalone bot (beta version)  
-`/internal` - bot's code (reused for both telegram/local bots)  
-`/pkg` - various packages   
-`/web` - standalone web application for viewing/editing files (alpha version, Chrome only)   
+I reuse long-learned pattern - messaging with a friend.  
+
+Only now I send notes and ideas to the bot.  
 
 ## Telegram Bot 🤖
+
 When we are focused and distracting information comes in, we want to get rid of it as quickly as possible. To do that, just send whatever is distracting you to the bot. Then choose how you want to save it - as a task, a note, or a journal entry. By default, it will be saved as today's task.
 
 It works like a regular chat, so it's easier to use because there's less resistance. We're used to sending messages to friends, now we're going to send stuff to the bot.
@@ -57,6 +52,19 @@ $ go run ./cmd/tgbot
 ```
 
 Bot's artifacts can be seen in `./storage/<USER_ID>` folder
+
+## Init Server
+```bash
+TOKENS_SALT=your-secret-salt-here (TODO salt)
+$ make init_server host=<YOUR_SSH_HOST>
+```
+
+## Repository structure
+`/cmd/server` - entrypoint for telegram bot (stable release)  
+`/cmd/bot` - entrypoint for local standalone bot (beta version)  
+`/internal` - bot's code (reused for both telegram/local bots)  
+`/pkg` - various packages   
+`/web` - standalone web application for viewing/editing files (alpha version, Chrome only)   
 
 
 ## App 📝
