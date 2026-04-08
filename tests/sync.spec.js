@@ -42,7 +42,7 @@ async function setup(page) {
         localStorage.setItem('token', workerIndex);
     }, currentWorkerIndex);
 
-    await page.goto('/app.html');
+    await page.goto('/index.html');
 
     await page.evaluate(()=> {
         window.getRootDirHandle = async function() {

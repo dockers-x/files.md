@@ -11,7 +11,7 @@ module.exports = defineConfig({
     reporter: 'html',
 
     use: {
-        // baseURL: `file://${path.resolve('../web/app.html')}`,
+        // baseURL: `file://${path.resolve('../web/index.html')}`,
         baseUrl: 'http://app.localhost:3000',
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',

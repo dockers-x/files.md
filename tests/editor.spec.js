@@ -1,7 +1,7 @@
 const {test, expect} = require('@playwright/test');
 
 test.beforeEach(async ({page}) => {
-    await page.goto('/app.html');
+    await page.goto('/index.html');
 
     // await page.waitForSelector('.CodeMirror', {timeout: 10000});
     await page.waitForSelector('#tree', {timeout: 5000});

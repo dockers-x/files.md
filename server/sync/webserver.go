@@ -89,11 +89,6 @@ func router(serverLogger *log.Logger) *http.ServeMux {
 		// Serving the PWA app
 		host := r.Host
 		if strings.HasPrefix(host, "app.") {
-			if r.URL.Path == "" || r.URL.Path == "/" {
-				http.ServeFile(w, r, "./web/app.html")
-				return
-			}
-
 			http.FileServer(http.Dir("./web")).ServeHTTP(w, r)
 			return
 		}

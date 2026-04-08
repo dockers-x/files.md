@@ -85,7 +85,7 @@ $ make init_server host=<YOUR_SSH_HOST>
 
 
 ## App 📝
-[app.files.md](https://app.files.md), is a standalone application for viewing/editing files, alpha version. Works offline. See `/web/app.html` for more details.
+[app.files.md](https://app.files.md), is a standalone application for viewing/editing files, alpha version. Works offline. See `/web/index.html` for more details.
 
 `cmd + k` for command palette.  
 `cmd + [` to move back in history, `cmd + ]` to move forward.  
