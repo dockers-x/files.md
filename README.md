@@ -12,8 +12,7 @@ You can store whole your life:
 
 All in plain `.md` files, locally.  
 
-You can try it out:
-https://app.files.md
+You can try it out: [app.files.md](https://app.files.md)
 
 ## Why?
 

@@ -766,11 +766,11 @@ function getImageExtension(mimeType) {
 
 // TODO can we reuse moveFile?
 async function moveCurrentFile(toDir) {
-    isMessingWithCurrentEditor = true;
-
-    // TODO add prevent syncing?
     const oldPath = currentEditor.path;
     const newPath = joinPath('/', toDir, toFilename(currentEditor.path));
+    if (oldPath === newPath) return;
+
+    isMessingWithCurrentEditor = true;
 
     try {
         let content = getCurrentContent();
