@@ -21,7 +21,7 @@ Maybe. But this time:
 - Works offline
 - Local first, you own all your files
 - Fully open source, you can tweak it however you want
-- Radically simple code. Web app is just a few `.js` files
+- Radically simple code. **Easy for one person or an LLM to understand**
 - Portable, no build systems, just open `web/index.html` 
 - Out of the box synchronization
 - The server is just one binary
