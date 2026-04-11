@@ -113,7 +113,8 @@ function createAutocompleteDict() {
 
         const filename = toFilename(path);
         const key = `${filename.replace(/\.md$/, '')}`;
-        const filePath = `${key}]`;
+        const url = path.replace(/ /g, '%20');
+        const filePath = `${filename.replace(/\.md$/, '')}](${url})`;
 
         entries.push({
             key,
