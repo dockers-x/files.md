@@ -49,14 +49,14 @@ const (
 	DirWatch    = "_watch_"
 	DirShop     = "_shop_"
 
-	TodayFilename = "Today.txt"
-	LaterFilename = "Later.txt"
-	DoneFilename  = "Done.txt"
-	InboxFilename = "Inbox.txt"
+	TodayFilename = "Today.md"
+	LaterFilename = "Later.md"
+	DoneFilename  = "Done.md"
+	InboxFilename = "Inbox.md"
 
-	ShopFilename  = "Shop.txt"
-	WatchFilename = "Watch.txt"
-	ReadFilename  = "Read.txt"
+	ShopFilename  = "Shop.md"
+	WatchFilename = "Watch.md"
+	ReadFilename  = "Read.md"
 
 	PomodoroTask = "Finished a break"
 

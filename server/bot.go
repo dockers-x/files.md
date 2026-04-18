@@ -984,22 +984,22 @@ func (b *Bot) showMoveToFromToday(params []string) error {
 
 	todayMD, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
 	if err != nil {
-		return fmt.Errorf("move from today.txt: can't read today file: %w", err)
+		return fmt.Errorf("move from today.md: can't read today file: %w", err)
 	}
 
 	todayMD, task := txt.RemoveChecklistItem(todayMD, taskHash)
 	if task == "" {
-		return fmt.Errorf("move from today.txt: task not found")
+		return fmt.Errorf("move from today.md: task not found")
 	}
 
 	err = b.fs.Write(fs.DirUserRoot, fs.TodayFilename, todayMD)
 	if err != nil {
-		return fmt.Errorf("move from today.txt: can't write today file: %w", err)
+		return fmt.Errorf("move from today.md: can't write today file: %w", err)
 	}
 
 	msgIndex, err := b.saveToInbox(task, b.cfg.Timezone())
 	if err != nil {
-		return fmt.Errorf("move from today.txt: can't save to inbox: %w", err)
+		return fmt.Errorf("move from today.md: can't save to inbox: %w", err)
 	}
 
 	return b.showMoveTo([]string{strconv.Itoa(msgIndex)})
@@ -1057,7 +1057,7 @@ func (b *Bot) ShowToday(_ []string) error {
 
 	var kb tg.Keyboard
 
-	// Adding tasks from Today.txt
+	// Adding tasks from Today.md
 	todayChecklistMD, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("show today: can't read today file: %w", err)
@@ -1195,7 +1195,7 @@ func (b *Bot) showLaterTasks(_ []string) error {
 		kb.AddRow(btn)
 	}
 
-	// Adding tasks from Later.txt
+	// Adding tasks from Later.md
 	laterChecklistMD, err := b.fs.Read(fs.DirUserRoot, fs.LaterFilename)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("show later: can't read later file: %w", err)
@@ -1382,7 +1382,7 @@ func (b *Bot) showPostpone(_ []string) error {
 func (b *Bot) showMoveFromTodayAndInbox(_ []string) error {
 	var kb tg.Keyboard
 
-	// Show tasks from Today.txt
+	// Show tasks from Today.md
 	todayMD, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
 	if err == nil {
 		tasks := txt.IncompleteChecklistItems(todayMD)
@@ -1434,7 +1434,7 @@ func (b *Bot) showMoveFromTodayAndInbox(_ []string) error {
 	return nil
 }
 
-// TODO today.txt
+// TODO today.md
 func (b *Bot) postpone(params []string) error {
 	// TODO Remove input expectations if dir is not today (?)
 	taskHash := params[0]
@@ -1574,7 +1574,7 @@ func (b *Bot) showShop(_ []string) error {
 	return b.showChecklist([]string{fs.Hash(fs.ShopFilename)})
 }
 
-// TODO today.txt
+// TODO today.md
 func (b *Bot) showMultilineTask(params []string) error {
 	dir := params[0]
 	filenameHash := params[1]
@@ -1626,7 +1626,7 @@ func (b *Bot) showMultilineTask(params []string) error {
 	return nil
 }
 
-// TODO today.txt move to today/later
+// TODO today.md move to today/later
 func (b *Bot) showLongItem(params []string) error {
 	checklistHash := params[0]
 	itemHash := params[1]
@@ -1663,7 +1663,7 @@ func (b *Bot) showLongItem(params []string) error {
 	return nil
 }
 
-// TODO today.txt move to today/later
+// TODO today.md move to today/later
 func (b *Bot) showLongItemFromInbox(params []string) error {
 	msgIndexStr := params[0]
 	msgIndex, err := strconv.Atoi(msgIndexStr)

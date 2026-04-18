@@ -1,4 +1,4 @@
-const INBOX_PATH = '/Inbox.txt';
+const INBOX_PATH = '/Inbox.md';
 let chatIsClean = true; // Are there any unsaved changes?
 
 const inbox = document.getElementById('chat');
@@ -6,9 +6,9 @@ const chatInput = document.getElementById('chat-input');
 const chatButton = document.getElementById('open-chat-modal');
 const chatContainer = document.getElementById('chat-container');
 
-const READ_PATH = '/Read.txt';
-const SHOP_PATH = '/Shop.txt';
-const WATCH_PATH = '/Watch.txt';
+const READ_PATH = '/Read.md';
+const SHOP_PATH = '/Shop.md';
+const WATCH_PATH = '/Watch.md';
 
 const MAX_TITLE_LENGTH = 100;
 
@@ -828,7 +828,7 @@ async function renderMessages() {
  
                     
                     <div class="btn-wrapper">
-                    <button class="action-btn to-checklist-btn" data-checklist="Today.txt">
+                    <button class="action-btn to-checklist-btn" data-checklist="Today.md">
                         <?xml version="1.0" encoding="utf-8"?>
                         <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="m20.215 2.387-8.258 10.547-2.704-3.092a1 1 0 1 0-1.506 1.316l3.103 3.548a1.5 1.5 0 0 0 2.31-.063L21.79 3.62a1 1 0 1 0-1.575-1.233zM20 11a1 1 0 0 0-1 1v6.077c0 .459-.021.57-.082.684a.364.364 0 0 1-.157.157c-.113.06-.225.082-.684.082H5.923c-.459 0-.57-.022-.684-.082a.363.363 0 0 1-.157-.157c-.06-.113-.082-.225-.082-.684V5.5a.5.5 0 0 1 .5-.5l8.5.004a1 1 0 1 0 0-2L5.5 3A2.5 2.5 0 0 0 3 5.5v12.577c0 .76.082 1.185.319 1.627.224.419.558.753.977.977.442.237.866.319 1.627.319h12.154c.76 0 1.185-.082 1.627-.319.42-.224.754-.558.978-.977.236-.442.318-.866.318-1.627V12a1 1 0 0 0-1-1z" stroke="none"/></svg>   
                     </button>
@@ -836,7 +836,7 @@ async function renderMessages() {
                     </div>
                                        
                     <div class="btn-wrapper">
-                        <button class="action-btn to-checklist-btn" data-checklist="Read.txt">
+                        <button class="action-btn to-checklist-btn" data-checklist="Read.md">
                             <?xml version="1.0" encoding="utf-8"?>
                             <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M4 19V6.2C4 5.0799 4 4.51984 4.21799 4.09202C4.40973 3.71569 4.71569 3.40973 5.09202 3.21799C5.51984 3 6.0799 3 7.2 3H16.8C17.9201 3 18.4802 3 18.908 3.21799C19.2843 3.40973 19.5903 3.71569 19.782 4.09202C20 4.51984 20 5.0799 20 6.2V17H6C4.89543 17 4 17.8954 4 19ZM4 19C4 20.1046 4.89543 21 6 21H20M9 7H15M9 11H15M19 17V21"  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
@@ -846,7 +846,7 @@ async function renderMessages() {
                     </div>
                     
                     <div class="btn-wrapper">
-                        <button class="action-btn to-checklist-btn" data-checklist="Shop.txt">
+                        <button class="action-btn to-checklist-btn" data-checklist="Shop.md">
                             <?xml version="1.0" encoding="utf-8"?>
                             <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path clip-rule="evenodd" d="M2 1C1.44772 1 1 1.44772 1 2C1 2.55228 1.44772 3 2 3H3.21922L6.78345 17.2569C5.73276 17.7236 5 18.7762 5 20C5 21.6569 6.34315 23 8 23C9.65685 23 11 21.6569 11 20C11 19.6494 10.9398 19.3128 10.8293 19H15.1707C15.0602 19.3128 15 19.6494 15 20C15 21.6569 16.3431 23 18 23C19.6569 23 21 21.6569 21 20C21 18.3431 19.6569 17 18 17H8.78078L8.28078 15H18C20.0642 15 21.3019 13.6959 21.9887 12.2559C22.6599 10.8487 22.8935 9.16692 22.975 7.94368C23.0884 6.24014 21.6803 5 20.1211 5H5.78078L5.15951 2.51493C4.93692 1.62459 4.13696 1 3.21922 1H2ZM18 13H7.78078L6.28078 7H20.1211C20.6742 7 21.0063 7.40675 20.9794 7.81078C20.9034 8.9522 20.6906 10.3318 20.1836 11.3949C19.6922 12.4251 19.0201 13 18 13ZM18 20.9938C17.4511 20.9938 17.0062 20.5489 17.0062 20C17.0062 19.4511 17.4511 19.0062 18 19.0062C18.5489 19.0062 18.9938 19.4511 18.9938 20C18.9938 20.5489 18.5489 20.9938 18 20.9938ZM7.00617 20C7.00617 20.5489 7.45112 20.9938 8 20.9938C8.54888 20.9938 8.99383 20.5489 8.99383 20C8.99383 19.4511 8.54888 19.0062 8 19.0062C7.45112 19.0062 7.00617 19.4511 7.00617 20Z" stroke="none"/>
@@ -856,7 +856,7 @@ async function renderMessages() {
                     </div>
                     
                     <div class="btn-wrapper">
-                    <button class="action-btn to-checklist-btn" data-index="${message.index}" data-checklist="Watch.txt">
+                    <button class="action-btn to-checklist-btn" data-index="${message.index}" data-checklist="Watch.md">
                         <?xml version="1.0" encoding="utf-8"?>
                         <svg fill="var(--col-link)" stroke="none" width="32px" height="32px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18,6H14.41l2.3-2.29a1,1,0,1,0-1.42-1.42L12,5.54l-1.17-2a1,1,0,1,0-1.74,1L10,6H6A3,3,0,0,0,3,9v8a3,3,0,0,0,3,3v1a1,1,0,0,0,2,0V20h8v1a1,1,0,0,0,2,0V20a3,3,0,0,0,3-3V9A3,3,0,0,0,18,6Zm1,11a1,1,0,0,1-1,1H6a1,1,0,0,1-1-1V9A1,1,0,0,1,6,8H18a1,1,0,0,1,1,1Z" stroke="none"/></svg>
                     </button>                    

@@ -6,9 +6,9 @@
 const sidebar = document.getElementById('sidebar');
 const content = document.getElementById('content')
 
-const TODAY_PATH = '/Today.txt';
-const LATER_PATH = '/Later.txt';
-const DONE_PATH = '/archive/Done.txt';
+const TODAY_PATH = '/Today.md';
+const LATER_PATH = '/Later.md';
+const DONE_PATH = '/archive/Done.md';
 const LOG_PATH = '/archive/Log.txt';
 const OPEN_INBOX_AFTER_IDLE = 1 * 60 * 60 * 1000; // ms
 

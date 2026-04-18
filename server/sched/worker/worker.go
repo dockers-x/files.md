@@ -202,7 +202,7 @@ func RemoveCompletedChecklistItems(
 }
 
 func moveTaskToToday(task string, userFS *fs.FS) (bool, error) {
-	// Move the task to today first, then try to delete it from either Later.txt or Done.txt.
+	// Move the task to today first, then try to delete it from either Later.md or Done.md.
 	todayMD, err := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -219,7 +219,7 @@ func moveTaskToToday(task string, userFS *fs.FS) (bool, error) {
 		return false, fmt.Errorf("moveTaskToToday: can't write to today file: %w", err)
 	}
 
-	// Try to remove task from Done.txt
+	// Try to remove task from Done.md
 	doneMD, _ := userFS.Read(fs.DirArchive, fs.DoneFilename)
 	reducedDoneMD, _ := txt.RemoveChecklistItem(doneMD, task)
 	itemWasRemoved := doneMD != reducedDoneMD
@@ -232,7 +232,7 @@ func moveTaskToToday(task string, userFS *fs.FS) (bool, error) {
 		return true, nil
 	}
 
-	// Try to remove task from Later.txt
+	// Try to remove task from Later.md
 	laterMD, _ := userFS.Read(fs.DirUserRoot, fs.LaterFilename)
 	reducedLaterMD, _ := txt.RemoveChecklistItem(laterMD, task)
 	itemWasRemoved = laterMD != reducedLaterMD
