@@ -833,3 +833,179 @@ async function setup(page) {
     await page.waitForSelector('#chat', {timeout: 10000});
     await page.waitForSelector('#tree', {timeout: 5000});
 }
+
+// Regression test for a destructive file-duplication cascade.
+//
+// --- Where the drift happened ---
+//
+// The decisive line is web/files.js:1028 in the parent openFile, but you
+// have to look at what currentEditor points to when it runs. Setting the
+// stage for pre-fix code:
+//
+// Just before the click on Awareness:
+//   - editor.path = /hap/Dream.md, editor content = Dream
+//   - editor2.path = /life/Pilaf.md, editor2 content = stale Pilaf
+//   - disk /life/Pilaf.md was externally updated
+//
+// Click on Awareness fires openFile('/hap/Awareness.md', true,
+// 'editor2-textarea') (call this P for parent):
+//
+//   1. P:977 — currentEditor = editor2. Good.
+//   2. P:982 — editor2.path ≠ Awareness, so await syncCurrentEditor(false).
+//      Control leaves P here.
+//   3. Inside that syncCurrentEditor: path = /life/Pilaf.md. Disk differs
+//      from editor2 cache. editor2 is clean. Enters the reload branch and
+//      calls await openFile('/life/Pilaf.md', false) — no el argument,
+//      defaults to 'editor-textarea'. Call this N for nested.
+//   4. Inside N: el === 'editor-textarea' → N:976 sets currentEditor =
+//      editor. Then loads disk Pilaf into editor. N:1038 reassigns
+//      currentEditor = editor again after reinit. N:1047 sets editor.path
+//      = /life/Pilaf.md. N returns.
+//   5. Control unwinds back through syncCurrentEditor, and then to P:984
+//      ("Finished syncing previous file").
+//
+// At this exact moment:
+//   - currentEditor is editor (main) — reassigned by N. P never noticed.
+//   - editor.path = /life/Pilaf.md, editor content = Pilaf UPDATED
+//   - P's local variables still say path = /hap/Awareness.md, el =
+//     'editor2-textarea'
+//
+//   6. P:1028 — currentEditor.path = path — writes editor.path =
+//      /hap/Awareness.md. This is where the drift is sealed. editor's
+//      content is still Pilaf; its .path is now Awareness.
+//   7. P:1037–1044 — branches on el === 'editor2-textarea', so it
+//      reinitializes editor2 only, not editor. Loads Awareness into
+//      editor2.
+//   8. P returns.
+//
+// State after P returns:
+//   - editor — path = /hap/Awareness.md, content = Pilaf. Poisoned.
+//   - editor2 — path = /hap/Awareness.md, content = Awareness. Clean.
+//
+// --- Why the copy happened later ---
+//
+// The rename-from-header block at files.js:1152–1219 triggers whenever
+// syncCurrentEditor runs against the poisoned editor. That requires two
+// things:
+//
+//   1. The periodic saver (setInterval(..., 1000ms) at files.js:1662)
+//      fires.
+//   2. Global currentEditor points at the poisoned editor at that moment.
+//
+// (2) is the trigger. editor.js:47 reassigns currentEditor on any focus
+// event. In the original session, focus returned to the main editor at
+// some point (the user probably clicked on it when they saw the unexpected
+// Pilaf content). Next saver tick:
+//   - path = editor.path = /hap/Awareness.md
+//   - firstLine = '# Pilaf', filename = 'Awareness.md'
+//     → hasFilenameChanged === true
+//   - remove('/hap/Awareness.md') → Awareness deleted
+//   - writeIfContentIsDifferent('/hap/Pilaf.md', ...) with the Pilaf
+//     content → hap/Pilaf.md created
+//
+// That's what the server log showed:
+//   Creating one clientFile: '/happiness/Плов, Pilaf.md' at 07:19:39,
+//   deleting file: 'happiness/0 Осознанное расслабление.md' at 07:19:46.
+//
+// --- The root cause in one line ---
+//
+// openFile kept setting .path on the global currentEditor without
+// re-verifying that currentEditor still pointed at the slot it targeted
+// (el). The await at P:983 surrendered control, a nested openFile rotated
+// the global, and P:1028 wrote the new path onto the wrong editor
+// instance.
+//
+// The current switchAwayEditor fix prevents the nested openFile from ever
+// running, so the rotation doesn't happen, so P:1028 ends up writing onto
+// the correct editor. It blocks this specific door. It does not disarm
+// the executioner (rename-from-header), nor does it fix the "P doesn't
+// re-verify currentEditor" problem — any future code path that rotates
+// currentEditor during P's await would poison again.
+test.only('pilaf should not be copied to happiness when opening link in editor2 after stale editor2 drift', async ({page}) => {
+    await page.evaluate(async () => {
+        const seedRoot = await navigator.storage.getDirectory();
+        const hapDir = await seedRoot.getDirectoryHandle('hap', {create: true});
+        const lifeDir = await seedRoot.getDirectoryHandle('life', {create: true});
+
+        const write = async (dir, name, content) => {
+            const handle = await dir.getFileHandle(name, {create: true});
+            const writable = await handle.createWritable();
+            await writable.write(content);
+            await writable.close();
+        };
+
+        await write(hapDir, 'Dream.md', 'Dream body [Awareness](Awareness.md)');
+        await write(hapDir, 'Awareness.md', 'Awareness body');
+        await write(lifeDir, 'Pilaf.md', 'Pilaf recipe');
+        await write(lifeDir, 'Recipes.md', 'Recipes list [Pilaf](Pilaf.md)');
+
+        window.getRootDirHandle = async function () {
+            return await navigator.storage.getDirectory();
+        };
+    });
+
+    await page.evaluate(() => {
+        init(document.getElementById('editor'));
+    });
+
+    await page.waitForTimeout(500);
+
+    const nodeSel = (name) => `#tree .tj_description:text-is('${name}')`;
+    const expand = async (dir) => {
+        const locator = page.locator(nodeSel(dir));
+        const isExpanded = await locator.evaluate(el => el.classList.contains('expanded'));
+        if (!isExpanded) {
+            await locator.click();
+            await page.waitForTimeout(100);
+        }
+    };
+
+    await expand('life');
+    await page.click(nodeSel('Recipes'));
+    await page.waitForTimeout(300);
+
+    await page.evaluate(() => editor.hmdReadLink('Pilaf'));
+    await page.waitForTimeout(500);
+
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+
+    await page.evaluate(async () => {
+        const root = await navigator.storage.getDirectory();
+        const lifeDir = await root.getDirectoryHandle('life');
+        const handle = await lifeDir.getFileHandle('Pilaf.md');
+        const writable = await handle.createWritable();
+        await writable.write('Pilaf recipe UPDATED externally');
+        await writable.close();
+    });
+    await page.waitForTimeout(200);
+
+    await expand('hap');
+    await page.click(nodeSel('Dream'));
+    await page.waitForTimeout(300);
+
+    await page.evaluate(() => editor.hmdReadLink('Awareness'));
+
+    // Wait past the periodic saver (CURRENT_FILE_SYNC_INTERVAL = 1000ms) so any
+    // pending rename-from-header operation would have fired by now.
+    await page.waitForTimeout(2000);
+
+    const disk = await page.evaluate(async () => {
+        const root = await navigator.storage.getDirectory();
+        const listDir = async (name) => {
+            const dir = await root.getDirectoryHandle(name);
+            const names = [];
+            for await (const entry of dir.values()) {
+                names.push(entry.name);
+            }
+            return names.sort();
+        };
+        return {
+            hap: await listDir('hap'),
+            life: await listDir('life'),
+        };
+    });
+
+    expect(disk.hap).toEqual(['Awareness.md', 'Dream.md']);
+    expect(disk.life).toEqual(['Pilaf.md', 'Recipes.md']);
+});
