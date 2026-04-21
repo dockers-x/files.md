@@ -1657,3 +1657,31 @@ async function removeCurrentFile() {
         showRandomFile();
     }
 }
+
+async function showRandomFile() {
+    if (debug) {
+        await openFile(debug.dir, debug.file);
+        return;
+    }
+
+    const allFiles = [];
+    walkFilesExcludingSystemDirs((path) => {
+        if (path === CONFIG_PATH) {
+            return;
+        }
+
+        allFiles.push(path);
+    });
+
+    if (allFiles.length === 0) {
+        console.error('No files found to open.');
+        return;
+    }
+
+    const randomPath = allFiles[Math.floor(Math.random() * allFiles.length)];
+    try {
+        await openFile(randomPath);
+    } catch (error) {
+        console.error('Failed to open random file:', error);
+    }
+}

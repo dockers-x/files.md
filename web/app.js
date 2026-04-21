@@ -162,34 +162,6 @@ function createAutocompleteDict() {
     return dict;
 }
 
-async function showRandomFile() {
-    if (debug) {
-        await openFile(debug.dir, debug.file);
-        return;
-    }
-
-    const allFiles = [];
-    walkFilesExcludingSystemDirs((path) => {
-        if (path === CONFIG_PATH) {
-            return;
-        }
-
-        allFiles.push(path);
-    });
-
-    if (allFiles.length === 0) {
-        console.error('No files found to open.');
-        return;
-    }
-
-    const randomPath = allFiles[Math.floor(Math.random() * allFiles.length)];
-    try {
-        await openFile(randomPath);
-    } catch (error) {
-        console.error('Failed to open random file:', error);
-    }
-}
-
 async function newFile() {
     log('New file clicked');
     let dirPath = toDirPath(currentEditor.path);
@@ -258,38 +230,6 @@ async function newFolder() {
     log('CREATED folder', finalFolderName);
 
     await renderSidebar(finalFolderName);
-}
-
-// Focus last line before the links.
-function focusLastLine() {
-    let lastLine = currentEditor.lastLine();
-    let targetLine = lastLine;
-
-    // Eat all empty lines before first links.
-    while (lastLine >= 0) {
-        const lineContent = currentEditor.getLine(lastLine).trim();
-        if (lineContent === '') {
-            lastLine--;
-            continue;
-        }
-
-        lastLine = Math.min(lastLine + 1, currentEditor.lastLine());
-        break;
-    }
-    for (let i = lastLine; i >= 0; i--) {
-        const lineContent = currentEditor.getLine(i).trim();
-
-        if (!lineContent.startsWith('[') && (!lineContent.endsWith(']') || !lineContent.endsWith(')'))) {
-            targetLine = i;
-            break;
-        }
-    }
-    const targetChar = currentEditor.getLine(targetLine).length;
-    currentEditor.setCursor({ line: targetLine, ch: targetChar });
-    // Cursor at the end, but scroll the doc to top
-    currentEditor.scrollTo(null, 0);
-    // TODO only focus if there's no quick dialogue
-    currentEditor.focus();
 }
 
 function isMetaKey(event) {
