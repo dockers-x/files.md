@@ -94,7 +94,6 @@ My friends and I have been using this approach for 5+ years.
 That's all you need to take notes.  
 
 Telegram bot: [@FilesMDBot](https://t.me/FilesMDBot) (other messengers will follow).  
-Or, you can use whatever is effortless for you.  
 
 ## Knowledge vs Experience
 If your goal is to:
@@ -181,8 +180,8 @@ We're used to sending messages to friends, now we're going to send stuff to the 
 | `Cmd+N` / `Ctrl+N`         | New file                       |
 | `Cmd+M` / `Ctrl+M`         | Move file                      |
 | `Cmd+D` / `Ctrl+D`         | Delete file                    |
-| `Cmd+Enter` / `Ctrl+Enter` | Open chat mode                 |
-| `Cmd+Shift+Enter` / `Ctrl+Shift+Enter` | Toggle inbox dialog |
+| `Cmd+Enter` / `Ctrl+Enter` | Open inbox                     |
+| `Cmd+Shift+Enter` / `Ctrl+Shift+Enter` | Toggle inbox dialog            |
 | `Cmd+[` / `Ctrl+[`         | Go to previous file            |
 | `Cmd+]` / `Ctrl+]`         | Go to next file                |
 | `Cmd+~` / `Ctrl+~`         | Toggle sidebar                 |
