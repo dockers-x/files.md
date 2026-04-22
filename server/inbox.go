@@ -23,7 +23,7 @@ var (
 )
 
 // stripInboxEntryPrefix removes the optional `- [ ]` / `- [x] ` task marker
-// and the `` `HH:MM` `` timestamp so only the entry body remains.
+// and the “ `HH:MM` “ timestamp so only the entry body remains.
 func stripInboxEntryPrefix(block string) string {
 	return inboxEntryPrefix.ReplaceAllString(block, "")
 }

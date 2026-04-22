@@ -1600,6 +1600,162 @@ func TestShowMoveTo(t *testing.T) {
 	r.Equal(kb, tgram.LastSentKeyboard)
 }
 
+func TestShowMoveFromTodayAndInbox(t *testing.T) {
+	r := require.New(t)
+
+	savedNow := now
+	defer func() { now = savedNow }()
+	now = func() time.Time {
+		return time.Date(2025, 6, 29, 9, 0, 0, 0, time.UTC)
+	}
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+	r.NoError(userFS.Write(fs.DirUserRoot, fs.TodayFilename, "- [ ] Today task"))
+	r.NoError(userFS.Write(
+		fs.DirUserRoot, fs.InboxFilename,
+		"#### 29 June, Sunday\n- [ ] `09:00` Inbox body\n- [x] `09:05` Completed body\n",
+	))
+
+	tgram := tg.NewFakeTG()
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
+	err = bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("move", nil)))
+	r.NoError(err)
+
+	inboxHash := inboxMsgHash(t, userFS, 0)
+	r.Equal(tg.NewKeyboard([]tg.Row{
+		tg.NewBtn("✅ Today task", tg.NewCmd("s_move_t", []string{fs.Hash("Today task")})),
+		tg.NewBtn("💬 Inbox body", tg.NewCmd("s_move", []string{inboxHash})),
+		tg.NewRow(
+			tg.NewBtn("Rename", tg.NewCmd("rename", []string{})),
+			tg.NewBtn("OK", tg.NewCmd("today", []string{})),
+		),
+	}), tgram.LastSentKeyboard)
+}
+
+func TestMoveFromTodayAndInbox_ToLater(t *testing.T) {
+	r := require.New(t)
+
+	savedNow := now
+	defer func() { now = savedNow }()
+	now = func() time.Time {
+		return time.Date(2025, 6, 29, 9, 0, 0, 0, time.UTC)
+	}
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+	r.NoError(userFS.Write(fs.DirUserRoot, fs.TodayFilename, "- [ ] Today task"))
+	r.NoError(userFS.Write(
+		fs.DirUserRoot, fs.InboxFilename,
+		"#### 29 June, Sunday\n- [ ] `09:00` Inbox body",
+	))
+
+	tgram := tg.NewFakeTG()
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
+
+	// Click the inbox button → moveToLater ships the entry to Later.md.
+	inboxHash := inboxMsgHash(t, userFS, 0)
+	r.NoError(bot.moveToLater([]string{inboxHash}))
+
+	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.InboxFilename)
+	r.NotContains(inboxMD, "Inbox body")
+
+	laterMD, _ := userFS.Read(fs.DirUserRoot, fs.LaterFilename)
+	r.Contains(laterMD, "- [ ] Inbox body")
+
+	// Click the today button → task is removed from Today.md and appended to
+	// Inbox.md (the handler's first step); user can then pick a target.
+	r.NoError(bot.showMoveToFromToday([]string{fs.Hash("Today task")}))
+
+	todayMD, _ := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
+	r.NotContains(todayMD, "Today task")
+
+	inboxMD, _ = userFS.Read(fs.DirUserRoot, fs.InboxFilename)
+	r.Contains(inboxMD, "Today task")
+}
+
+func TestShowPostpone_WithInbox(t *testing.T) {
+	r := require.New(t)
+
+	savedNow := now
+	defer func() { now = savedNow }()
+	now = func() time.Time {
+		return time.Date(2025, 6, 29, 9, 0, 0, 0, time.UTC)
+	}
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+	r.NoError(userFS.Write(fs.DirUserRoot, fs.TodayFilename, "- [ ] Today task"))
+	r.NoError(userFS.Write(
+		fs.DirUserRoot, fs.InboxFilename,
+		"#### 29 June, Sunday\n- [ ] `09:00` Inbox body\n- [x] `09:05` Completed body\n",
+	))
+
+	tgram := tg.NewFakeTG()
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
+	err = bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("postpone", nil)))
+	r.NoError(err)
+
+	inboxHash := inboxMsgHash(t, userFS, 0)
+	r.Equal(tg.NewKeyboard([]tg.Row{
+		tg.NewBtn("Today task", tg.NewCmd("post", []string{fs.Hash("Today task")})),
+		tg.NewBtn("💬 Inbox body", tg.NewCmd("post", []string{inboxHash})),
+		tg.NewRow(
+			tg.NewBtn("Rename", tg.NewCmd("rename", []string{})),
+			tg.NewBtn("OK", tg.NewCmd("today", []string{})),
+		),
+	}), tgram.LastSentKeyboard)
+}
+
+func TestPostponeTodayTask(t *testing.T) {
+	r := require.New(t)
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+	r.NoError(userFS.Write(fs.DirUserRoot, fs.TodayFilename, "- [ ] Today task"))
+	r.NoError(userFS.Write(fs.DirUserRoot, fs.LaterFilename, ""))
+
+	tgram := tg.NewFakeTG()
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
+	err = bot.postpone([]string{fs.Hash("Today task")})
+	r.NoError(err)
+
+	todayMD, _ := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
+	r.NotContains(todayMD, "Today task")
+
+	laterMD, _ := userFS.Read(fs.DirUserRoot, fs.LaterFilename)
+	r.Contains(laterMD, "- [ ] Today task")
+}
+
+func TestPostponeInboxEntry(t *testing.T) {
+	r := require.New(t)
+
+	savedNow := now
+	defer func() { now = savedNow }()
+	now = func() time.Time {
+		return time.Date(2025, 6, 29, 9, 0, 0, 0, time.UTC)
+	}
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+	r.NoError(userFS.Write(
+		fs.DirUserRoot, fs.InboxFilename,
+		"#### 29 June, Sunday\n- [ ] `09:00` Inbox body",
+	))
+
+	tgram := tg.NewFakeTG()
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
+	h := inboxMsgHash(t, userFS, 0)
+	err = bot.postpone([]string{h})
+	r.NoError(err)
+
+	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.InboxFilename)
+	r.NotContains(inboxMD, "Inbox body")
+
+	laterMD, _ := userFS.Read(fs.DirUserRoot, fs.LaterFilename)
+	r.Contains(laterMD, "- [ ] Inbox body")
+}
+
 func TestShowScheduleEmpty(t *testing.T) {
 	r := require.New(t)
 
