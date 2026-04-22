@@ -1251,7 +1251,7 @@ var TreeConfig = {
 // openContextMenu renders a small floating menu at (e.clientX, e.clientY) and
 // calls build(addItem) where addItem(label, onClick) appends a row. The menu
 // closes on outside click or Esc.
-function openContextMenu(e, build) {
+function openContextMenu(e, build, onClose) {
     const menu = document.createElement('div');
     menu.className = 'sidebar-ctx-menu';
     menu.style.left = e.clientX + 'px';
@@ -1272,6 +1272,7 @@ function openContextMenu(e, build) {
         menu.remove();
         document.removeEventListener('mousedown', onOutside, true);
         document.removeEventListener('keydown', onEsc, true);
+        if (typeof onClose === 'function') onClose();
     }
     function onOutside(ev) { if (!menu.contains(ev.target)) close(); }
     function onEsc(ev) { if (ev.key === 'Escape') close(); }
@@ -1296,12 +1297,20 @@ async function folderContextMenu(e, node) {
     const isFile = !isDir && !path.endsWith('/') && path !== INBOX_PATH;
     if (!isDir && !isFile) return;
 
+    // Visually mark the targeted node as selected while the menu is open, so
+    // scrolling the menu or moving the mouse doesn't make it unclear which
+    // node the action applies to.
+    const span = e.target.closest('.tj_description');
+    if (span) span.classList.add('selected');
+
     openContextMenu(e, (item) => {
         if (isDir) {
             buildFolderMenu(item, path);
         } else {
             buildFileMenu(item, path);
         }
+    }, () => {
+        if (span) span.classList.remove('selected');
     });
 }
 
