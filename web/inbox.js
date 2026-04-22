@@ -209,6 +209,7 @@ async function saveMessagesToInbox(messages) {
     });
 
     await write(INBOX_PATH, content);
+    lastInboxText = content;
 }
 
 // Toggle the checkbox marker on a single inbox line in place.
