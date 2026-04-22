@@ -35,7 +35,8 @@ func stripInboxEntryPrefix(block string) string {
 //   - forward-collapse appending continuation lines to the first block
 //     (see saveFromTextMsg → createOrAdd). A keyboard built for message 1
 //     must still resolve after message 2 is collapsed into the same block.
-// Collision scope: two separate entries with the same `` `HH:MM` `` timestamp
+//
+// Collision scope: two separate entries with the same “ `HH:MM` “ timestamp
 // AND identical first line would hash the same. Per-minute resolution makes
 // this rare in practice, and the outcome (acting on the older entry) is
 // harmless — it's still the user's own content with the same first line.

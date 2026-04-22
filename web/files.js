@@ -997,7 +997,6 @@ async function openFile(path, saveToHistory = true, el = 'editor-textarea') {
     try {
         if (path === INBOX_PATH) {
             openInbox();
-            isMessingWithCurrentEditor = false;
             return;
         } else {
             const codemirror = document.querySelector('.CodeMirror-wrap');
@@ -1092,6 +1091,9 @@ async function openFile(path, saveToHistory = true, el = 'editor-textarea') {
             currentEditor.setOption('viewportMargin', Infinity);
         }, 100);
 
+    } catch (err) {
+        logError('openFile:', err);
+        throw err;
     } finally {
         isMessingWithCurrentEditor = false;
     }
