@@ -1833,6 +1833,52 @@ func TestRenameInboxEntry_PreservesCompletedMarker(t *testing.T) {
 	r.Contains(inboxMD, "- [x] `09:00` Renamed done")
 }
 
+// Reproduces the "msgHash ... not found in inbox" error that users hit when
+// forwarding multiple messages: message 1 produces a keyboard carrying
+// msgHash1, message 2 is collapsed into the same inbox block as a
+// continuation line, which shifts the block's hash. The original msgHash1
+// from the keyboard then fails to resolve.
+func TestForwardCollapse_HashStableAcrossContinuations(t *testing.T) {
+	r := require.New(t)
+
+	savedNow := now
+	defer func() { now = savedNow }()
+	now = func() time.Time {
+		return time.Date(2025, 6, 29, 14, 35, 0, 0, time.UTC)
+	}
+
+	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
+	r.NoError(err)
+
+	tgram := tg.NewFakeTG()
+	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
+
+	u1 := tg.NewUpd(-1, "one\ntwo\nthree")
+	u1.TimeVal = 100
+	u1.HasTimeVal = true
+	r.NoError(bot.Reply(u1))
+
+	msgHash1, ok := firstMsgHash(-1)
+	r.True(ok, "firstMsgHash should be stored for msg 1")
+
+	u2 := tg.NewUpd(-1, "two")
+	u2.TimeVal = 100
+	u2.HasTimeVal = true
+	r.NoError(bot.Reply(u2))
+
+	// The keyboard on msg 1 still carries msgHash1. After the collapsed append,
+	// moveFromInbox must still resolve it to the first block.
+	var gotContent string
+	err = bot.moveFromInbox(func(content string, _ time.Time) error {
+		gotContent = content
+		return nil
+	}, false, msgHash1)
+	r.NoError(err)
+	r.Contains(gotContent, "One")
+	r.Contains(gotContent, "two")
+	r.Contains(gotContent, "three")
+}
+
 func TestShowScheduleEmpty(t *testing.T) {
 	r := require.New(t)
 

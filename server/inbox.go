@@ -28,12 +28,21 @@ func stripInboxEntryPrefix(block string) string {
 	return inboxEntryPrefix.ReplaceAllString(block, "")
 }
 
-// inboxBlockHash returns a stable identifier for an inbox block. The optional
-// `- [ ]` / `- [x] ` task-marker prefix is stripped before hashing so the hash
-// is the same regardless of completion state (a completed entry keeps the
-// identity of the open entry it was toggled from).
+// inboxBlockHash returns a stable identifier for an inbox block. We hash only
+// the timestamped first line (after stripping the `- [ ]`/`- [x] ` marker)
+// so the identifier survives two mutations the bot makes to a block:
+//   - completion toggle `- [ ]` ↔ `- [x]`
+//   - forward-collapse appending continuation lines to the first block
+//     (see saveFromTextMsg → createOrAdd). A keyboard built for message 1
+//     must still resolve after message 2 is collapsed into the same block.
+// Collision scope: two separate entries with the same `` `HH:MM` `` timestamp
+// AND identical first line would hash the same. Per-minute resolution makes
+// this rare in practice, and the outcome (acting on the older entry) is
+// harmless — it's still the user's own content with the same first line.
 func inboxBlockHash(block string) string {
-	return fs.Hash(inboxMarkerPrefix.ReplaceAllString(block, ""))
+	stripped := inboxMarkerPrefix.ReplaceAllString(block, "")
+	firstLine := strings.SplitN(stripped, "\n", 2)[0]
+	return fs.Hash(firstLine)
 }
 
 // findInboxBlockByHash returns (blockIndex, block, true) for the first
