@@ -1,4 +1,4 @@
-#chat {
+#inbox {
     flex: 1;
     overflow-y: auto;
     padding: 24px;
@@ -7,14 +7,14 @@
     position: relative;
 }
 
-#chat-container {
+#inbox-container {
     display: flex;
     flex-direction: column;
     height: 100%;
     background: var(--col-bg);
 }
 
-#chat-container.modal {
+#inbox-container.modal {
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -28,7 +28,7 @@
     z-index: 10;
 }
 
-#chat::before {
+#inbox::before {
     content: '';
     flex-grow: 1;
 }
@@ -233,7 +233,7 @@
     display: block;
 }
 
-#chat-container.modal .to-recent-btn {
+#inbox-container.modal .to-recent-btn {
     max-width: 50px;
     white-space: nowrap;
     overflow: hidden;
@@ -243,7 +243,7 @@
     position: relative;
 }
 
-#chat-container.modal .to-recent-btn {
+#inbox-container.modal .to-recent-btn {
     max-width: 50px;
     white-space: nowrap;
     overflow: hidden;
@@ -253,7 +253,7 @@
     position: relative;
 }
 
-#chat-container.modal .to-recent-btn:hover {
+#inbox-container.modal .to-recent-btn:hover {
     overflow: visible;
 }
 
@@ -262,7 +262,7 @@
     display: inline-block;
 }
 
-#chat-container.modal .btn-wrapper .to-recent-btn {
+#inbox-container.modal .btn-wrapper .to-recent-btn {
     max-width: 50px;
     white-space: nowrap;
     overflow: hidden;
@@ -346,7 +346,7 @@
     color: color-mix(in srgb, var(--col-tx-alt) 70%, transparent);
 }
 
-#chat-input {
+#inbox-input {
     background: var(--col-bg-alt);
     border: 1px solid transparent;
     border-radius: 12px;
@@ -360,7 +360,7 @@
     margin: 0 24px 24px 24px;
 }
 
-#chat-input:focus {
+#inbox-input:focus {
     outline: none;
     border: 1px solid var(--col-border);
 }
@@ -400,15 +400,15 @@
     }
 }
 
-#chat.block-selecting {
+#inbox.block-selecting {
     user-select: none;
 }
 
-#chat.block-selecting .message-content {
+#inbox.block-selecting .message-content {
     user-select: none;
 }
 
-#open-chat-modal {
+#open-inbox-modal {
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -416,20 +416,20 @@
     border: none;
 }
 
-#open-chat-modal:hover svg {
+#open-inbox-modal:hover svg {
     cursor: pointer;
     border-radius: 50%;
 }
 
-#open-chat-modal:not(.hidden) {
+#open-inbox-modal:not(.hidden) {
     display: block;
 }
 
-#open-chat-modal:not(.hidden) svg {
+#open-inbox-modal:not(.hidden) svg {
     display: block !important;
 }
 
-#chat-container.modal #close-chat {
+#inbox-container.modal #close-inbox {
     position: absolute;
     top: 3px;
     right: 5px;
@@ -448,7 +448,7 @@
     transition: background-color 0.2s;
 }
 
-#chat-container.modal #fullscreen-chat {
+#inbox-container.modal #fullscreen-inbox {
     position: absolute;
     top: 6px;
     right: 28px;

@@ -23,7 +23,7 @@ test('send message to chat', async ({ page }) => {
         });
     });
 
-    await page.waitForSelector('#chat');
+    await page.waitForSelector('#inbox');
     await page.keyboard.type('My message');
     await page.waitForTimeout(300);
     // TODO I believe chat is reloaded 2 times for some reason, it blinks, and thus removes previous message
@@ -51,7 +51,7 @@ test('send to chat and move to recent file', async ({ page }) => {
         init(document.getElementById("editor"));
     });
 
-    await page.waitForSelector('#chat');
+    await page.waitForSelector('#inbox');
     await page.keyboard.type('My message');
     await page.waitForTimeout(300);
     await page.keyboard.press('Enter');

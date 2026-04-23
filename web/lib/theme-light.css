@@ -43,23 +43,23 @@
         background: var(--col-bg-active);
     }
 
-    #close-chat, #fullscreen-chat {
+    #close-inbox, #fullscreen-inbox {
         color: var(--col-tx-alt) !important;
     }
 
-    #open-chat-modal:hover svg {
+    #open-inbox-modal:hover svg {
        stroke: var(--col-link) !important;
     }
 
-    #close-chat:hover, #fullscreen-chat:hover {
+    #close-inbox:hover, #fullscreen-inbox:hover {
         color: var(--col-link) !important;
     }
 
-    #close-chat:hover {
+    #close-inbox:hover {
         color: var(--col-link) !important;
     }
 
-    #open-chat-modal svg {
+    #open-inbox-modal svg {
         stroke: #F5F5F5 !important;
     }
 

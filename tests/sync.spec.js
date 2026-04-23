@@ -38,7 +38,7 @@ test.beforeEach(async ({page}, testInfo) => {
 
 async function setup(page) {
     await page.addInitScript((workerIndex) => {
-        window.API_HOST = 'http://localhost:8080';
+        localStorage.setItem('apiUrl', 'http://localhost:8080');
         localStorage.setItem('token', workerIndex);
     }, currentWorkerIndex);
 
@@ -75,7 +75,7 @@ async function setup(page) {
         init(document.getElementById('editor'));
     });
 
-    await page.waitForSelector('#chat', {timeout: 10000});
+    await page.waitForSelector('#inbox', {timeout: 10000});
     await page.waitForSelector('#tree', {timeout: 5000});
 }
 

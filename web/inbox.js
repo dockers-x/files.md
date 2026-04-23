@@ -1,10 +1,10 @@
 const INBOX_PATH = '/Inbox.md';
 let chatIsClean = true; // Are there any unsaved changes?
 
-const inbox = document.getElementById('chat');
-const chatInput = document.getElementById('chat-input');
-const chatButton = document.getElementById('open-chat-modal');
-const chatContainer = document.getElementById('chat-container');
+const inbox = document.getElementById('inbox');
+const chatInput = document.getElementById('inbox-input');
+const chatButton = document.getElementById('open-inbox-modal');
+const chatContainer = document.getElementById('inbox-container');
 
 const READ_PATH = '/Read.md';
 const SHOP_PATH = '/Shop.md';
@@ -103,7 +103,7 @@ async function toggleInboxModal() {
         return;
     }
 
-    let isInboxModal = document.getElementById('chat-container').classList.contains('modal');
+    let isInboxModal = document.getElementById('inbox-container').classList.contains('modal');
     if (isInboxModal) {
         closeInboxModal();
     } else {

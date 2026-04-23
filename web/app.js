@@ -702,7 +702,7 @@ window.addEventListener('focus', async () => {
     // We don't want to do heavy stuff when chat is open.
     if (isInbox || isMemFS) {
         if (isInbox) {
-            document.getElementById('chat-input').focus();
+            document.getElementById('inbox-input').focus();
         }
         return false;
     }
@@ -713,7 +713,7 @@ window.addEventListener('focus', async () => {
         return;
     }
 
-    document.getElementById('chat-input').focus();
+    document.getElementById('inbox-input').focus();
 
     const savedDirectoryHandle = await getRootDirHandle();
     // TODO check if access granted
