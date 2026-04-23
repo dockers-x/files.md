@@ -1,5 +1,6 @@
 // When there's no opened local dir, a temporary FS is provided.
 // Temporary FS includes welcome files, so to demonstrate the app.
+// First we try to create OPFS storage, fallback to our own in-memory FS on failure.
 
 async function getOpfsOrInMemDirHandle() {
     // OPFS requires a secure context (https or localhost), not available on file://
