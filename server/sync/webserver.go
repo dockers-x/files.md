@@ -106,7 +106,7 @@ func router(serverLogger *log.Logger) *http.ServeMux {
 		}
 
 		// Serving the PWA app
-		if config.ServerCfg.AppHost != "" && r.Host == config.ServerCfg.AppHost {
+		if appHost := config.ServerCfg.AppHost(); appHost != "" && r.Host == appHost {
 			http.FileServer(http.Dir("./web")).ServeHTTP(w, r)
 			return
 		}
@@ -272,7 +272,7 @@ func panicMiddleware(next http.HandlerFunc) http.HandlerFunc {
 func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
-		if origin == "https://"+config.ServerCfg.AppHost {
+		if origin == config.ServerCfg.AppURL {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 		}
 

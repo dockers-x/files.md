@@ -36,10 +36,10 @@ func main() {
 
 	// TODO apphost?
 	// Launch habits server if needed
-	if config.ServerCfg.APIHost != "" {
+	if apiHost := config.ServerCfg.APIHost(); apiHost != "" {
 		go sync.Serve(
-			config.ServerCfg.APIHost,
-			config.ServerCfg.AppHost,
+			apiHost,
+			config.ServerCfg.AppHost(),
 			config.ServerCfg.ServerCertDir,
 			config.ServerCfg.ServerLogFile,
 		)
