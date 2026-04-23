@@ -2916,7 +2916,6 @@ func TestSaveToExistingFile(t *testing.T) {
 		),
 		tg.NewBtn("Search", tg.NewCustomCmd("search", nil, "iq")),
 		tg.NewRow(
-			tg.NewBtn("🗂️ Habits", tg.NewCmd("mv", []string{"51fc0", inboxMsgHash(t, userFS, 1)})),
 			tg.NewBtn("🗂 New Dir", tg.NewCmd("new_dir", []string{inboxMsgHash(t, userFS, 1)})),
 		),
 	})
@@ -3004,7 +3003,6 @@ func TestSaveToExistingFileModeTasks(t *testing.T) {
 		),
 		tg.NewBtn("Search", tg.NewCustomCmd("search", nil, "iq")),
 		tg.NewRow(
-			tg.NewBtn("🗂️ Habits", tg.NewCmd("mv", []string{"51fc0", inboxMsgHash(t, userFS, 1)})),
 			tg.NewBtn("🗂 New Dir", tg.NewCmd("new_dir", []string{inboxMsgHash(t, userFS, 1)})),
 		),
 	})
@@ -3090,7 +3088,6 @@ func TestSaveToNewFile(t *testing.T) {
 	selectFileKB := tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("Search", tg.NewCustomCmd("search", nil, "iq")),
 		tg.NewRow(
-			tg.NewBtn("🗂️ Habits", tg.NewCmd("mv", []string{"51fc0", inboxMsgHash(t, userFS, 1)})),
 			tg.NewBtn("🗂 New Dir", tg.NewCmd("new_dir", []string{inboxMsgHash(t, userFS, 1)})),
 		),
 	})
@@ -3172,7 +3169,6 @@ func TestSaveToNewDirFull(t *testing.T) {
 	selectFileKB := tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("Search", tg.NewCustomCmd("search", nil, "iq")),
 		tg.NewRow(
-			tg.NewBtn("🗂️ Habits", tg.NewCmd("mv", []string{"51fc0", inboxMsgHash(t, userFS, 0)})),
 			tg.NewBtn("🗂 New Dir", tg.NewCmd("new_dir", []string{inboxMsgHash(t, userFS, 0)})),
 		),
 	})
@@ -3259,7 +3255,6 @@ func TestSaveToNewDir(t *testing.T) {
 	selectFileKB := tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("Search", tg.NewCustomCmd("search", nil, "iq")),
 		tg.NewRow(
-			tg.NewBtn("🗂️ Habits", tg.NewCmd("mv", []string{"51fc0", inboxMsgHash(t, userFS, 0)})),
 			tg.NewBtn("🗂 New Dir", tg.NewCmd("new_dir", []string{inboxMsgHash(t, userFS, 0)})),
 		),
 	})
@@ -3351,7 +3346,6 @@ func TestSaveToNewMultilineFile(t *testing.T) {
 		),
 		tg.NewBtn("Search", tg.NewCustomCmd("search", nil, "iq")),
 		tg.NewRow(
-			tg.NewBtn("🗂️ Habits", tg.NewCmd("mv", []string{"51fc0", inboxMsgHash(t, userFS, 0)})),
 			tg.NewBtn("🗂 New Dir", tg.NewCmd("new_dir", []string{inboxMsgHash(t, userFS, 0)})),
 		),
 	})
@@ -3431,7 +3425,6 @@ func TestSaveToNewCustomFile(t *testing.T) {
 	selectFileKB := tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("Search", tg.NewCustomCmd("search", nil, "iq")),
 		tg.NewRow(
-			tg.NewBtn("🗂️ Habits", tg.NewCmd("mv", []string{"51fc0", inboxMsgHash(t, userFS, 0)})),
 			tg.NewBtn("🗂 New Dir", tg.NewCmd("new_dir", []string{inboxMsgHash(t, userFS, 0)})),
 		),
 	})
