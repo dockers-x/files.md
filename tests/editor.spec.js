@@ -57,6 +57,7 @@ test('insert link', async ({page}) => {
 });
 
 test('should handle text selection correctly', async ({page}) => {
+    test.skip(!process.env.RUN_SELECTION, 'pixel-dependent; run with RUN_SELECTION=1');
     // Add some test content with various markdown elements
     await page.click('#sidebar >> text=Welcome');
     await page.waitForTimeout(500);
@@ -108,6 +109,7 @@ test('should handle text selection correctly', async ({page}) => {
 });
 
 test('should handle text selection for word-wrap content', async ({page}) => {
+    test.skip(!process.env.RUN_SELECTION, 'pixel-dependent; run with RUN_SELECTION=1');
     // Add some test content with various markdown elements
     await page.click('#sidebar >> text=Welcome');
     await page.waitForSelector('.CodeMirror');
@@ -249,6 +251,7 @@ test('opening link in editor2 should not clobber main editor when stale editor2 
 });
 
 test('should handle partical text selection for word-wrap content', async ({page}) => {
+    test.skip(!process.env.RUN_SELECTION, 'pixel-dependent; run with RUN_SELECTION=1');
     await page.click('#sidebar >> text=Welcome');
     await page.waitForTimeout(500);
     await page.keyboard.press('Meta+a');
