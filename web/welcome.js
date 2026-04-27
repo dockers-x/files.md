@@ -256,3 +256,7 @@ const WELCOME_FILES = {
     }
 }
 
+function getHelpContent() {
+    return WELCOME_FILES["Hotkeys.md"].content;
+}
+

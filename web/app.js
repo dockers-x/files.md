@@ -258,7 +258,7 @@ async function openDir() {
     // TODO check that permissions are given?
 
     await saveDirectoryHandle(dirHandle);
-
+    await write('/Help.md', getHelpContent());
 
     // Media files got corrupted because they got copied from OPFS to local fs storage.
     // It breaks binary files via .text()

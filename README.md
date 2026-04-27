@@ -99,10 +99,9 @@ You can do the same in the web app.
 
 P.S. A really good book on the topic: *How to Take Smart Notes* by Sönke Ahrens.   
 
-## Self-help through taking notes?
-**Harm suffered at the emotional level must be healed at the emotional level.**  
-
-Not through intellectual work, reading or taking notes.  
+## Self-help through reading and taking notes?
+**Harm caused at the emotional level must be healed at the emotional level.**  
+Not through intellectual work.  
 No amount of self-help books can heal emotional wounds.  
 What can help is psychotherapy, rescripting and chair work. Meditation.  
 **Healing happens by feeling.**    
