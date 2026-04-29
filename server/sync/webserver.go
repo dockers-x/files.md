@@ -123,6 +123,7 @@ func router(serverLogger *log.Logger) *http.ServeMux {
 	r.HandleFunc("/token", corsMiddleware(panicMiddleware(IssueToken)))
 
 	// For now it is possible to see other user's habits, but is it a big deal?
+	// TODO use X-Telegram-Init-Data header to verify requests
 	r.HandleFunc("GET /habits_v2/{userID}", func(w http.ResponseWriter, r *http.Request) {
 		userID, err := strconv.ParseInt(r.PathValue("userID"), 10, 64)
 		if err != nil {
@@ -147,6 +148,7 @@ func router(serverLogger *log.Logger) *http.ServeMux {
 		}
 	})
 
+	// TODO use X-Telegram-Init-Data header to verify requests
 	r.HandleFunc("POST /habits_v2/{userID}/{habitName}/{yearDay}/{status}", func(w http.ResponseWriter, r *http.Request) {
 		userID, err := strconv.ParseInt(r.PathValue("userID"), 10, 64)
 		if err != nil {
