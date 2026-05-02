@@ -97,7 +97,9 @@
                 var spans = line_spans_1.getLineSpanExtractor(cm).extract(cursor.line);
                 for (var i = 0; i < spans.length; i++) {
                     var span = spans[i];
-                    if (span.type !== 'linkHref' || !/\.md\)?$/.test(span.text)) continue;
+                    if (span.type !== 'linkHref') continue;
+                    if (span.text.includes('://')) continue;
+                    if (!span.text.endsWith('.md') && !span.text.endsWith('.md)')) continue;
                     if (e.key === 'ArrowRight' && cursor.ch >= span.begin && cursor.ch < span.end) {
                         e.preventDefault();
                         // PATCHED, shift+arrow at hidden linkHref selects to end/start of line.
@@ -249,7 +251,9 @@
                     iNodeHint++;
                 var shallHideTokens = true;
                 // PATCHED, always hide linkHref when path ends with .md — internal links.
-                var isHiddenLinkHref = span.type === 'linkHref' && /\.md\)?$/.test(span.text);
+                var isHiddenLinkHref = span.type === 'linkHref' &&
+                    !span.text.includes('://') &&
+                    (span.text.endsWith('.md') || span.text.endsWith('.md)'));
                 if (!isHiddenLinkHref) {
                     for (var iLineRange = 0; iLineRange < rangesInLine.length; iLineRange++) {
                         var userRange = rangesInLine[iLineRange];
