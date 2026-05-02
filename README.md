@@ -28,6 +28,15 @@ Maybe. But this time:
 - The server is just one binary (or use iCloud/Dropbox/Google Drive for sync)
 - Telegram bot for on-the-go access to your files
 
+## Taking notes is extremely simple
+Just drop your note into the chat-like input and press `Enter`.
+
+<div align="center">
+    <img src="https://github.com/zakirullin/files.md/raw/main/web/img/note1.png" alt="Taking notes" title="Taking notes" width="350"/>
+</div>
+
+That's it. Nothing to learn or setup.
+
 ## Are there enough features and plugins?
 Enough to do the real work.  
 
@@ -100,7 +109,7 @@ I'll quote [I Deleted My Second Brain](https://www.joanwestenberg.com/i-deleted-
 > 
 > **That self never arrived.**
 
-The Second Brain is fancy. _Sounds thrilling._
+The Second Brain is fancy. _Sounds thrilling._  
 Advanced guru templates, plugins...  
 One wants to scrape the wisdom of the whole internet.  
 There's some beauty in this neat system. Every new note brings dopamine.  

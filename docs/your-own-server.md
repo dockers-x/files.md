@@ -37,8 +37,6 @@ settings - ⚙️ Settings
 help - 📕 Help
 ```
 
-
-
 ## Transfer files to another server
 
 1) Backup your data (`/app/storage`)
@@ -62,3 +60,12 @@ We don't need to transfer fslog (renames), if we're certain that all clients rea
 4) Execute `localStorage.setItem('ApiHost', 'YOUR_NEW_API_HOST');` in your PWA applications
 5) Make sure that all files are available
 6) Cleanup the oldserver
+
+## Additional information
+Add this to your crontab (`crontab -e`) for daily git backups:
+`0 0 * * * cd /app/storage/<YOUR_TELEGRAM_ID> && git add . && git commit -m "$(date +\%d.\%m.\%Y)"`
+
+Execute `git init` in your folder before that, to init a git repository.
+
+If you have non-ASCI character in filenames, disable quoting:
+`git config --global core.quotePath false`
