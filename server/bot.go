@@ -127,7 +127,7 @@ const (
 	CmdShowStart                       = "start"
 	CmdDoNothing                       = "nothing"
 	CmdShowLater                       = "later"
-	CmdShowToday                       = "today"
+	CmdShowHome                        = "home"
 	CmdShowFiles                       = "files"
 	CmdShowDirs                        = "dirs"
 	CmdShowPostpone                    = "postpone"
@@ -322,7 +322,7 @@ func (b *Bot) Reply(u Update) error {
 func (b *Bot) handlers() map[string]func([]string) error {
 	handlers := map[string]func([]string) error{
 		// Direct user commands
-		CmdShowToday:          b.ShowHome,
+		CmdShowHome:           b.ShowHome,
 		CmdShowStart:          b.showStart,
 		CmdShowLater:          b.showLaterTasks,
 		CmdShowFiles:          b.showFiles,
@@ -937,7 +937,7 @@ func (b *Bot) showMoveTo(params []string) error {
 
 	// This command is "do nothing and leave an item in the inbox"
 	if !b.cfg.TasksOnlyMode() {
-		showTodayCmd := tg.NewCmd(CmdShowToday, []string{})
+		showTodayCmd := tg.NewCmd(CmdShowHome, []string{})
 		showTodayLabel := "👌"
 		userMoveToBtns = append(userMoveToBtns, tg.NewBtn(showTodayLabel, showTodayCmd))
 	}
@@ -1118,7 +1118,7 @@ func (b *Bot) showLaterTasks(_ []string) error {
 			kb.AddRow(btn)
 		}
 	}
-	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowToday, nil)))
+	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowHome, nil)))
 
 	msg := b.tr("⏳ Your tasks for <b>later</b>:")
 	err = b.showHTML(msg, &kb)
@@ -1217,7 +1217,7 @@ func (b *Bot) showFiles(_ []string) error {
 
 	footer := tg.NewRow(tg.NewBtn(i18n.Tr("🔎 Search"), inlineCmd))
 	if !b.cfg.NotesOnlyMode() {
-		footer = append(footer, tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowToday, nil)))
+		footer = append(footer, tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowHome, nil)))
 	}
 	kb.AddRow(footer)
 
@@ -1252,7 +1252,7 @@ func (b *Bot) showDirs(_ []string) error {
 	inlineCmd := tg.NewCustomCmd(CmdInlineQuerySearchEveryWhere, nil, tg.CmdTypeInlineQueryCurrentChat)
 	footer := tg.NewRow(tg.NewBtn(i18n.Tr("🔎 Search"), inlineCmd))
 	if !b.cfg.NotesOnlyMode() {
-		footer = append(footer, tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowToday, nil)))
+		footer = append(footer, tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowHome, nil)))
 	}
 	kb.AddRow(footer)
 
@@ -1278,7 +1278,7 @@ func (b *Bot) showChecklists(_ []string) error {
 
 		kb.AddRow(btn)
 	}
-	kb.AddRow(tg.NewBtn(b.tr("🏠 Home"), tg.NewCmd(CmdShowToday, nil)))
+	kb.AddRow(tg.NewBtn(b.tr("🏠 Home"), tg.NewCmd(CmdShowHome, nil)))
 
 	err = b.showHTML(b.tr("☑️ Checklists"), &kb)
 	if err != nil {
@@ -1312,7 +1312,7 @@ func (b *Bot) showPostpone(_ []string) error {
 
 	kb.AddRow(tg.NewRow(
 		tg.NewBtn(b.tr("Rename"), tg.NewCmd(CmdShowRename, []string{})),
-		tg.NewBtn(b.tr("OK"), tg.NewCmd(CmdShowToday, []string{})),
+		tg.NewBtn(b.tr("OK"), tg.NewCmd(CmdShowHome, []string{})),
 	))
 
 	err = b.showHTML(b.tr("🦥 Select a task to postpone:"), &kb)
@@ -1349,7 +1349,7 @@ func (b *Bot) showMoveFromToday(_ []string) error {
 
 	kb.AddRow(tg.NewRow(
 		tg.NewBtn(b.tr("Rename"), tg.NewCmd(CmdShowRename, []string{})),
-		tg.NewBtn(b.tr("OK"), tg.NewCmd(CmdShowToday, []string{})),
+		tg.NewBtn(b.tr("OK"), tg.NewCmd(CmdShowHome, []string{})),
 	))
 
 	err = b.showHTML(b.tr("🦥 Select an item to move:"), &kb)
@@ -1398,7 +1398,7 @@ func (b *Bot) showRename(_ []string) error {
 		}
 	}
 
-	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowToday, nil)))
+	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowHome, nil)))
 
 	err = b.showHTML(b.homeLabel(), &kb)
 	if err != nil {
@@ -1413,7 +1413,7 @@ func (b *Bot) showRenameFile(params []string) error {
 	itemHash := params[1]
 
 	kb := tg.NewKeyboard([]tg.Row{
-		tg.NewRow(tg.NewBtn(i18n.StrBack, tg.NewCmd(CmdShowToday, []string{}))),
+		tg.NewRow(tg.NewBtn(i18n.StrBack, tg.NewCmd(CmdShowHome, []string{}))),
 	})
 
 	cmd := tg.NewCmd(CmdRename, []string{checklist, itemHash, "%s"})
@@ -1461,7 +1461,7 @@ func (b *Bot) showStats(_ []string) error {
 		return fmt.Errorf("show stats: %w", err)
 	}
 
-	kb := tg.NewKeyboard([]tg.Row{tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowToday, nil))})
+	kb := tg.NewKeyboard([]tg.Row{tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowHome, nil))})
 	err = b.showHTML(strings.TrimSpace(report), kb)
 	if err != nil {
 		return fmt.Errorf("show stats: %w", err)
@@ -1480,7 +1480,7 @@ func (b *Bot) showSchedule(_ []string) error {
 		schedule = i18n.Tr("You don't have any scheduled tasks! 🌴")
 	}
 
-	kb := tg.NewKeyboard([]tg.Row{tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowToday, nil))})
+	kb := tg.NewKeyboard([]tg.Row{tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowHome, nil))})
 	err = b.showHTML(schedule, kb)
 	if err != nil {
 		return fmt.Errorf("show stats: %w", err)
@@ -1518,7 +1518,7 @@ func (b *Bot) showLongItem(params []string) error {
 
 	item := txt.ChecklistItem(checklistMD, itemHash)
 
-	cmd := CmdShowToday
+	cmd := CmdShowHome
 	if checklist == fs.LaterFilename {
 		cmd = CmdShowLater
 	}
@@ -1560,7 +1560,7 @@ func (b *Bot) showLongItemFromInbox(params []string) error {
 
 	kb := tg.NewKeyboard([]tg.Row{
 		tg.NewRow(
-			tg.NewBtn(i18n.StrBack, tg.NewCmd(CmdShowToday, []string{})),
+			tg.NewBtn(i18n.StrBack, tg.NewCmd(CmdShowHome, []string{})),
 			tg.NewBtn(i18n.AddEmoji("Move"), tg.NewCmd(CmdShowMoveTo, []string{msgHash})),
 			tg.NewBtn(txt.Emoji(i18n.Emoji("Archive"), "Complete"), tg.NewCmd(CmdComplete, []string{msgHash})),
 		),
@@ -1604,7 +1604,7 @@ func (b *Bot) showFile(params []string) error {
 			row = append(row, tg.NewBtn(i18n.Tr("🖨 Share"), cmd))
 		}
 	}
-	row = append(row, tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowToday, nil)))
+	row = append(row, tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowHome, nil)))
 	kb := tg.NewKeyboard([]tg.Row{row})
 
 	md := fmt.Sprintf("**%s**\n\n%s", fs.DisplayName(filename), content)
@@ -1655,7 +1655,7 @@ func (b *Bot) showChecklist(params []string) error {
 			kb.AddRow(btn)
 		}
 	}
-	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowToday, nil)))
+	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowHome, nil)))
 
 	title := checklistTitle(checklist)
 	err = b.showHTML(title+wideSpacer, kb)
@@ -2418,7 +2418,7 @@ func (b *Bot) toADayKeyboard(filenameHash string) (*tg.Keyboard, error) {
 		}
 		kb.AddRow(row)
 	}
-	kb.AddRow(tg.NewBtn(i18n.StrToToday, tg.NewCmd(CmdShowToday, nil)))
+	kb.AddRow(tg.NewBtn(i18n.StrToToday, tg.NewCmd(CmdShowHome, nil)))
 
 	return kb, nil
 }
@@ -2650,7 +2650,7 @@ func (b *Bot) showToADayRecurring(params []string) error {
 		}
 		kb.AddRow(row)
 	}
-	kb.AddRow(tg.NewBtn(i18n.StrToToday, tg.NewCmd(CmdShowToday, nil)))
+	kb.AddRow(tg.NewBtn(i18n.StrToToday, tg.NewCmd(CmdShowHome, nil)))
 
 	err := b.showHTML(i18n.Tr("Repeat the task"), kb)
 	if err != nil {
@@ -2689,13 +2689,13 @@ func (b *Bot) openInApp(_ []string) error {
 }
 
 func (b *Bot) showHelp(_ []string) error {
-	kb := tg.NewKeyboard([]tg.Row{tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowToday, nil))})
+	kb := tg.NewKeyboard([]tg.Row{tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowHome, nil))})
 
 	return b.showHTML("Refer to files.md for help!", kb)
 }
 
 func (b *Bot) download(_ []string) error {
-	kb := tg.NewKeyboard([]tg.Row{tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowToday, nil))})
+	kb := tg.NewKeyboard([]tg.Row{tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowHome, nil))})
 
 	return b.showHTML("Not yet implemented 🏗!", kb)
 }

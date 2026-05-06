@@ -52,7 +52,7 @@ func (b *Bot) showSettings(params []string) error {
 	kb.AddRow(tg.NewBtn(i18n.StrQuickBtns, tg.NewCmd(CmdShowQuickBtnsSettings, nil)))
 	kb.AddRow(tg.NewBtn(i18n.StrMoveToBtns, tg.NewCmd(CmdShowMoveToBtnsSettings, nil)))
 	kb.AddRow(tg.NewBtn(txt.Emoji(i18n.Emoji("world"), b.tr("Timezone")), tg.NewCmd(CmdShowTimezone, nil)))
-	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowToday, nil)))
+	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowHome, nil)))
 
 	err := b.showHTML("Settings:", &kb)
 	if err != nil {
@@ -102,7 +102,7 @@ func (b *Bot) showTimezone(_ []string) error {
 		}
 		kb.AddRow(tg.NewBtn(name, tg.NewCmd(CmdSetTimezone, []string{tz})))
 	}
-	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowToday, nil)))
+	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowHome, nil)))
 
 	err := b.showHTML("Timezone:", &kb)
 	if err != nil {
@@ -169,7 +169,7 @@ func (b *Bot) showQuickBtnsSettings(params []string) error {
 		kb.AddRow(tg.NewBtn(name, disabledCmd))
 	}
 
-	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowToday, nil)))
+	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowHome, nil)))
 
 	text := fmt.Sprintf("Configure quick buttons (%s = add to quick buttons, %s = to remove from quick buttons):", addBtn, delBtn)
 	err = b.showHTML(text, &kb)
@@ -284,7 +284,7 @@ func (b *Bot) showMoveToBtnsSettings(params []string) error {
 		kb.AddRow(tg.NewBtn(name, disabledCmd))
 	}
 
-	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowToday, nil)))
+	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowHome, nil)))
 
 	text := fmt.Sprintf("Configure quick panel (%s = add to panel, %s = to remove):", addBtn, delBtn)
 	err = b.showHTML(text, &kb)
