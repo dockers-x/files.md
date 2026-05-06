@@ -139,10 +139,10 @@ func OnlyChecklists(dirs []File) []File {
 
 func OnlyUserMDFiles(entries []File) []File {
 	systemFiles := []string{
-		TodayFilename,
+		ChatFilename,
 		LaterFilename,
 		DoneFilename,
-		TodayFilename,
+		ChatFilename,
 		ShopFilename,
 		WatchFilename,
 		ReadFilename,

@@ -146,7 +146,7 @@ func AddChecklistItem(md, item string, checked bool) string {
 // Returns newMarkdown and modifiedItem.
 //
 // The marker stays where it was instead of being relocated to the bottom.
-// Moving it broke multi-line records on Today.md: only the marker line
+// Moving it broke multi-line records on Chat.md: only the marker line
 // would migrate, leaving the continuation lines stranded above it.
 func CompleteChecklistItem(md, itemHash string) (string, string) {
 	foundItem := ""

@@ -44,7 +44,7 @@ const (
 	DirHabits   = "habits"
 	DirInsights = "insights"
 
-	TodayFilename = "Today.md"
+	ChatFilename  = "Chat.md"
 	LaterFilename = "Later.md"
 	DoneFilename  = "Done.md"
 

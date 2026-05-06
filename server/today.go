@@ -93,7 +93,7 @@ func renameTodayBlock(content, msgHash, newBody string) (string, error) {
 
 // appendToToday writes a new entry to Inbox.md and returns its stable hash.
 func (b *Bot) appendToToday(content string, timezone *time.Location) (string, error) {
-	exists, err := b.fs.Exists(fs.DirUserRoot, fs.TodayFilename)
+	exists, err := b.fs.Exists(fs.DirUserRoot, fs.ChatFilename)
 	if err != nil {
 		return "", fmt.Errorf("appendToInbox: %w", err)
 	}
@@ -102,7 +102,7 @@ func (b *Bot) appendToToday(content string, timezone *time.Location) (string, er
 
 	var md string
 	if exists {
-		md, err = b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
+		md, err = b.fs.Read(fs.DirUserRoot, fs.ChatFilename)
 		if err != nil {
 			return "", fmt.Errorf("appendToInbox: %w", err)
 		}
@@ -125,7 +125,7 @@ func (b *Bot) appendToToday(content string, timezone *time.Location) (string, er
 	newEntry := fmt.Sprintf("- [ ] %s %s", timestamp, content)
 	md += newEntry + "\n"
 
-	if err := b.fs.Write(fs.DirUserRoot, fs.TodayFilename, md); err != nil {
+	if err := b.fs.Write(fs.DirUserRoot, fs.ChatFilename, md); err != nil {
 		return "", fmt.Errorf("appendToInbox: %w", err)
 	}
 
@@ -151,7 +151,7 @@ func (b *Bot) moveFromToday(
 	lock.Lock()
 	defer lock.Unlock()
 
-	content, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
+	content, err := b.fs.Read(fs.DirUserRoot, fs.ChatFilename)
 	if err != nil {
 		return err
 	}
@@ -278,7 +278,7 @@ func (b *Bot) moveFromToday(
 	}
 	modifiedContent := strings.TrimSpace(strings.Join(newBlocks, "\n"))
 
-	return b.fs.Write(fs.DirUserRoot, fs.TodayFilename, modifiedContent)
+	return b.fs.Write(fs.DirUserRoot, fs.ChatFilename, modifiedContent)
 }
 
 // readBlocks parses content into logical blocks

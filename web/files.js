@@ -53,7 +53,7 @@ let server = {files: {}, media: {}, timestamps: {}, mediaTimestamp: 0}; // In-me
 
 const SERVER_STORAGE_KEY = 'server'; // If scheme is migrated, I believe it's better to introduce a new key, because for now old keys aren't removed.
 const SUPPORTED_EXTENSIONS = ['md', 'png', 'jpg', 'jpeg', 'webp', 'gif',];
-const SYSTEM_DIRS = ['media', 'archive', 'today', 'later', 'journal', 'habits', 'triggers', 'insights'];
+const SYSTEM_DIRS = ['media', 'archive', 'journal', 'habits', 'triggers', 'insights'];
 const CONFIG_PATH = '/config.json';
 
 async function loadLocalFiles(rootDirHandle, slowMode = false) {
@@ -1012,13 +1012,13 @@ async function openFile(path, saveToHistory = true, el = 'editor-textarea') {
     // We should do this before any awaits.
     isMessingWithCurrentEditor = true;
     try {
-        if (path === TODAY_PATH) {
+        if (path === CHAT_PATH) {
             openToday();
             return;
         } else {
             const codemirror = document.querySelector('.CodeMirror-wrap');
             codemirror.style.display = 'block';
-            today.style.display = 'none';
+            chat.style.display = 'none';
             chatInput.style.display = 'none';
             isInbox = false;
         }
@@ -1156,12 +1156,12 @@ async function syncCurrentText(switchAwayEditor = false) {
         return path === window.currentEditor.path;
     }
 
-    if (path === TODAY_PATH) {
+    if (path === CHAT_PATH) {
         // Try to load local changes.
         if (chatIsClean) {
             try {
                 let inMemoryLastModified = getMemFile(path)?.lastModified;
-                let file = await ((await getFileHandle(TODAY_PATH)).getFile());
+                let file = await ((await getFileHandle(CHAT_PATH)).getFile());
 
                 // Update last modified in memory.
                 let memFile = getMemFile(path);
@@ -1176,7 +1176,7 @@ async function syncCurrentText(switchAwayEditor = false) {
                     log(files);
                     isMessingWithCurrentEditor = false;
                     if (!switchAwayEditor) {
-                        await openFile(TODAY_PATH);
+                        await openFile(CHAT_PATH);
                     }
                     return;
                 }
@@ -1191,7 +1191,7 @@ async function syncCurrentText(switchAwayEditor = false) {
 
         if (!switchAwayEditor) {
             try {
-                await syncLocalFileWithServer(TODAY_PATH);
+                await syncLocalFileWithServer(CHAT_PATH);
             } catch (error) {
                 console.error('Error during sync with server:', error);
             }
@@ -1651,7 +1651,7 @@ function findSiblingPath(path) {
     let foundDesiredPath = false;
     let nextPath = null;
     walk(files, (filePath, isFile) => {
-        if (filePath === CONFIG_PATH || filePath === TODAY_PATH) {
+        if (filePath === CONFIG_PATH || filePath === CHAT_PATH) {
             return;
         }
 
@@ -1681,7 +1681,7 @@ function findSiblingPath(path) {
 
 async function removeCurrentFile() {
     const path = currentEditor.path;
-    if (path === TODAY_PATH) {
+    if (path === CHAT_PATH) {
         return;
     }
 

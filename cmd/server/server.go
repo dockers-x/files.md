@@ -188,7 +188,7 @@ func updateToday(telegram *tg.TG, userID int64) {
 		return
 	}
 
-	err = bot.ShowToday(nil)
+	err = bot.ShowHome(nil)
 	if err != nil {
 		slog.Error("Bot error: can't update today", "userID", userID, "err", err)
 	}

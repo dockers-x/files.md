@@ -77,7 +77,7 @@ class SearchModal {
         }
 
         let results = [];
-        const lowPriorityDirs = ['archive', '_read_', '_watch_', '_shop_', 'habits', 'triggers', 'today', 'later'];
+        const lowPriorityDirs = ['archive', 'habits', 'triggers'];
         let searchDirs= excludeDirs(SYSTEM_DIRS);
         const searchHasSlash = search.includes('/') && search.split('/').length === 2;
         if (searchHasSlash) {
@@ -287,7 +287,7 @@ class SearchModal {
             if (path === CONFIG_PATH) {
                 return;
             }
-            if (this.selectedMsgText !== null && path === TODAY_PATH) {
+            if (this.selectedMsgText !== null && path === CHAT_PATH) {
                 return;
             }
 

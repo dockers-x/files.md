@@ -24,7 +24,7 @@ Bot's artifacts can be seen in `/app/storage/<USER_ID>` folder
 1) Enable `Inline Mode` for your bot in [@BotFather](https://t.me/BotFather)
 2) Press "Edit Commands", and send the following list:
 ```
-today - 🏠 Today
+chat - 🏠 Home
 files - 📄 Files
 dirs - 🗂 Dirs
 checklists - ☑️ Checklists

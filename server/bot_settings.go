@@ -120,7 +120,7 @@ func (b *Bot) setTimezone(params []string) error {
 		return fmt.Errorf("setTimezone : %w", err)
 	}
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) showQuickBtnsSettings(params []string) error {

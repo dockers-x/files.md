@@ -31,17 +31,17 @@ function renderSidebar(focusDir = '', modifiedPaths) {
     root = new TreeNode('');
     root.path = '/';
 
-    let inbox = new TreeNode('inbox');
-    inbox.path = TODAY_PATH;
-    if ((currentEditor.path === undefined && !isMemFS) || selectedNodes.has('inbox')) {
-        inbox.setSelected(true);
+    let chat = new TreeNode('chat');
+    chat.path = CHAT_PATH;
+    if ((currentEditor.path === undefined && !isMemFS) || selectedNodes.has('chat')) {
+        chat.setSelected(true);
     }
-    inbox.on('click', async function (n, node) {
+    chat.on('click', async function (n, node) {
         await openToday();
     });
-    root.addChild(inbox)
+    root.addChild(chat)
 
-    // Later sits right under the inbox (today) at the top of the sidebar.
+    // Later sits right under the chat (today) at the top of the sidebar.
     if (files[toFilename(LATER_PATH)] !== undefined) {
         let laterNode = new TreeNode('later', {expanded: false, dir: false});
         laterNode.path = LATER_PATH;
@@ -94,7 +94,7 @@ function renderSidebar(focusDir = '', modifiedPaths) {
         }
     });
 
-    const groupedDirs = new Set(['_read_', '_watch_', 'journal', 'habits', 'insights', 'archive', 'today', 'later']);
+    const groupedDirs = new Set(['journal', 'habits', 'insights', 'archive']);
 
     // Step 0: Lists group
     let lastListNode = null;
@@ -112,7 +112,7 @@ function renderSidebar(focusDir = '', modifiedPaths) {
             return;
         }
 
-        // Later.md is rendered at the top under the inbox, skip it here.
+        // Later.md is rendered at the top under the chat, skip it here.
         if (path === LATER_PATH) {
             return;
         }
@@ -201,7 +201,7 @@ function renderSidebar(focusDir = '', modifiedPaths) {
             return;
         }
 
-        if ([CONFIG_PATH, TODAY_PATH, LATER_PATH].includes(path)) {
+        if ([CONFIG_PATH, CHAT_PATH, LATER_PATH].includes(path)) {
             return;
         }
 
@@ -813,7 +813,7 @@ function TreeView(root, container, options) {
                 } else if (['journal', 'habits', 'insights'].includes(nodeStr)) {
                     groupHeaderText = "PERSONAL";
                     groupHeaderClass = "personal";
-                } else if (nodeStr === 'inbox') {
+                } else if (nodeStr === 'chat') {
                     // groupHeaderText = "Personal";
                     groupHeaderClass = "personal";
                 } else {
@@ -839,7 +839,7 @@ function TreeView(root, container, options) {
             span_desc.classList.add("group-end");
         }
 
-        if (node.isLeaf() && !['today', 'later', 'watch', 'shop', 'read', 'inbox'].includes(node.toString())) {
+        if (node.isLeaf() && !['later', 'watch', 'shop', 'read', 'chat'].includes(node.toString())) {
             span_desc.draggable = true;
         }
 
@@ -1021,9 +1021,9 @@ function TreeView(root, container, options) {
             if (startsWithEmoji(name)) {
                 ret += '<span class="tree-mod_icon" ><div style="width: 22px; text-align: center; transform: translateY(-2px);">' + getFirstEmoji(node.toString()) + '</div></span>';
                 name = trimFirstEmoji(name);
-            } else if (node.toString() === 'inbox') {
+            } else if (node.toString() === 'chat') {
                 ret += '<span class="tree-mod_icon" style="padding-right: 2px">' + TreeConfig.chat_icon + '</span>';
-                name = 'today';
+                name = 'chat';
             } else if (icon != "") {
                 ret += '<span class="tree-mod_icon">' + icon + '</span>';
             } else if ((icon = TreeUtil.getProperty(options, "leaf_icon", "")) != "") {
@@ -1040,8 +1040,8 @@ function TreeView(root, container, options) {
 
             span_desc.innerHTML = ret + name + "</span>";
             span_desc.classList.add("tree-leaf");
-            if (node.toString() === 'inbox') {
-                span_desc.classList.add("sidebar-inbox");
+            if (node.toString() === 'chat') {
+                span_desc.classList.add("sidebar-chat");
             }
 
             li_outer.appendChild(span_desc);
@@ -1107,7 +1107,7 @@ const TreeUtil = {
     default_close_icon: "<svg width=\"22px\" height=\"22px\" viewBox=\"0 0 32 32\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\"> <path stroke-linecap=\"round\" stroke-width=\"2\" d=\"M28 11v13a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h6c3 0 3 3 5 3h9.003C27.108 9 28 9.895 28 11z\"/> </svg>",
     tasks_icon: "<svg width=\"22px\" height=\"22px\" fill=\"none\" viewBox=\"0 0 32 32\"> <path  stroke-linecap=\"round\" stroke-width=\"2\" d=\"M28 11v13a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h6c3 0 3 3 5 3h9.003C27.108 9 28 9.895 28 11zM12 15h8M12 19h8\"/> </svg>",
     checklists_icon: "<svg width=\"22px\" height=\"22px\" fill=\"none\" viewBox=\"0 0 32 32\"> <path stroke-linecap=\"round\" stroke-width=\"2\" d=\"M28 11v13a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h6c3 0 3 3 5 3h9.003C27.108 9 28 9.895 28 11z\"/> <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 17.5l3 3 6-6\"/> </svg>",
-    inbox_icon: "<svg xmlns=\"http://www.w3.org/2000/svg\" style=\"transform: translateX(-3px);\" width=\"25px\" height=\"25px\" fill=\"none\" viewBox=\"0 0 30 30\"> <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M 25 7 H 11 a 4 4 0 0 0 -4 4 v 10 a 4 4 0 0 0 4 4 h 7 l 6 4 v -4 h 1 a 4 4 0 0 0 4 -4 V 11 a 4 4 0 0 0 -4 -4 z\"/> </svg>",
+    chat_icon: "<svg xmlns=\"http://www.w3.org/2000/svg\" style=\"transform: translateX(-3px);\" width=\"25px\" height=\"25px\" fill=\"none\" viewBox=\"0 0 30 30\"> <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M 25 7 H 11 a 4 4 0 0 0 -4 4 v 10 a 4 4 0 0 0 4 4 h 7 l 6 4 v -4 h 1 a 4 4 0 0 0 4 -4 V 11 a 4 4 0 0 0 -4 -4 z\"/> </svg>",
 
     isDOM: function (obj) {
         try {
@@ -1220,7 +1220,7 @@ var TreeConfig = {
     open_icon: TreeUtil.default_open_icon,
     close_icon: TreeUtil.default_close_icon,
     tasks_icon: TreeUtil.tasks_icon,
-    chat_icon: TreeUtil.inbox_icon,
+    chat_icon: TreeUtil.chat_icon,
     checklists_icon: TreeUtil.checklists_icon,
     context_menu: function (e, node) { return folderContextMenu(e, node); }
 };
@@ -1281,7 +1281,7 @@ async function folderContextMenu(e, node) {
     const path = node && node.path;
     if (!path || path === '/') return;
 
-    const isFile = !isDir && !path.endsWith('/') && path !== TODAY_PATH;
+    const isFile = !isDir && !path.endsWith('/') && path !== CHAT_PATH;
     if (!isDir && !isFile) return;
 
     // Visually mark the targeted node as selected while the menu is open, so

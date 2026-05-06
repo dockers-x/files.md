@@ -253,7 +253,7 @@ func (b *Bot) Reply(u Update) error {
 			_, _ = b.tg.Send(b.userID, output, nil, tg.MarkupHTML)
 
 			b.delAllKeyboards()
-			err = b.ShowToday(nil)
+			err = b.ShowHome(nil)
 			if err != nil {
 				return fmt.Errorf("answer after plugin: %w", err)
 			}
@@ -322,7 +322,7 @@ func (b *Bot) Reply(u Update) error {
 func (b *Bot) handlers() map[string]func([]string) error {
 	handlers := map[string]func([]string) error{
 		// Direct user commands
-		CmdShowToday:          b.ShowToday,
+		CmdShowToday:          b.ShowHome,
 		CmdShowStart:          b.showStart,
 		CmdShowLater:          b.showLaterTasks,
 		CmdShowFiles:          b.showFiles,
@@ -487,7 +487,7 @@ func (b *Bot) saveFromTextMsg(u Update) error {
 		if shouldCollapse {
 			// We just write at the end of our append-only chat file,
 			// that would concat the current message with the previous one.
-			err := b.createOrAdd(fs.DirUserRoot, fs.TodayFilename, msg)
+			err := b.createOrAdd(fs.DirUserRoot, fs.ChatFilename, msg)
 			if err != nil {
 				return fmt.Errorf("save collapsed: %w", err)
 			}
@@ -535,7 +535,7 @@ func (b *Bot) saveFromImage(u Update) error {
 	if updateHasTime {
 		_, shouldCollapse := collapseToMsg(b.userID, msgTime)
 		if shouldCollapse {
-			err := b.createOrAdd(fs.DirUserRoot, fs.TodayFilename, content)
+			err := b.createOrAdd(fs.DirUserRoot, fs.ChatFilename, content)
 			if err != nil {
 				return fmt.Errorf("save collapsed: %w", err)
 			}
@@ -626,7 +626,7 @@ func (b *Bot) addToRepliedFile(replyToMsgID int, newContent string) error {
 	b.db.SetRecentCommand(CmdMoveToExistingFile)
 	b.db.SetRecentCommandParams([]string{fs.ShortHash(existingFilename)})
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) answerSearch(u Update) error {
@@ -728,7 +728,7 @@ func (b *Bot) answerFileRequest(msg string) error {
 		// Just an informative message
 		_, _ = b.tg.Send(b.userID, fmt.Sprintf(i18n.Tr("Saved to <b>%s</b>"), fs.DisplayName(filename)), nil, tg.MarkupHTML)
 
-		return b.ShowToday(nil)
+		return b.ShowHome(nil)
 	}
 
 	return b.showFile([]string{dir, filename})
@@ -926,7 +926,7 @@ func (b *Bot) showMoveTo(params []string) error {
 	if len(userMoveToBtns) == 0 {
 		b.delAllKeyboards()
 
-		return b.ShowToday(nil)
+		return b.ShowHome(nil)
 	}
 
 	// Add recent command if any
@@ -994,7 +994,7 @@ func (b *Bot) recentCmdBtn(msgHash string) *tg.Btn {
 	return &btn
 }
 
-func (b *Bot) ShowToday(_ []string) error {
+func (b *Bot) ShowHome(_ []string) error {
 	if b.cfg.NotesOnlyMode() {
 		return b.showDirs(nil)
 	}
@@ -1010,7 +1010,7 @@ func (b *Bot) ShowToday(_ []string) error {
 	var kb tg.Keyboard
 
 	// Adding records from today
-	content, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
+	content, err := b.fs.Read(fs.DirUserRoot, fs.ChatFilename)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("show today: can't read chat file: %w", err)
 	}
@@ -1093,7 +1093,7 @@ func (b *Bot) ShowToday(_ []string) error {
 		}
 	}
 
-	msg := b.todayLabel(shownCount)
+	msg := b.homeLabel(shownCount)
 	err = b.showHTML(msg, &kb)
 	if err != nil {
 		return fmt.Errorf("show list: %w", err)
@@ -1131,11 +1131,11 @@ func (b *Bot) showLaterTasks(_ []string) error {
 
 // TODO improve a bit
 // msgsCount - how many messages (inbox items) were shown to a user
-func (b *Bot) todayLabel(msgsCount ...int) string {
+func (b *Bot) homeLabel(msgsCount ...int) string {
 	var statusBar string
 
 	hasPomodoroInToday := false
-	todayMD, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
+	todayMD, err := b.fs.Read(fs.DirUserRoot, fs.ChatFilename)
 	if err == nil {
 		_, completed := txt.ChecklistItems(todayMD)
 		checked, exists := completed[fs.PomodoroTask]
@@ -1184,7 +1184,7 @@ func (b *Bot) randomNote(_ []string) error {
 		}
 	}
 	if len(notes) == 0 {
-		return b.ShowToday(nil)
+		return b.ShowHome(nil)
 	}
 	pick := notes[rand.Intn(len(notes))]
 	return b.showFile([]string{fs.Hash(pick.dir), fs.Hash(pick.name)})
@@ -1273,7 +1273,7 @@ func (b *Bot) showChecklists(_ []string) error {
 
 		kb.AddRow(btn)
 	}
-	kb.AddRow(tg.NewBtn(b.tr("🏠 Today"), tg.NewCmd(CmdShowToday, nil)))
+	kb.AddRow(tg.NewBtn(b.tr("🏠 Home"), tg.NewCmd(CmdShowToday, nil)))
 
 	err = b.showHTML(b.tr("☑️ Checklists"), &kb)
 	if err != nil {
@@ -1287,7 +1287,7 @@ func (b *Bot) showPostpone(_ []string) error {
 	var kb tg.Keyboard
 
 	// Inbox items also show in /postpone so the user can send them to Later.md.
-	inboxMD, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
+	inboxMD, err := b.fs.Read(fs.DirUserRoot, fs.ChatFilename)
 	if err == nil {
 		for _, block := range readBlocks(inboxMD) {
 			if inboxHeaderRegex.MatchString(block) {
@@ -1322,7 +1322,7 @@ func (b *Bot) showMoveFromToday(_ []string) error {
 	var kb tg.Keyboard
 
 	// Show today inbox items
-	inboxContent, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
+	inboxContent, err := b.fs.Read(fs.DirUserRoot, fs.ChatFilename)
 	if err == nil {
 		blocks := readBlocks(inboxContent)
 		for _, block := range blocks {
@@ -1375,7 +1375,7 @@ func (b *Bot) postpone(params []string) error {
 func (b *Bot) showRename(_ []string) error {
 	var kb tg.Keyboard
 
-	inboxMD, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
+	inboxMD, err := b.fs.Read(fs.DirUserRoot, fs.ChatFilename)
 	if err == nil {
 		for _, block := range readBlocks(inboxMD) {
 			if inboxHeaderRegex.MatchString(block) {
@@ -1388,14 +1388,14 @@ func (b *Bot) showRename(_ []string) error {
 			if len([]rune(preview)) > maxHeaderLengthForMobile {
 				preview = string([]rune(preview)[:maxHeaderLengthForMobile]) + "…"
 			}
-			cmd := tg.NewCmd(CmdShowRenameFile, []string{fs.TodayFilename, todayBlockHash(block)})
+			cmd := tg.NewCmd(CmdShowRenameFile, []string{fs.ChatFilename, todayBlockHash(block)})
 			kb.AddRow(tg.NewBtn("💬 "+preview, cmd))
 		}
 	}
 
 	kb.AddRow(tg.NewBtn(i18n.StrToday, tg.NewCmd(CmdShowToday, nil)))
 
-	err = b.showHTML(b.todayLabel(), &kb)
+	err = b.showHTML(b.homeLabel(), &kb)
 	if err != nil {
 		return fmt.Errorf("show rename: %w", err)
 	}
@@ -1432,7 +1432,7 @@ func (b *Bot) rename(params []string) error {
 		return fmt.Errorf("rename: can't read checklist %s: %w", checklist, err)
 	}
 
-	if checklist == fs.TodayFilename {
+	if checklist == fs.ChatFilename {
 		md, err = renameTodayBlock(md, itemHash, newItemNameFromUserInput)
 		if err != nil {
 			return fmt.Errorf("rename: %w", err)
@@ -1447,7 +1447,7 @@ func (b *Bot) rename(params []string) error {
 		return fmt.Errorf("rename: can't write checklist %s: %w", checklist, err)
 	}
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) showStats(_ []string) error {
@@ -1496,7 +1496,7 @@ func (b *Bot) showShop(_ []string) error {
 	return b.showChecklist([]string{fs.Hash(fs.ShopFilename)})
 }
 
-// TODO today.md move to today/later
+// TODO Chat.md move to today/later
 func (b *Bot) showLongItem(params []string) error {
 	checklistHash := params[0]
 	itemHash := params[1]
@@ -1533,11 +1533,11 @@ func (b *Bot) showLongItem(params []string) error {
 	return nil
 }
 
-// TODO today.md move to today/later
+// TODO Chat.md move to today/later
 func (b *Bot) showLongItemFromInbox(params []string) error {
 	msgHash := params[0]
 
-	inboxMD, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
+	inboxMD, err := b.fs.Read(fs.DirUserRoot, fs.ChatFilename)
 	if err != nil {
 		return fmt.Errorf("show long item: can't read inbox file: %w", err)
 	}
@@ -1729,7 +1729,7 @@ func (b *Bot) moveToDirFromToday(params []string) error {
 	// Just an informative messages
 	_, _ = b.tg.Send(b.userID, msg, nil, tg.MarkupHTML)
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) moveToDir(params []string) error {
@@ -1773,7 +1773,7 @@ func (b *Bot) moveToDir(params []string) error {
 	// Just an informative messages
 	_, _ = b.tg.Send(b.userID, msg, nil, tg.MarkupHTML)
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) moveToChecklist(params []string) error {
@@ -1788,7 +1788,7 @@ func (b *Bot) moveToChecklist(params []string) error {
 		}
 	}
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) addToChecklist(checklistHash string, msgHash string) (string, error) {
@@ -1796,7 +1796,7 @@ func (b *Bot) addToChecklist(checklistHash string, msgHash string) (string, erro
 	// Create known checklist if it doesn't exist
 	if err != nil {
 		supportedChecklists := []string{
-			fs.TodayFilename,
+			fs.ChatFilename,
 			fs.LaterFilename,
 			fs.ReadFilename,
 			fs.WatchFilename,
@@ -1864,11 +1864,11 @@ func (b *Bot) completeChecklistItem(params []string) error {
 
 	if checklist == fs.LaterFilename {
 		return b.showLaterTasks(nil)
-	} else if checklist != fs.TodayFilename {
+	} else if checklist != fs.ChatFilename {
 		return b.showChecklist([]string{checklist})
 	}
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) requestNewDirName(params []string) error {
@@ -1932,7 +1932,7 @@ func (b *Bot) moveToExistingFile(params []string) error {
 	// Just an informative messages
 	_, _ = b.tg.Send(b.userID, msg, nil, tg.MarkupHTML)
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) moveToExistingNote(params []string) error {
@@ -1977,7 +1977,7 @@ func (b *Bot) moveToExistingNote(params []string) error {
 	// Just an informative messages
 	_, _ = b.tg.Send(b.userID, msg, nil, tg.MarkupHTML)
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) moveToDirChecklist(params []string) error {
@@ -2017,7 +2017,7 @@ func (b *Bot) moveToDirChecklist(params []string) error {
 		return fmt.Errorf("move to checklistDir: can't read content from chat: %w", err)
 	}
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) moveToRead(params []string) error {
@@ -2085,7 +2085,7 @@ func (b *Bot) moveToNewFile(params []string) error {
 	msg := txt.Emoji(i18n.Emoji("file"), fmt.Sprintf(i18n.Tr("Saved to <b>%s</b>"), fs.DisplayName(newFilenameFromUserInput)))
 	_, _ = b.tg.Send(b.userID, msg, nil, tg.MarkupHTML)
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) moveToNewChecklist(params []string) error {
@@ -2126,7 +2126,7 @@ func (b *Bot) moveToJournal(params []string) error {
 		return nil
 	}
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) addToJournalAndContinue(params []string) error {
@@ -2158,7 +2158,7 @@ func (b *Bot) addToJournalFromShortcut(params []string) error {
 	msg := i18n.Tr("Saved to <b>Journal</b>")
 	_, _ = b.tg.Send(b.userID, msg, nil, tg.MarkupHTML)
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 // TODO add tests
@@ -2201,7 +2201,7 @@ func (b *Bot) addToRecentFileOrNoteFromShortcut(params []string) error {
 	msg := fmt.Sprintf(i18n.Tr("Added to <b>%s</b>"), fs.DisplayName(existingFilename))
 	_, _ = b.tg.Send(b.userID, msg, nil, tg.MarkupHTML)
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) moveToLater(params []string) error {
@@ -2210,7 +2210,7 @@ func (b *Bot) moveToLater(params []string) error {
 	return b.moveToChecklist([]string{fs.LaterFilename, msgHash})
 }
 
-// complete marks a single Today.md entry as done ("- [ ]" => "- [x]").
+// complete marks a single Chat.md entry as done ("- [ ]" => "- [x]").
 func (b *Bot) complete(params []string) error {
 	msgHash := params[0]
 
@@ -2222,17 +2222,17 @@ func (b *Bot) complete(params []string) error {
 	lock.Lock()
 	defer lock.Unlock()
 
-	content, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
+	content, err := b.fs.Read(fs.DirUserRoot, fs.ChatFilename)
 	if err != nil {
 		return fmt.Errorf("complete: can't read inbox: %w", err)
 	}
 
 	newContent, item := txt.CompleteChecklistItem(content, msgHash)
 	if item == "" {
-		return b.ShowToday(nil)
+		return b.ShowHome(nil)
 	}
 
-	if err := b.fs.Write(fs.DirUserRoot, fs.TodayFilename, newContent); err != nil {
+	if err := b.fs.Write(fs.DirUserRoot, fs.ChatFilename, newContent); err != nil {
 		return fmt.Errorf("complete: can't write inbox: %w", err)
 	}
 
@@ -2243,7 +2243,7 @@ func (b *Bot) complete(params []string) error {
 		}
 	}
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) completeListItem(params []string) error {
@@ -2332,7 +2332,7 @@ func (b *Bot) schedule(params []string) error {
 		return fmt.Errorf("schedule: can't add to schedule: %w", err)
 	}
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) scheduleForTmrw(params []string) error {
@@ -2578,7 +2578,7 @@ func (b *Bot) toChecklistKeyboard(filenameHash string) (*tg.Keyboard, error) {
 func (b *Bot) togglePomodoro(_ []string) error {
 	// Check if Pomodoro is already running
 	hasPomodoroInToday := false
-	todayMD, err := b.fs.Read(fs.DirUserRoot, fs.TodayFilename)
+	todayMD, err := b.fs.Read(fs.DirUserRoot, fs.ChatFilename)
 	if err == nil {
 		_, isCompleted := txt.ChecklistItems(todayMD)
 		_, hasPomodoroInToday = isCompleted[fs.PomodoroTask]
@@ -2586,7 +2586,7 @@ func (b *Bot) togglePomodoro(_ []string) error {
 
 	if hasPomodoroInToday {
 		todayMD, _ = txt.RemoveChecklistItem(todayMD, fs.PomodoroTask)
-		err = b.fs.Write(fs.DirUserRoot, fs.TodayFilename, todayMD)
+		err = b.fs.Write(fs.DirUserRoot, fs.ChatFilename, todayMD)
 		if err != nil {
 			return fmt.Errorf("toggle pomodoro: failed to delete pomodoro file: %w", err)
 		}
@@ -2594,18 +2594,18 @@ func (b *Bot) togglePomodoro(_ []string) error {
 
 	if hasPomodoroInToday {
 		_, _ = b.tg.Send(b.userID, "Pomodoro is stopped", nil, tg.MarkupHTML)
-		return b.ShowToday(nil)
+		return b.ShowHome(nil)
 	}
 
 	// Create Pomodoro checklist item
-	err = b.fs.Write(fs.DirUserRoot, fs.TodayFilename, txt.AddChecklistItem(todayMD, fs.PomodoroTask, false))
+	err = b.fs.Write(fs.DirUserRoot, fs.ChatFilename, txt.AddChecklistItem(todayMD, fs.PomodoroTask, false))
 
 	_, err = b.tg.Send(b.userID, i18n.PomodoroStarted, nil, tg.MarkupHTML)
 	if err != nil {
 		return fmt.Errorf("toggle pomodoro: failed to show pomodoro hint message %w", err)
 	}
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) showToADayRecurring(params []string) error {
@@ -2725,7 +2725,7 @@ func (b *Bot) setTasksOnlyMode(_ []string) error {
 		}
 	}
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) setNotesOnlyMode(_ []string) error {
@@ -2734,7 +2734,7 @@ func (b *Bot) setNotesOnlyMode(_ []string) error {
 		return fmt.Errorf("notes only mode: can't set notes only mode %w", err)
 	}
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) setJournalOnlyMode(_ []string) error {
@@ -2774,7 +2774,7 @@ func (b *Bot) setFullMode(_ []string) error {
 		return fmt.Errorf("full mode: can't create dirs: %w", err)
 	}
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) setChatOnlyMode(_ []string) error {
@@ -2814,7 +2814,7 @@ func (b *Bot) completeHabit(params []string) error {
 		return fmt.Errorf("complete habit: can't write record to journal: %w", err)
 	}
 
-	return b.ShowToday(nil)
+	return b.ShowHome(nil)
 }
 
 func (b *Bot) shareNote(params []string) error {

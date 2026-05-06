@@ -158,7 +158,7 @@ func MoveDueTasks(
 
 			infolog.Info("scheduled task moved to inbox", schedule.Filename, "filename")
 
-			_ = bot.ShowToday(nil)
+			_ = bot.ShowHome(nil)
 
 			if len(schedule.Cron) != 0 {
 				nextScheduledAt := NextExcludeToday(schedule.Cron)
@@ -183,7 +183,7 @@ func MoveDueTasks(
 }
 
 // RemoveCompletedChecklistItems runs nightly (23:50 user-local) to sweep
-// `- [x]` items out of Today.md, Later.md and Inbox.md, archive them to
+// `- [x]` items out of Chat.md, Later.md and Inbox.md, archive them to
 // Done.md, and append each to the user's journal.
 func RemoveCompletedChecklistItems(
 	storagePath,
@@ -228,9 +228,9 @@ func RemoveCompletedChecklistItems(
 			reducer  func(string) (string, string)
 		}
 		targets := []target{
-			{fs.TodayFilename, txt.RemoveCompletedChecklistItems},
+			{fs.ChatFilename, txt.RemoveCompletedChecklistItems},
 			{fs.LaterFilename, txt.RemoveCompletedChecklistItems},
-			{fs.TodayFilename, removeCompletedInboxEntries},
+			{fs.ChatFilename, removeCompletedInboxEntries},
 		}
 
 		for _, t := range targets {

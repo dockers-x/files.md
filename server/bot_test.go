@@ -26,13 +26,13 @@ func init() {
 	}
 }
 
-// inboxMsgHash returns the hash of the nth non-header block in Today.md, or
+// inboxMsgHash returns the hash of the nth non-header block in Chat.md, or
 // a placeholder string if the inbox doesn't yet exist or has fewer entries.
 // Tests use this to resolve the stable inbox-entry identifier the bot now
 // carries in its callback params (previously a positional int index).
 func inboxMsgHash(t *testing.T, userFS *fs.FS, nth int) string {
 	t.Helper()
-	content, err := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
+	content, err := userFS.Read(fs.DirUserRoot, fs.ChatFilename)
 	if err != nil {
 		return "nohash"
 	}
@@ -76,13 +76,13 @@ func TestSaveFromTextMsg(t *testing.T) {
 	err = bot.Reply(tg.NewUpd(-1, "New task"))
 	r.NoError(err)
 
-	chat, err := bot.fs.Read("/", "Today.md")
+	chat, err := bot.fs.Read("/", "Chat.md")
 	r.NoError(err)
 
 	r.Equal("#### 29 June, Sunday\n- [ ] `12:00` New task\n", chat)
 }
 
-// TODO today.md
+// TODO Chat.md
 func TestSaveFromLongTextMsg(t *testing.T) {
 	r := require.New(t)
 
@@ -120,7 +120,7 @@ func TestSaveFromLongTextMsg(t *testing.T) {
 	r.Equal("", content)
 }
 
-// TODO today.md
+// TODO Chat.md
 //
 //	func TestSaveFromTextMsgWithSanitize(t *testing.T) {
 //		r := require.New(t)
@@ -456,7 +456,7 @@ func TestSaveFromPhotoWithCaption(t *testing.T) {
 	err = bot.Reply(upd)
 	r.NoError(err)
 
-	content, err := userFS.Read("/", "Today.md")
+	content, err := userFS.Read("/", "Chat.md")
 	r.NoError(err)
 	r.Equal("#### 11 August, Sunday\n- [ ] `09:54` ![](media/tg_PHOTO_ID)\nCaption\n", content)
 
@@ -501,7 +501,7 @@ func TestSaveFromPhotoWithLongCaption(t *testing.T) {
 	err = bot.Reply(upd)
 	r.NoError(err)
 
-	content, err := userFS.Read("/", "Today.md")
+	content, err := userFS.Read("/", "Chat.md")
 	r.NoError(err)
 	r.Equal("#### 11 August, Sunday\n- [ ] `09:54` ![](media/tg_PHOTO_ID)\nAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n", content)
 
@@ -540,7 +540,7 @@ func TestSaveFromPhotoWithSanitizedCaption(t *testing.T) {
 	err = bot.Reply(upd)
 	r.NoError(err)
 
-	content, err := userFS.Read("/", "Today.md")
+	content, err := userFS.Read("/", "Chat.md")
 	r.NoError(err)
 	r.Equal("#### 11 August, Sunday\n- [ ] `09:54` ![](media/tg_PHOTO_ID)\nCaption/\n", content)
 
@@ -590,7 +590,7 @@ func TestSaveFromPhotoWithoutCaption(t *testing.T) {
 	err = bot.Reply(upd)
 	r.NoError(err)
 
-	content, err := userFS.Read("/", "Today.md")
+	content, err := userFS.Read("/", "Chat.md")
 	r.NoError(err)
 	r.Equal("#### 11 August, Sunday\n- [ ] `09:54` ![](media/tg_PHOTO_ID)\n", content)
 
@@ -652,13 +652,13 @@ func TestAddTaskToLater(t *testing.T) {
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	r.NoError(userFS.CreateSystemDirs())
-	r.NoError(userFS.Write(fs.DirUserRoot, fs.TodayFilename, "- [ ] First task"))
+	r.NoError(userFS.Write(fs.DirUserRoot, fs.ChatFilename, "- [ ] First task"))
 
 	tgram := tg.NewFakeTG()
 	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	r.NoError(bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("mv_later", []string{todayBlockHash("- [ ] First task")}))))
 
-	todayMD, err := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
+	todayMD, err := userFS.Read(fs.DirUserRoot, fs.ChatFilename)
 	r.NoError(err)
 	r.NotContains(todayMD, "First task")
 
@@ -679,12 +679,12 @@ func completeTask(t *testing.T, initial, hashed string) string {
 	r := require.New(t)
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	r.NoError(userFS.Write("/", "Today.md", initial))
+	r.NoError(userFS.Write("/", "Chat.md", initial))
 
 	bot := NewBot(-1, tg.NewFakeTG(), userFS, db.NewFakeDB(), fakeConfig())
 	r.NoError(bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("c", []string{todayBlockHash(hashed)}))))
 
-	got, err := userFS.Read("/", "Today.md")
+	got, err := userFS.Read("/", "Chat.md")
 	r.NoError(err)
 	return got
 }
@@ -746,7 +746,7 @@ func TestCompleteTask_Pomodoro_AddsSchedule(t *testing.T) {
 	r.NoError(bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("c", []string{todayBlockHash(pomodoroBlock)}))))
 	after := time.Now().Unix()
 
-	todayMD, err := userFS.Read("/", fs.TodayFilename)
+	todayMD, err := userFS.Read("/", fs.ChatFilename)
 	r.NoError(err)
 	r.Contains(todayMD, "- [x] "+fs.PomodoroTask)
 
@@ -765,7 +765,7 @@ func TestCompleteTask_NonPomodoro_DoesNotSchedule(t *testing.T) {
 
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	r.NoError(userFS.Write("/", fs.TodayFilename, "- [ ] Regular task"))
+	r.NoError(userFS.Write("/", fs.ChatFilename, "- [ ] Regular task"))
 
 	cfg := fakeConfig()
 	bot := NewBot(-1, tg.NewFakeTG(), userFS, db.NewFakeDB(), cfg)
@@ -782,12 +782,12 @@ func TestCompleteChecklistItem_Pomodoro_DoesNotSchedule(t *testing.T) {
 
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	r.NoError(userFS.Write("/", fs.TodayFilename, "- [ ] "+fs.PomodoroTask))
+	r.NoError(userFS.Write("/", fs.ChatFilename, "- [ ] "+fs.PomodoroTask))
 
 	cfg := fakeConfig()
 	bot := NewBot(-1, tg.NewFakeTG(), userFS, db.NewFakeDB(), cfg)
 
-	r.NoError(bot.completeChecklistItem([]string{fs.Hash(fs.TodayFilename), fs.Hash(fs.PomodoroTask)}))
+	r.NoError(bot.completeChecklistItem([]string{fs.Hash(fs.ChatFilename), fs.Hash(fs.PomodoroTask)}))
 
 	schedules, err := cfg.Schedules()
 	r.NoError(err)
@@ -821,7 +821,7 @@ func TestToday(t *testing.T) {
 
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	err = userFS.Write("/", "Today.md", "- [ ] `00:00` First task\n- [ ] `00:00` Second task")
+	err = userFS.Write("/", "Chat.md", "- [ ] `00:00` First task\n- [ ] `00:00` Second task")
 	r.NoError(err)
 
 	tgram := tg.NewFakeTG()
@@ -897,7 +897,7 @@ func TestTodayMultilineTaskShownAsLong(t *testing.T) {
 
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	err = userFS.Write("/", "Today.md", "- [ ] `00:00` First task\nsome continuation")
+	err = userFS.Write("/", "Chat.md", "- [ ] `00:00` First task\nsome continuation")
 	r.NoError(err)
 
 	tgram := tg.NewFakeTG()
@@ -931,7 +931,7 @@ func TestTodayMixedSingleAndMultilineTasks(t *testing.T) {
 	r.NoError(err)
 	content := "- [ ] `00:00` First task\n" +
 		"- [ ] `00:00` Second task\nextra detail line"
-	err = userFS.Write("/", "Today.md", content)
+	err = userFS.Write("/", "Chat.md", content)
 	r.NoError(err)
 
 	tgram := tg.NewFakeTG()
@@ -948,7 +948,7 @@ func TestTodayMixedSingleAndMultilineTasks(t *testing.T) {
 	}), tgram.LastSentKeyboard)
 }
 
-// TODO Today.md
+// TODO Chat.md
 //func TestTodayWithMultilineTasks(t *testing.T) {
 //	r := require.New(t)
 //
@@ -1020,7 +1020,7 @@ func TestFiles(t *testing.T) {
 		},
 		[]tg.Btn{
 			tg.NewBtn("🔎 Search", tg.NewCustomCmd("search", nil, "iq")),
-			tg.NewBtn("🏠 Today", tg.NewCmd("today", nil)),
+			tg.NewBtn("🏠 Home", tg.NewCmd("today", nil)),
 		},
 	}), tgram.LastSentKeyboard)
 }
@@ -1045,7 +1045,7 @@ func TestChecklists(t *testing.T) {
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("Checklist1", tg.NewCmd("checklist", []string{"3755fd335a8"})),
 		tg.NewBtn("Checklist2", tg.NewCmd("checklist", []string{"c54b67d1d3d"})),
-		tg.NewBtn("🏠 Today", tg.NewCmd("today", nil)),
+		tg.NewBtn("🏠 Home", tg.NewCmd("today", nil)),
 	},
 	), tgram.LastSentKeyboard)
 }
@@ -1128,7 +1128,7 @@ func TestShowChecklist(t *testing.T) {
 	r.Equal("Checklist1"+wideSpacer, tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("Item", tg.NewCmd("check_item", []string{"Checklist1_.txt", "7d74f3b92b1"})),
-		tg.NewBtn("🏠 Today", tg.NewCmd("today", nil)),
+		tg.NewBtn("🏠 Home", tg.NewCmd("today", nil)),
 	},
 	), tgram.LastSentKeyboard)
 }
@@ -1150,7 +1150,7 @@ func TestCompleteItemInChecklist(t *testing.T) {
 
 	r.Equal("Checklist1"+wideSpacer, tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
-		tg.NewBtn("🏠 Today", tg.NewCmd("today", nil)),
+		tg.NewBtn("🏠 Home", tg.NewCmd("today", nil)),
 	},
 	), tgram.LastSentKeyboard)
 
@@ -1174,27 +1174,27 @@ func TestBotTodayLabelIcons(t *testing.T) {
 
 	// Pomodoro is the only task in today
 	r.Nil(b.togglePomodoro(nil))
-	label := b.todayLabel()
+	label := b.homeLabel()
 	r.Contains(label, "🌴")
 	r.Contains(label, "🍅")
 
 	// Pomodoro and another task in today
-	todayMD, err := b.fs.Read("", "Today.md")
+	todayMD, err := b.fs.Read("", "Chat.md")
 	r.NoError(err)
-	r.Nil(b.fs.Write("", "Today.md", txt.AddChecklistItem(todayMD, "Task", false)))
-	label = b.todayLabel(1)
+	r.Nil(b.fs.Write("", "Chat.md", txt.AddChecklistItem(todayMD, "Task", false)))
+	label = b.homeLabel(1)
 	r.NotContains(label, "🌴")
 	r.Contains(label, "🍅")
 
 	// No pomodoro, but there is another task in today
-	r.Nil(b.completeChecklistItem([]string{fs.Hash(fs.TodayFilename), fs.Hash(fs.PomodoroTask)}))
-	label = b.todayLabel(1)
+	r.Nil(b.completeChecklistItem([]string{fs.Hash(fs.ChatFilename), fs.Hash(fs.PomodoroTask)}))
+	label = b.homeLabel(1)
 	r.NotContains(label, "🌴")
 	r.NotContains(label, "🍅")
 
 	// No pomodoro, no other tasks in today
-	r.Nil(b.completeChecklistItem([]string{fs.Hash(fs.TodayFilename), fs.Hash("Task")}))
-	label = b.todayLabel()
+	r.Nil(b.completeChecklistItem([]string{fs.Hash(fs.ChatFilename), fs.Hash("Task")}))
+	label = b.homeLabel()
 	r.NoError(err)
 	r.Contains(label, "🌴")
 	r.NotContains(label, "🍅")
@@ -1205,7 +1205,7 @@ func makeBot(t *testing.T, cfg *userconfig.Config) (*Bot, *tg.FakeTG, *require.A
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 
-	err = userFS.Write("/", "Today.md", "- [ ] First task")
+	err = userFS.Write("/", "Chat.md", "- [ ] First task")
 	r.NoError(err)
 
 	err = userFS.Write("/", "Later.md", "- [ ] Second task")
@@ -1232,7 +1232,7 @@ func TestSettingsMainPanel(t *testing.T) {
 		tg.NewBtn("⚡️ Quick buttons", tg.NewCmd("c_quick_btns", nil)),
 		tg.NewBtn("➡️ Move to buttons", tg.NewCmd("c_move_btns", nil)),
 		tg.NewBtn("🌎 Timezone", tg.NewCmd("timezone", nil)),
-		tg.NewBtn("🏠 Today", tg.NewCmd("today", nil)),
+		tg.NewBtn("🏠 Home", tg.NewCmd("today", nil)),
 	},
 	), tgram.LastSentKeyboard)
 }
@@ -1247,7 +1247,7 @@ var (
 
 var (
 	delimiter = tg.NewBtn("-", tg.NewCmd("nothing", nil))
-	homeBtn   = tg.NewBtn("🏠 Today", tg.NewCmd("today", nil))
+	homeBtn   = tg.NewBtn("🏠 Home", tg.NewCmd("today", nil))
 )
 
 var (
@@ -1645,7 +1645,7 @@ func TestMoveToExistingFile(t *testing.T) {
 
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	err = userFS.Write("/", "Today.md", "#### 27 June, Friday\n`12:00` New message")
+	err = userFS.Write("/", "Chat.md", "#### 27 June, Friday\n`12:00` New message")
 	r.NoError(err)
 	err = userFS.Write("", "Existing file.md", "")
 	r.NoError(err)
@@ -1674,7 +1674,7 @@ func TestMoveToExistingFileExistingRecord(t *testing.T) {
 
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	err = userFS.Write("/", "Today.md", "#### 27 June, Friday\n`12:00` New message")
+	err = userFS.Write("/", "Chat.md", "#### 27 June, Friday\n`12:00` New message")
 	r.NoError(err)
 	err = userFS.Write("", "Existing file.md", "### 11.08.2024 Sunday\nContent")
 	r.NoError(err)
@@ -1750,7 +1750,7 @@ func TestShowMoveFromTodayAndInbox(t *testing.T) {
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	r.NoError(userFS.Write(
-		fs.DirUserRoot, fs.TodayFilename,
+		fs.DirUserRoot, fs.ChatFilename,
 		"#### 29 June, Sunday\n- [ ] `09:00` Inbox body\n- [x] `09:05` Completed body\n",
 	))
 
@@ -1781,7 +1781,7 @@ func TestMoveFromTodayAndInbox_ToLater(t *testing.T) {
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	r.NoError(userFS.Write(
-		fs.DirUserRoot, fs.TodayFilename,
+		fs.DirUserRoot, fs.ChatFilename,
 		"- [ ] Today task\n#### 29 June, Sunday\n- [ ] `09:00` Inbox body",
 	))
 
@@ -1793,7 +1793,7 @@ func TestMoveFromTodayAndInbox_ToLater(t *testing.T) {
 	inboxHash := inboxMsgHash(t, userFS, 1)
 	r.NoError(bot.moveToLater([]string{inboxHash}))
 
-	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
+	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.ChatFilename)
 	r.NotContains(inboxMD, "Inbox body")
 
 	laterMD, _ := userFS.Read(fs.DirUserRoot, fs.LaterFilename)
@@ -1812,7 +1812,7 @@ func TestShowPostpone_WithInbox(t *testing.T) {
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	r.NoError(userFS.Write(
-		fs.DirUserRoot, fs.TodayFilename,
+		fs.DirUserRoot, fs.ChatFilename,
 		"#### 29 June, Sunday\n- [ ] `09:00` Inbox body\n- [x] `09:05` Completed body\n",
 	))
 
@@ -1836,7 +1836,7 @@ func TestPostponeTodayTask(t *testing.T) {
 
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	r.NoError(userFS.Write(fs.DirUserRoot, fs.TodayFilename, "- [ ] Today task"))
+	r.NoError(userFS.Write(fs.DirUserRoot, fs.ChatFilename, "- [ ] Today task"))
 	r.NoError(userFS.Write(fs.DirUserRoot, fs.LaterFilename, ""))
 
 	tgram := tg.NewFakeTG()
@@ -1844,7 +1844,7 @@ func TestPostponeTodayTask(t *testing.T) {
 	err = bot.postpone([]string{fs.Hash("Today task")})
 	r.NoError(err)
 
-	todayMD, _ := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
+	todayMD, _ := userFS.Read(fs.DirUserRoot, fs.ChatFilename)
 	r.NotContains(todayMD, "Today task")
 
 	laterMD, _ := userFS.Read(fs.DirUserRoot, fs.LaterFilename)
@@ -1863,7 +1863,7 @@ func TestPostponeInboxEntry(t *testing.T) {
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	r.NoError(userFS.Write(
-		fs.DirUserRoot, fs.TodayFilename,
+		fs.DirUserRoot, fs.ChatFilename,
 		"#### 29 June, Sunday\n- [ ] `09:00` Inbox body",
 	))
 
@@ -1873,7 +1873,7 @@ func TestPostponeInboxEntry(t *testing.T) {
 	err = bot.postpone([]string{h})
 	r.NoError(err)
 
-	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
+	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.ChatFilename)
 	r.NotContains(inboxMD, "Inbox body")
 
 	laterMD, _ := userFS.Read(fs.DirUserRoot, fs.LaterFilename)
@@ -1892,7 +1892,7 @@ func TestShowRename_WithInbox(t *testing.T) {
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	r.NoError(userFS.Write(
-		fs.DirUserRoot, fs.TodayFilename,
+		fs.DirUserRoot, fs.ChatFilename,
 		"#### 29 June, Sunday\n- [ ] `09:00` Inbox body\n- [x] `09:05` Completed body\n",
 	))
 
@@ -1902,8 +1902,8 @@ func TestShowRename_WithInbox(t *testing.T) {
 
 	inboxHash := inboxMsgHash(t, userFS, 0)
 	r.Equal(tg.NewKeyboard([]tg.Row{
-		tg.NewBtn("💬 Inbox body", tg.NewCmd("rename_file", []string{fs.TodayFilename, inboxHash})),
-		tg.NewBtn("🏠 Today", tg.NewCmd("today", nil)),
+		tg.NewBtn("💬 Inbox body", tg.NewCmd("rename_file", []string{fs.ChatFilename, inboxHash})),
+		tg.NewBtn("🏠 Home", tg.NewCmd("today", nil)),
 	}), tgram.LastSentKeyboard)
 }
 
@@ -1919,16 +1919,16 @@ func TestRenameInboxEntry(t *testing.T) {
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	r.NoError(userFS.Write(
-		fs.DirUserRoot, fs.TodayFilename,
+		fs.DirUserRoot, fs.ChatFilename,
 		"#### 29 June, Sunday\n- [ ] `09:00` Inbox body\n- [ ] `09:05` Second entry",
 	))
 
 	tgram := tg.NewFakeTG()
 	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	h := inboxMsgHash(t, userFS, 0)
-	r.NoError(bot.rename([]string{fs.TodayFilename, h, "Renamed body"}))
+	r.NoError(bot.rename([]string{fs.ChatFilename, h, "Renamed body"}))
 
-	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
+	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.ChatFilename)
 	// Timestamp and marker preserved, body replaced.
 	r.Contains(inboxMD, "- [ ] `09:00` Renamed body")
 	r.NotContains(inboxMD, "Inbox body")
@@ -1942,16 +1942,16 @@ func TestRenameInboxEntry_PreservesCompletedMarker(t *testing.T) {
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
 	r.NoError(userFS.Write(
-		fs.DirUserRoot, fs.TodayFilename,
+		fs.DirUserRoot, fs.ChatFilename,
 		"#### 29 June, Sunday\n- [x] `09:00` Done body",
 	))
 
 	tgram := tg.NewFakeTG()
 	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), fakeConfig())
 	h := inboxMsgHash(t, userFS, 0)
-	r.NoError(bot.rename([]string{fs.TodayFilename, h, "Renamed done"}))
+	r.NoError(bot.rename([]string{fs.ChatFilename, h, "Renamed done"}))
 
-	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.TodayFilename)
+	inboxMD, _ := userFS.Read(fs.DirUserRoot, fs.ChatFilename)
 	r.Contains(inboxMD, "- [x] `09:00` Renamed done")
 }
 
@@ -2077,7 +2077,7 @@ func TestMoveToChecklistSplittable(t *testing.T) {
 	err = bot.Reply(tg.NewUpd(-1, "item1\nitem2"))
 	r.NoError(err)
 
-	content, err := userFS.Read("/", "Today.md")
+	content, err := userFS.Read("/", "Chat.md")
 	r.NoError(err)
 	r.Equal("#### 11 August, Sunday\n- [ ] `09:54` Item1\nitem2\n", content)
 
@@ -2203,7 +2203,7 @@ func TestMoveToJournal(t *testing.T) {
 	err = userFS.CreateSystemDirs()
 	r.NoError(err)
 
-	err = userFS.Write("/", "Today.md", "#### 27 June, Friday\n`01:01` Multiline\ncontent")
+	err = userFS.Write("/", "Chat.md", "#### 27 June, Friday\n`01:01` Multiline\ncontent")
 	r.NoError(err)
 
 	tgram := tg.NewFakeTG()
@@ -2220,7 +2220,7 @@ func TestMoveToJournal(t *testing.T) {
 	r.NoError(err)
 	r.Equal("#### 1 January, Thursday\n`00:00` Multiline\ncontent\n", content)
 
-	content, err = userFS.Read("/", "Today.md")
+	content, err = userFS.Read("/", "Chat.md")
 	r.NoError(err)
 	r.Equal("#### 27 June, Friday", content)
 }
@@ -2905,7 +2905,7 @@ func TestSaveToExistingFile(t *testing.T) {
 	err = userFS.CreateSystemDirs()
 	r.NoError(err)
 
-	err = userFS.Write("/", "Today.md", "#### 27 June, Friday\n`01:01` Existing\nmessage")
+	err = userFS.Write("/", "Chat.md", "#### 27 June, Friday\n`01:01` Existing\nmessage")
 	r.NoError(err)
 	err = userFS.Write("", "File.md", "#### 1 January 1970, Thursday\nExisting content")
 	r.NoError(err)
@@ -2992,7 +2992,7 @@ func TestSaveToExistingFileModeTasks(t *testing.T) {
 	err = userFS.CreateSystemDirs()
 	r.NoError(err)
 
-	err = userFS.Write("/", "Today.md", "#### 27 June, Friday\n`01:01` New\ncontent")
+	err = userFS.Write("/", "Chat.md", "#### 27 June, Friday\n`01:01` New\ncontent")
 	r.NoError(err)
 	err = userFS.Write("", "File.md", "#### 1 January 1970, Thursday\nExisting\ncontent")
 	r.NoError(err)
@@ -3076,7 +3076,7 @@ func TestSaveToNewFile(t *testing.T) {
 
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	err = userFS.Write("/", "Today.md", "#### 1 January, Thursday\n`01:01` New\ncontent")
+	err = userFS.Write("/", "Chat.md", "#### 1 January, Thursday\n`01:01` New\ncontent")
 	r.NoError(err)
 	err = userFS.CreateSystemDirs()
 	r.NoError(err)
@@ -3097,7 +3097,7 @@ func TestSaveToNewFile(t *testing.T) {
 	err = bot.Reply(tg.NewUpd(-1, "Text"))
 	r.NoError(err)
 
-	content, err := userFS.Read("/", "Today.md")
+	content, err := userFS.Read("/", "Chat.md")
 	r.NoError(err)
 	r.Equal("#### 1 January, Thursday\n`01:01` New\ncontent\n- [ ] `00:00` Text\n", content)
 
@@ -3161,7 +3161,7 @@ func TestSaveToNewDirFull(t *testing.T) {
 
 	userFS, err := fs.NewFS("/", afero.NewMemMapFs())
 	r.NoError(err)
-	err = userFS.Write("/", "Today.md", "#### 1 January, Thursday\n")
+	err = userFS.Write("/", "Chat.md", "#### 1 January, Thursday\n")
 	r.NoError(err)
 	err = userFS.CreateSystemDirs()
 	r.NoError(err)
@@ -3611,7 +3611,7 @@ func TestSaveToTodayTask(t *testing.T) {
 	err = userFS.CreateSystemDirs()
 	r.NoError(err)
 
-	err = userFS.Write("", "Today.md", txt.AddChecklistItem("", "Existing task", false))
+	err = userFS.Write("", "Chat.md", txt.AddChecklistItem("", "Existing task", false))
 	r.NoError(err)
 
 	cfg := userconfig.NewConfig(userFS, -1, "config.json")
@@ -3744,7 +3744,7 @@ func TestCollapseForwardedMessages(t *testing.T) {
 	err = bot.Reply(upd)
 	r.NoError(err)
 
-	content, err := userFS.Read("/", "Today.md")
+	content, err := userFS.Read("/", "Chat.md")
 	r.NoError(err)
 	r.Equal("#### 1 January, Thursday\n- [ ] `00:00` First msg\nSecond msg\nThird msg\n- [ ] `00:00` Fourth msg\n", content)
 
@@ -3986,7 +3986,7 @@ func TestSaveFromImage_MultilineCaption(t *testing.T) {
 	err = bot.saveFromImage(upd)
 	r.NoError(err)
 
-	content, err := userFS.Read("/", "Today.md")
+	content, err := userFS.Read("/", "Chat.md")
 	r.NoError(err)
 	r.Equal("#### 11 August, Sunday\n- [ ] `09:54` ![](media/tg_PHOTO_ID)\nAbc\ndef\n", content)
 
@@ -4330,7 +4330,7 @@ func TestMoveToExistingNote_InvalidIndex(t *testing.T) {
 	r.Contains(err.Error(), "move to existing note")
 }
 
-// TODO move to today.md
+// TODO move to Chat.md
 func FuzzSaveFromTextMsg(f *testing.F) {
 	mode := userconfig.DefaultConfig.Mode
 	userconfig.DefaultConfig.Mode = userconfig.ModeTasks
@@ -4499,7 +4499,7 @@ func TestJournalOnlyMode_SaveTextMessage(t *testing.T) {
 //	r.NoError(err)
 //	r.True(len(rootFiles) > 0)
 //
-//	content, err := bot.fs.Read("", "Today.md")
+//	content, err := bot.fs.Read("", "Chat.md")
 //	r.NoError(err)
 //	r.Equal("File content", content)
 //}
@@ -4521,7 +4521,7 @@ func TestShowToday_NotesOnlyMode(t *testing.T) {
 	r.NoError(err)
 
 	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), cfg)
-	err = bot.ShowToday(nil)
+	err = bot.ShowHome(nil)
 	r.NoError(err)
 
 	// Should show directories instead of today tasks
@@ -4545,7 +4545,7 @@ func TestShowToday_JournalOnlyMode(t *testing.T) {
 	r.NoError(err)
 
 	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), cfg)
-	err = bot.ShowToday(nil)
+	err = bot.ShowHome(nil)
 	r.NoError(err)
 
 	// Should send "What's on your mind?" message
@@ -4569,7 +4569,7 @@ func TestShowToday_NormalMode(t *testing.T) {
 	r.NoError(err)
 
 	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), cfg)
-	err = bot.ShowToday(nil)
+	err = bot.ShowHome(nil)
 	r.NoError(err)
 
 	// Should show empty today list
@@ -4600,7 +4600,7 @@ func TestShowToday_NormalModeWithTasks(t *testing.T) {
 	err = userFS.CreateSystemDirs()
 	r.NoError(err)
 
-	err = userFS.Write("/", "Today.md", "- [ ] test task")
+	err = userFS.Write("/", "Chat.md", "- [ ] test task")
 	r.NoError(err)
 
 	tgram := tg.NewFakeTG()
@@ -4610,7 +4610,7 @@ func TestShowToday_NormalModeWithTasks(t *testing.T) {
 	r.NoError(err)
 
 	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), cfg)
-	err = bot.ShowToday(nil)
+	err = bot.ShowHome(nil)
 	r.NoError(err)
 
 	r.Contains(tgram.LastSentText, "1")
@@ -4649,7 +4649,7 @@ func TestShowToday_InboxMixedFormat(t *testing.T) {
 		"- [ ] Plain msg\n" +
 		"- [ ] `09:05` New msg\n" +
 		"- [x] `09:10` Done msg\n"
-	err = userFS.Write(fs.DirUserRoot, fs.TodayFilename, inbox)
+	err = userFS.Write(fs.DirUserRoot, fs.ChatFilename, inbox)
 	r.NoError(err)
 
 	tgram := tg.NewFakeTG()
@@ -4659,7 +4659,7 @@ func TestShowToday_InboxMixedFormat(t *testing.T) {
 	r.NoError(err)
 
 	bot := NewBot(-1, tgram, userFS, db.NewFakeDB(), cfg)
-	err = bot.ShowToday(nil)
+	err = bot.ShowHome(nil)
 	r.NoError(err)
 
 	// Label: 2 tasks left (plain + timestamped unchecked); completed one excluded.

@@ -225,11 +225,11 @@ Things like these are easy to remember, but again they drain your mental energy.
 ## Files structure 🗂
 You don't have to think about the structure, it is predefined.  
 
+- Chat: `Chat.md` - incoming messages, chat's tasks, append-only chat log
 - Notes: `brain/Note.md` (`<category>/*.md`, files in subfolders)
 - Projects: `My project.md` (`/*.md`, files in the root directory) - projects, important notes
 - Checklists: `Read.md`, `Watch.md`, `Shop.md`, `MyChecklist_.md`
 - Journal: `journal/2024.08 August.md` (`journal/<YYYY>.<MM> <Month>.md`)
-- Today: `Today.md` - incoming messages, today's tasks, append-only chat log
 - Tasks: `Later.md` - checklist-based task lists
 - Habits: `habits/Ate consciously.md` (`habits/*.md`)
 - Media: `media/*` - images (png, jpg, webp, gif)
@@ -247,8 +247,8 @@ You can copy-paste it into `CLAUDE.md` or `AGENTS.md`, so that your AI agent wou
 | `Cmd+N` / `Ctrl+N`         | New file                       |
 | `Cmd+M` / `Ctrl+M`         | Move file                      |
 | `Cmd+D` / `Ctrl+D`         | Delete file                    |
-| `Cmd+Enter` / `Ctrl+Enter` | Open today                     |
-| `Cmd+Shift+Enter` / `Ctrl+Shift+Enter` | Toggle today dialog            |
+| `Cmd+Enter` / `Ctrl+Enter` | Open chat                     |
+| `Cmd+Shift+Enter` / `Ctrl+Shift+Enter` | Toggle chat dialog            |
 | `Cmd+[` / `Ctrl+[`         | Go to previous file            |
 | `Cmd+]` / `Ctrl+]`         | Go to next file                |
 | `Cmd+~` / `Ctrl+~`         | Toggle sidebar                 |
@@ -349,11 +349,12 @@ Read 4K randomly from SSD = 150,000 ns
 ```
 
 ## ADRs (Architecture Decision Records)
+- Moved from Today.md to Chat.md. CustDev showed that users have trouble grasping "chat" concept. And besides, "open chat" phrase has meaning in both bot and webapp.
 - Now hide-token runs synchronously on every change, previously it had 100ms debounce which caused jitter on by word removals in links and formatted texts.
-- Merged Inbox.md and Today.md to Today.md. Inbox name is too abstract, productivity-related and GTD-ish. I want calmness and simplicity. Today is like "the page I live in today".
+- Merged Inbox.md and Today.md to Today.md. Inbox name is too abstract, productivity-related and GTD-ish. I want calmness and simplicity. Today is like "the page I live in chat".
 - Moved from API_HOST, APP_HOST to API_URL, APP_URL. For different environments it's better to provide more information like desired schema in configuration.
 - Inbox entries in the bot are now identified by a stable content hash (`fs.Hash` of the block with the `- [ ] `/`- [x] ` marker stripped) instead of a positional index, so a button keeps pointing at the right line even if other entries are added/removed/completed in between.
-- It was mentally taxing to see two buttons/messages "to inbox" and "to today", it was not as mentally easy just to drop a task for today. Because it went to inbox, and 1 more click needed. That one click was the reason adding new tasks became frustrating. I let go of two different flow, and now everything goes to inbox, and every item is inbox is a markdown checklist item. As a bonus, PWA app is now very handy as it shows tasks for today by default. Also, maybe "inbox" is a mentally overloaded term, and "today" sounds better. Will see.
+- It was mentally taxing to see two buttons/messages "to inbox" and "to chat", it was not as mentally easy just to drop a task for chat. Because it went to inbox, and 1 more click needed. That one click was the reason adding new tasks became frustrating. I let go of two different flow, and now everything goes to inbox, and every item is inbox is a markdown checklist item. As a bonus, PWA app is now very handy as it shows tasks for chat by default. Also, maybe "inbox" is a mentally overloaded term, and "chat" sounds better. Will see.
 - Even though I want to store links as plain markdown links, visually I want to work with them as if they were minimal [links]. For that I decided to hide (...) part when cursor is on the line. The (...) part is only hidden for markdown-files link.
 - Brought back standart Markdown Links. I want the knowledge base to be cross-platform. It should work in GitHub.
 - Tried to move web/* stuff in the root folder for simplicity. Bad decision - there should be an explicit dir which we can use as public DOCROOT on our server.
@@ -363,7 +364,7 @@ Read 4K randomly from SSD = 150,000 ns
 - Root folder is now '/', not ''. All files in webapp are identified by path, not by 'dir' + 'filename', restricting to 1 level of nesting.
 - Dropbox is changing some metadata for newfly created files, thus ctime is changed. I was thinking about moving to mtime for sync, but that wouldn't allow us detect renames (though, we detect them through a separate mechanism anyway), so mtime can be more reliable. Also sync won't be triggered by permission/ownership change etc. Migrated to mtime. Mtime is used for content-based sync, ctime is used for append-only sync log (renames/del). Also we can restore mtime from .git/archive, unlike ctime.
 - Decided to migrate every flow to Chat.md, even todo lists. Added - we can't work with multiline tasks with this flow, we may want support both files and indices. We have two ways of doing so - encode params in a uniform way, and use same command handlers with IFs. Or we can use different command handlers to handle chat/file movements. I decided to go for different command handlers. Added, if we go for different commands - move to buttons config would be complicated. Added, maybe we can move files back to Chat.md on "file move", and reuse the existing flow? Added, so far seems good. Our chat.md log acts as an append-only log. As a bonus, if we don't finish some flow (like schedule/move), the content would be saved in log and we can continue scheduling/moving from the app.
-- All incoming messages go to Chat.md now by default. Before that they got moved to `/today` (and become tasks), which was good for a simple todo list, but not as convenient for other use cases. I realized that during meetings, all I needed was a simple input field where I can dump whatever stuff from my head with no further immediate action. With a possibility to review and organize it later. It can be tasks, it can be journal records, or it can be files. Also, it's better to have a really simple easy to understand default flow - we dump all the messages into one file, and that's it.  
+- All incoming messages go to Chat.md now by default. Before that they got moved to `/chat` (and become tasks), which was good for a simple todo list, but not as convenient for other use cases. I realized that during meetings, all I needed was a simple input field where I can dump whatever stuff from my head with no further immediate action. With a possibility to review and organize it later. It can be tasks, it can be journal records, or it can be files. Also, it's better to have a really simple easy to understand default flow - we dump all the messages into one file, and that's it.  
 - Default mode for chat is "One big file" now, i.e. the only thing it does is dumps all the messages into one file. Again, let's start with the simplest flow, not to overwhelm users. Added later. If we choose full mode, we'll have to create dirs upfront so that "to habits", "to read/shop" etc. would work. If users don't need it, he removes the dirs, and we don't recreate them (as we would do in "on-the-fly mode"). So, we can't use on-the-fly strategy everywhere.
 - Before we created all necessary dirs upfront, now we create dirs on the fly. That way we won't clutter user's knowledge base right from the start.
 - Switched to microseconds for tracking file changes during sync. Gap between consecutive files creation is more than enough - ranging from 5000μs to 1000μs. We didn't go for nanosec because js is having troubles with int64 precision. Added later. Linux is using cached kernel time, which is updated at `CONFIG_HZ` interval (`grep CONFIG_HZ /boot/config-$(uname -r)`), in my case the value is 1000 (1ms). Most real-world operations operations are spaced much further apart than 1ms due to: user interaction, network latency, disk i/o. We might only have issue if we update files inside an effective/native loop. 

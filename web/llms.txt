@@ -11,7 +11,7 @@ All files are plain Markdown (.md) stored locally.
 │   └── *.md              # e.g. brain/Memory.md
 ├── *.md                  # Projects, important notes, index notes
 │
-├── Today.md              # Incoming messages, today's tasks, append-only log
+├── Chat.md              # Incoming messages, chat's tasks, append-only log
 ├── Later.md              # Postponed tasks (checklist format)
 │
 ├── Read.md               # Reading list (checklist)
@@ -46,7 +46,7 @@ Append-only chat log. New messages are appended with timestamps under daily head
 `14:22` Another thought
 ```
 
-### Tasks (Today.md, Later.md)
+### Tasks (Chat.md, Later.md)
 Checklist format. Each task is a checklist item.
 ```
 - [ ] Pay the bills

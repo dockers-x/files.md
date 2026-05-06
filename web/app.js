@@ -7,7 +7,7 @@
 const sidebar = document.getElementById('sidebar');
 const content = document.getElementById('content')
 
-const TODAY_PATH = '/Today.md';
+const CHAT_PATH = '/Chat.md';
 const LATER_PATH = '/Later.md';
 const READ_PATH = '/Read.md';
 const SHOP_PATH = '/Shop.md';
@@ -121,7 +121,7 @@ function createAutocompleteDict() {
 
     // Collect all files with their metadata
     walkFilesExcludingSystemDirs((path) => {
-        if (path === CONFIG_PATH || path === TODAY_PATH || path === LATER_PATH || path === READ_PATH || path === WATCH_PATH || path === SHOP_PATH) {
+        if (path === CONFIG_PATH || path === CHAT_PATH || path === LATER_PATH || path === READ_PATH || path === WATCH_PATH || path === SHOP_PATH) {
             return;
         }
 
@@ -152,7 +152,7 @@ function createAutocompleteDict() {
         }
 
         Object.keys(files[dir]).forEach(filename => {
-            if (filename === CONFIG_PATH || filename === TODAY_PATH) {
+            if (filename === CONFIG_PATH || filename === CHAT_PATH) {
                 return;
             }
             const key = `${filename.replace(/\.md$/, '')}`;
@@ -650,7 +650,7 @@ document.addEventListener('keydown', (event) => {
     // TODO cursor shouldn't jump to top once we hit "esc".
     if (event.key === 'Escape') {
         if (chatContainer.style.display !== 'none') {
-            const selectedMessages = today.querySelectorAll('.message.selected');
+            const selectedMessages = chat.querySelectorAll('.message.selected');
             if (selectedMessages.length > 0) {
                 selectedMessages.forEach(message => message.classList.remove('selected'));
                 event.preventDefault();
@@ -666,7 +666,7 @@ document.addEventListener('keydown', (event) => {
         hideEditor2();
         editor.focus();
 
-        const allMessages = today.querySelectorAll('.message');
+        const allMessages = chat.querySelectorAll('.message');
         allMessages.forEach(message => message.classList.remove('selected'));
         // If in chat, focus chat input
         if (isInbox) {

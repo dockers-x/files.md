@@ -1,6 +1,6 @@
 let chatIsClean = true; // Are there any unsaved changes?
 
-const today = document.getElementById('inbox');
+const chat = document.getElementById('inbox');
 const chatInput = document.getElementById('inbox-input');
 const chatContainer = document.getElementById('inbox-container');
 
@@ -34,7 +34,7 @@ async function sendToToday() {
         minute: '2-digit'
     });
     const formattedContent = `\n- [ ] \`${timestamp}\` ${text}\n`;
-    await writeAtEnd(TODAY_PATH, formattedContent);
+    await writeAtEnd(CHAT_PATH, formattedContent);
 
     chatInput.value = '';
     chatIsClean = false;
@@ -47,16 +47,16 @@ async function openToday() {
     chatContainer.style.display = 'flex';
     // chatButton.classList.add('hidden');
 
-    if (currentEditor.path !== TODAY_PATH) {
+    if (currentEditor.path !== CHAT_PATH) {
         const state = {path: editor.path};
         history.pushState(state, '');
     }
 
-    currentEditor.path = TODAY_PATH;
+    currentEditor.path = CHAT_PATH;
 
     const codemirror = document.querySelector('.CodeMirror-wrap');
     codemirror.style.display = 'none';
-    today.style.display = 'flex';
+    chat.style.display = 'flex';
     chatInput.style.display = 'block';
     hideEditor2();
 
@@ -73,9 +73,9 @@ async function openTodayModal() {
     chatContainer.classList.add('modal');
     chatContainer.style.display = 'flex';
     // chatButton.classList.add('hidden');
-    today.style.display = 'block';
+    chat.style.display = 'block';
     chatInput.style.display = 'block';
-    today.style.display = 'flex';
+    chat.style.display = 'flex';
     chatInput.style.display = 'block';
 
     chatInput.focus();
@@ -87,7 +87,7 @@ function closeTodayModal() {
     chatContainer.classList.remove('modal');
     if (!isInbox) {
         chatContainer.style.display = 'none';
-        today.style.display = 'none';
+        chat.style.display = 'none';
         chatInput.style.display = 'none';
         // chatButton.classList.remove('hidden');
     }
@@ -107,7 +107,7 @@ async function toggleTodayModal() {
 }
 
 async function parseMessagesFromToday() {
-    const file = await ((await getFileHandle(TODAY_PATH, true)).getFile());
+    const file = await ((await getFileHandle(CHAT_PATH, true)).getFile());
     let chat = await file.text();
 
     // Normalize line endings
@@ -217,7 +217,7 @@ async function saveMessagesToToday(messages) {
         });
     });
 
-    await write(TODAY_PATH, content);
+    await write(CHAT_PATH, content);
     lastInboxText = content;
 }
 
@@ -228,7 +228,7 @@ async function saveMessagesToToday(messages) {
 //   - [x] `HH:MM` text    (new, done)
 // and rewrites it to the requested done/undone marker.
 async function toggleTodayLine(timestamp, text, done) {
-    const handle = await getFileHandle(TODAY_PATH, true);
+    const handle = await getFileHandle(CHAT_PATH, true);
     const file = await handle.getFile();
     let content = await file.text();
 
@@ -265,7 +265,7 @@ function initToday() {
 
 function scrollToBottom() {
     setTimeout(function () {
-        today.scrollTop = today.scrollHeight;
+        chat.scrollTop = chat.scrollHeight;
     }, 100);
 }
 
@@ -297,7 +297,7 @@ function getRecentlyModifiedFiles(n) {
         const content = files[filename];
         if (filename && content &&
             ![
-                toFilename(TODAY_PATH),
+                toFilename(CHAT_PATH),
                 toFilename(CONFIG_PATH),
                 toFilename(LATER_PATH),
                 toFilename(WATCH_PATH),
@@ -416,16 +416,16 @@ function attachEventListeners() {
 
             if (e.target.id !== 'inbox-input') {
                 e.preventDefault();
-                const allMessages = today.querySelectorAll('.message');
+                const allMessages = chat.querySelectorAll('.message');
                 allMessages.forEach(message => message.classList.add('selected'));
             }
         }
     });
 
-    today.addEventListener('mousedown', function (e) {
+    chat.addEventListener('mousedown', function (e) {
         // If clicking outside messages, prepare for multi-select
         if (!e.target.closest('.message')) {
-            let allMessages = Array.from(today.querySelectorAll('.message'));
+            let allMessages = Array.from(chat.querySelectorAll('.message'));
             let startMessage = null;
 
             function handleMouseMove(e) {
@@ -476,7 +476,7 @@ function attachEventListeners() {
         if (e.shiftKey) {
             const selectedMessages = document.querySelectorAll('.message.selected');
             if (selectedMessages.length > 0) {
-                const allMessages = Array.from(today.querySelectorAll('.message'));
+                const allMessages = Array.from(chat.querySelectorAll('.message'));
                 const lastSelected = selectedMessages[selectedMessages.length - 1];
                 const startIndex = allMessages.indexOf(lastSelected);
                 const endIndex = allMessages.indexOf(message);
@@ -494,7 +494,7 @@ function attachEventListeners() {
         message.classList.add('selected');
 
         let startMessage = message;
-        let allMessages = Array.from(today.querySelectorAll('.message'));
+        let allMessages = Array.from(chat.querySelectorAll('.message'));
 
         function handleMouseMove(e) {
             const currentMessage = e.target.closest('.message');
@@ -523,16 +523,16 @@ function attachEventListeners() {
         document.addEventListener('mouseup', handleMouseUp);
     });
 
-    today.addEventListener('click', function (e) {
+    chat.addEventListener('click', function (e) {
         // Only clear selection if clicking outside messages AND not dragging
         if (!e.target.closest('.message') && !e.detail > 1) {
             document.querySelectorAll('.message.selected').forEach(m => m.classList.remove('selected'));
         }
     });
 
-    today.addEventListener('keydown', function (e) {
+    chat.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
-            const selectedMessages = today.querySelectorAll('.message.selected');
+            const selectedMessages = chat.querySelectorAll('.message.selected');
             if (selectedMessages.length > 0) {
                 selectedMessages.forEach(message => message.classList.remove('selected'));
                 e.preventDefault();
@@ -564,7 +564,7 @@ function attachEventListeners() {
     //     });
     // });
 
-    today.querySelectorAll('.complete-btn').forEach(btn => {
+    chat.querySelectorAll('.complete-btn').forEach(btn => {
         btn.addEventListener('click', async function (e) {
             e.stopPropagation();
             const el = btn.closest('.message');
@@ -579,7 +579,7 @@ function attachEventListeners() {
         });
     });
 
-    today.querySelectorAll('.to-file-btn').forEach(btn => {
+    chat.querySelectorAll('.to-file-btn').forEach(btn => {
         btn.addEventListener('click', function (e) {
             e.stopPropagation();
             const searchModalElement = document.getElementById('search');
@@ -597,7 +597,7 @@ function attachEventListeners() {
         });
     });
 
-    today.querySelectorAll('.to-journal-btn').forEach(btn => {
+    chat.querySelectorAll('.to-journal-btn').forEach(btn => {
         btn.addEventListener('click', async function (e) {
             e.stopPropagation();
             const selectedMessages = document.querySelectorAll('.message.selected');
@@ -631,7 +631,7 @@ function attachEventListeners() {
         });
     });
 
-    today.querySelectorAll('.to-checklist-btn').forEach(btn => {
+    chat.querySelectorAll('.to-checklist-btn').forEach(btn => {
         btn.addEventListener('click', async function (e) {
             e.stopPropagation();
             const selectedMessages = document.querySelectorAll('.message.selected');
@@ -670,7 +670,7 @@ function attachEventListeners() {
         });
     });
 
-    today.querySelectorAll('.to-archive-btn').forEach(btn => {
+    chat.querySelectorAll('.to-archive-btn').forEach(btn => {
         btn.addEventListener('click', async function (e) {
             e.stopPropagation();
             const selectedMessages = document.querySelectorAll('.message.selected');
@@ -711,7 +711,7 @@ function attachEventListeners() {
         });
     });
 
-    today.querySelectorAll('.to-recent-btn').forEach(btn => {
+    chat.querySelectorAll('.to-recent-btn').forEach(btn => {
         btn.addEventListener('click', async function (e) {
             e.stopPropagation();
             const selectedMessages = document.querySelectorAll('.message.selected');
@@ -749,7 +749,7 @@ function attachEventListeners() {
     });
 
     // Enable editing on double-click
-    today.querySelectorAll('.message-content').forEach(content => {
+    chat.querySelectorAll('.message-content').forEach(content => {
         content.addEventListener('dblclick', function (e) {
             e.stopPropagation();
             this.style.pointerEvents = 'auto';
@@ -766,10 +766,10 @@ async function renderMessages() {
         return;
     }
     lastInboxText = text;
-    log(`Loaded ${messages.length} messages from ${TODAY_PATH}`);
+    log(`Loaded ${messages.length} messages from ${CHAT_PATH}`);
 
     if (messages.length === 0) {
-        today.innerHTML = `
+        chat.innerHTML = `
             <div class="empty-state">
                 <img class="empty-icon" src="img/icon.png" alt="">
                 <div class="empty-title">Free your head</div>
@@ -790,7 +790,7 @@ async function renderMessages() {
     `).join('');
 
     // add own class every other message
-    today.innerHTML = messages.map((message, i) => `
+    chat.innerHTML = messages.map((message, i) => `
         <div class="message ${i % 2 === 1 ? 'own' : ''}${message.done ? ' completed' : ''}" data-text="${escapeHtml(message.text)}" data-timestamp="${message.timestamp}">
             <button class="complete-btn" title="Mark as done">
                 <svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
