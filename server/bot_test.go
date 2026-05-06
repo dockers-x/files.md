@@ -161,7 +161,7 @@ func TestSaveFromLongTextMsg(t *testing.T) {
 //		err = bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("add_item", []string{"db0a776589b", inboxMsgHash(t, userFS, 0)})))
 //		r.NoError(err)
 //
-//		r.Equal("<b>1</b> left"+wideSpacer, tgram.LastSentText)
+//		r.Equal("<b>1</b> items"+wideSpacer, tgram.LastSentText)
 //		r.Equal(tg.NewKeyboard([]tg.Row{
 //			tg.NewBtn("👀 New task/", tg.NewCmd("task", []string{"today", "24e70ffbf48"})),
 //		},
@@ -830,7 +830,7 @@ func TestToday(t *testing.T) {
 	err = bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("today", nil)))
 	r.NoError(err)
 
-	r.Equal("<b>2</b> left"+wideSpacer, tgram.LastSentText)
+	r.Equal("<b>2</b> items"+wideSpacer, tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("First task", tg.NewCmd("c", []string{"060f6b7c9c8"})),
 		tg.NewBtn("🥈 Second task", tg.NewCmd("c", []string{"083d6c37d07"})),
@@ -868,7 +868,7 @@ func TestTodayQuickMenuFilled(t *testing.T) {
 	bot, tgram, r := makeBot(t, cfg)
 	err := bot.Reply(tg.NewUpdCmd(-1, tg.NewCmd("today", nil)))
 	r.NoError(err)
-	r.Equal("<b>1</b> left"+wideSpacer, tgram.LastSentText)
+	r.Equal("<b>1</b> item"+wideSpacer, tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("First task", tg.NewCmd("c", []string{"832a6c2a713"})),
 		tg.NewRow(
@@ -906,7 +906,7 @@ func TestTodayMultilineTaskShownAsLong(t *testing.T) {
 	r.NoError(err)
 
 	hash := inboxMsgHash(t, userFS, 0)
-	r.Equal("<b>1</b> left"+wideSpacer, tgram.LastSentText)
+	r.Equal("<b>1</b> item"+wideSpacer, tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("👀 First task", tg.NewCmd(CmdShowLongItemFromToday, []string{hash})),
 	}), tgram.LastSentKeyboard)
@@ -941,7 +941,7 @@ func TestTodayMixedSingleAndMultilineTasks(t *testing.T) {
 
 	first := inboxMsgHash(t, userFS, 0)
 	second := inboxMsgHash(t, userFS, 1)
-	r.Equal("<b>2</b> left"+wideSpacer, tgram.LastSentText)
+	r.Equal("<b>2</b> items"+wideSpacer, tgram.LastSentText)
 	r.Equal(tg.NewKeyboard([]tg.Row{
 		tg.NewBtn("First task", tg.NewCmd(CmdComplete, []string{first})),
 		tg.NewBtn("👀 Second task", tg.NewCmd(CmdShowLongItemFromToday, []string{second})),
@@ -988,7 +988,7 @@ func TestTodayMixedSingleAndMultilineTasks(t *testing.T) {
 //	err = bot.Reply(upd)
 //	r.NoError(err)
 //
-//	r.Equal("<b>2</b> left"+wideSpacer, tgram.LastSentText)
+//	r.Equal("<b>2</b> items"+wideSpacer, tgram.LastSentText)
 //	r.Equal(tg.NewKeyboard([]tg.Row{
 //		tg.NewBtn("👀 First task", tg.NewCmd("task", []string{"today", "0824149b387"})),
 //		tg.NewBtn("🥈 Second task", tg.NewCmd("c", []string{"today", "4eb62f93b3e"})),
@@ -4614,7 +4614,7 @@ func TestShowToday_NormalModeWithTasks(t *testing.T) {
 	r.NoError(err)
 
 	r.Contains(tgram.LastSentText, "1")
-	r.Contains(tgram.LastSentText, "left")
+	r.Contains(tgram.LastSentText, "items")
 
 	r.Len(tgram.LastSentKeyboard.Btns, 1)
 }
@@ -4663,7 +4663,7 @@ func TestShowToday_InboxMixedFormat(t *testing.T) {
 	r.NoError(err)
 
 	// Label: 2 tasks left (plain + timestamped unchecked); completed one excluded.
-	r.Equal("<b>2</b> left"+wideSpacer, tgram.LastSentText)
+	r.Equal("<b>2</b> items"+wideSpacer, tgram.LastSentText)
 
 	// Two rows, each with one button. The completed entry (disk position 2) is
 	// not rendered but its slot is preserved — the next fresh entry added to

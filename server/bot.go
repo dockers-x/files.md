@@ -1162,7 +1162,12 @@ func (b *Bot) homeLabel(msgsCount ...int) string {
 		return statusBar + i18n.Tr("Nothing here yet - send me something!")
 	}
 
-	return statusBar + fmt.Sprintf(i18n.Tr("<b>%d</b> left%s"), tasksCount, wideSpacer)
+	postfix := "items"
+	if tasksCount == 1 {
+		postfix = "item"
+	}
+
+	return statusBar + fmt.Sprintf(i18n.Tr("<b>%d</b> %s%s"), tasksCount, postfix, wideSpacer)
 }
 
 func (b *Bot) randomNote(_ []string) error {
