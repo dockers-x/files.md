@@ -175,15 +175,21 @@ function createAutocompleteDict() {
     return dict;
 }
 
-async function newFile() {
+async function newFile(parentDir) {
     log('New file clicked');
-    let dirPath = toDirPath(currentEditor.path);
-    let selectedDirs = tree.getSelectedNodes();
-    if (selectedDirs.length > 0 &&
-        selectedDirs[0].getOptions &&
-        typeof selectedDirs[0].getOptions === 'function' &&
-        selectedDirs[0].getOptions()['dir'] === true) {
-        dirPath = '/' + selectedDirs[0].toString();
+    let dirPath;
+    if (parentDir !== undefined) {
+        // Explicit parent (e.g. from sidebar right-click → New file).
+        dirPath = parentDir === '/' ? '/' : parentDir.replace(/\/$/, '');
+    } else {
+        dirPath = toDirPath(currentEditor.path);
+        let selectedDirs = tree.getSelectedNodes();
+        if (selectedDirs.length > 0 &&
+            selectedDirs[0].getOptions &&
+            typeof selectedDirs[0].getOptions === 'function' &&
+            selectedDirs[0].getOptions()['dir'] === true) {
+            dirPath = '/' + selectedDirs[0].toString();
+        }
     }
     // TODO don't create on disk?
     let filename = 'New file.md';

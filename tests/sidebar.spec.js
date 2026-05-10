@@ -52,11 +52,12 @@ async function clickMenuItem(page, label) {
 test('root ctx menu: new file creates a root-level file', async ({page}) => {
     await setupSidebar(page);
 
-    page.once('dialog', d => d.accept('MyRootFile'));
+    // No prompt anymore - same behaviour as the toolbar #new-file button:
+    // a "New file.md" is created under the targeted parent and opened.
     await rightClickSidebarEmpty(page);
     await clickMenuItem(page, 'New file');
 
-    await expect(page.locator('#tree .tree-item:text-is("MyRootFile")')).toBeVisible();
+    await expect(page.locator('#tree .tree-item:text-is("New file")')).toBeVisible();
 });
 
 test('root ctx menu: new dir creates a root-level directory', async ({page}) => {
@@ -74,11 +75,10 @@ test('root ctx menu: new dir creates a root-level directory', async ({page}) => 
 test('file ctx menu: new file creates sibling in parent dir', async ({page}) => {
     await setupSidebar(page);
 
-    page.once('dialog', d => d.accept('SiblingFile'));
     await rightClickNode(page, 'README');
     await clickMenuItem(page, 'New file');
 
-    await expect(page.locator('#tree .tree-item:text-is("SiblingFile")')).toBeVisible();
+    await expect(page.locator('#tree .tree-item:text-is("New file")')).toBeVisible();
 });
 
 test('file ctx menu: new dir creates sibling dir in parent dir', async ({page}) => {
@@ -155,13 +155,12 @@ test('file ctx menu: delete removes the file', async ({page}) => {
 test('dir ctx menu: new file creates file inside directory', async ({page}) => {
     await setupSidebar(page);
 
-    page.once('dialog', d => d.accept('InsideLife'));
     await rightClickNode(page, 'life');
     await clickMenuItem(page, 'New file');
 
     // Expand the dir to verify the child shows up.
     await page.locator('#tree .tree-item:text-is("life")').click();
-    await expect(page.locator('#tree .tree-item:text-is("InsideLife")')).toBeVisible();
+    await expect(page.locator('#tree .tree-item:text-is("New file")')).toBeVisible();
 });
 
 test('dir ctx menu: new dir creates sub-directory', async ({page}) => {

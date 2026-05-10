@@ -1319,26 +1319,8 @@ async function folderContextMenu(e, node) {
 // under parentDir. parentDir is '/' for root or '/some/dir' for a sub-path.
 function addNewFileItem(item, parentDir) {
     item('New file', async () => {
-        const name = prompt('New file name:');
-        if (name === null) return;
-        const trimmed = name.trim().replace(/^\/+|\/+$/g, '');
-        if (!trimmed) return;
-        if (trimmed.includes('/')) { alert('File name cannot contain "/"'); return; }
-        const finalName = trimmed.endsWith('.md') ? trimmed : trimmed + '.md';
-        const newFilePath = (parentDir === '/' ? '' : parentDir) + '/' + finalName;
         try {
-            await write(newFilePath, '');
-            addMemFile(newFilePath, {
-                isFile: true,
-                content: '',
-                lastModified: 0,
-                path: newFilePath,
-                handle: await getFileHandle(newFilePath),
-            });
-            setServerFile(newFilePath, '', 0);
-            saveServerFiles();
-            await renderSidebar();
-            await openFile(newFilePath);
+            await newFile(parentDir);
         } catch (err) {
             logError('new file failed', err);
             alert('Create file failed: ' + (err && err.message ? err.message : err));
