@@ -13,7 +13,7 @@ let needsResyncWithServer = {}; // path -> bool, flags that another sync was req
 let isLoadingLocalFiles = false;
 
 const LAST_SERVER_OK_KEY = 'lastServerOk';
-const MAX_NESTING_LEVEL = 10;
+const MAX_DIR_NESTING_LEVEL = 10;
 
 function markServerOk() {
     localStorage.setItem(LAST_SERVER_OK_KEY, Date.now().toString());
@@ -100,7 +100,7 @@ async function loadLocalFiles(rootDirHandle, slowMode = false) {
             }
 
             if (entry.kind === 'directory') {
-                if (filename.startsWith('.') || depth >= MAX_NESTING_LEVEL) continue;
+                if (filename.startsWith('.') || depth >= MAX_DIR_NESTING_LEVEL) continue;
 
                 currentDir[filename + '/'] = {};
                 const dir = `${path}${filename}/`;
@@ -456,6 +456,14 @@ async function syncMedia() {
         let filesProcessed = 0;
         for (const fileInfo of serverData.files) {
             const {filename, lastModified} = fileInfo;
+
+            // Skip download if the file already exists locally - media
+            // files are write-once (binary, not edited), so a local copy
+            // is byte-for-byte identical to the server's copy.
+            if (await exists(`media/${filename}`)) {
+                log(`Skipping media file (already exists): ${filename}`);
+                continue;
+            }
             log(`Downloading media file: ${filename}`);
 
             try {
