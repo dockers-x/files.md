@@ -278,7 +278,6 @@ go run /abs/path/to/files.md/cmd/shifttime/shifttime.go
 - **The less code we have, the more flexible we are**
 - Code should be self-sufficient, so `vendor` and `web/lib` folders are included in the repository
 - **Do we really need this feature? Will it help us to do the real job, or does it just give dopamine?**
-- Avoid flaky e2e tests. First we get negative emotions, then we stop running all the tests. 
 
 Refer to [this guide](https://github.com/zakirullin/cognitive-load) for more comprehensive rules.
 
@@ -298,7 +297,8 @@ Refer to [this guide](https://github.com/zakirullin/cognitive-load) for more com
 - **It would be fantastic if, one day, we replaced `CodeMirror` with our own tiny implementation**
 - No build systems, **in 10 years we will open `/web/index.html` and it should just work**
 - Don't forget that awaits between lock check and lock acquire can cause race condition
-- Most bugs are caused in web app due to race conditions, like when an async flow is interrupted mid through
+- Avoid flaky e2e tests. First we get negative emotions, then we stop running all the tests
+- Most bugs are caused due to race conditions, when an async flow is interrupted mid through
 
 ## Glossary
 - `filename` - a filename with extension, like "note.md" (USE THIS AS ID)
