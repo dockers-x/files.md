@@ -118,7 +118,7 @@ func router(serverLogger *log.Logger) *http.ServeMux {
 	r.HandleFunc("/syncFilenames", corsMiddleware(panicMiddleware(tokenMiddleware(gzipMiddleware(SyncFilenames)))))
 	r.HandleFunc("/syncFile", corsMiddleware(panicMiddleware(tokenMiddleware(gzipMiddleware(SyncFile)))))
 	r.HandleFunc("/syncMediaFilenames", corsMiddleware(panicMiddleware(tokenMiddleware(gzipMiddleware(SyncMediaFilenames)))))
-	r.HandleFunc("/syncMedia", corsMiddleware(panicMiddleware(tokenMiddleware(gzipMiddleware(SyncMedia)))))
+	r.HandleFunc("/syncMediaFile", corsMiddleware(panicMiddleware(tokenMiddleware(gzipMiddleware(SyncMediaFile)))))
 	r.HandleFunc("/token", corsMiddleware(panicMiddleware(IssueToken)))
 
 	// Old urls for backward compatibility.

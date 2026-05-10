@@ -82,8 +82,8 @@ func SyncMediaFilenames(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// SyncMedia syncs a single media file by path.
-func SyncMedia(w http.ResponseWriter, r *http.Request) {
+// SyncMediaFile syncs a single media file by path.
+func SyncMediaFile(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return

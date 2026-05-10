@@ -218,13 +218,13 @@ async function syncTextsWithServer() {
     } else {
         log('NEVER SYNCED BEFORE');
     }
-    const { json: response, error } = await post('syncTexts', {
+    const { json: response, error } = await post('syncFilenames', {
         modified: modified,
         deleted: deleted,
         timestamps: server['timestamps'] || [],
     });
     if (error) {
-        console.error('syncTexts failed:', error);
+        console.error('syncFilenames failed:', error);
         isSyncingTexts = false;
         return;
     }
@@ -329,7 +329,7 @@ async function syncLocalFileWithServer(path) {
 
         let serverFile = {};
         const clientLastModified = file.lastModified;
-        const { json, error } = await post('syncText', {
+        const { json, error } = await post('syncFile', {
             path: path,
             lastModified: serverTimestamp,
             clientLastModified: clientLastModified,
@@ -443,11 +443,11 @@ async function syncMedia() {
         }
     }
     try {
-        const { json: serverData, error } = await post('syncMedias', {
+        const { json: serverData, error } = await post('syncMediaFilenames', {
             timestamp: mediaTimestamp,
         });
         if (error) {
-            console.error('syncMedias failed:', error);
+            console.error('syncMediaFilenames failed:', error);
             isSyncingMedia = false;
             return;
         }
@@ -460,7 +460,7 @@ async function syncMedia() {
             try {
                 // Raw fetch: this endpoint streams a binary blob, not JSON,
                 // so the JSON-based post() helper doesn't apply here.
-                const response = await fetch(`${API_URL}/syncMedia`, {
+                const response = await fetch(`${API_URL}/syncMediaFile`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
