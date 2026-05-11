@@ -19,7 +19,7 @@ $ make deploy_systemd host=<YOUR_SSH_HOST>
 4) Redeploy/relaunch the server
 
 Bot's artifacts can be seen in `./storage/<USER_ID>` folder.  
-You can create symlink to your existing knowledge base for convenience:  
+You can create a symlink to your existing knowledge base for convenience:  
 `ln -s <YOUR_EXISTING_DIR_WITH_MD_FILES> storage/<USER_ID>`
 
 ### Additional bot's settings
