@@ -47,7 +47,7 @@
         stroke: var(--col-tx) !important;
     }
 
-    #close-inbox:hover, #fullscreen-inbox:hover, #close-sidebar:hover, #close-editor2:hover, #go-backward:hover svg, #go-forward:hover svg {
+    #close-chat:hover, #fullscreen-chat:hover, #close-sidebar:hover, #close-editor2:hover, #go-backward:hover svg, #go-forward:hover svg {
         color: var(--col-tx) !important;
         stroke: var(--col-tx) !important;
     }

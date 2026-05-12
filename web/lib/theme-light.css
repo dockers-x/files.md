@@ -43,7 +43,7 @@
         background: var(--col-bg-active);
     }
 
-    #close-inbox, #fullscreen-inbox {
+    #close-chat, #fullscreen-chat {
         color: var(--col-tx-alt) !important;
     }
 
@@ -51,11 +51,11 @@
        stroke: var(--col-link) !important;
     }
 
-    #close-inbox:hover, #fullscreen-inbox:hover {
+    #close-chat:hover, #fullscreen-chat:hover {
         color: var(--col-link) !important;
     }
 
-    #close-inbox:hover {
+    #close-chat:hover {
         color: var(--col-link) !important;
     }
 

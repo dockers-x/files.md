@@ -431,7 +431,7 @@
     display: block !important;
 }
 
-#inbox-container.modal #close-inbox {
+#inbox-container.modal #close-chat {
     position: absolute;
     top: 3px;
     right: 5px;
@@ -450,7 +450,7 @@
     transition: background-color 0.2s;
 }
 
-#inbox-container.modal #fullscreen-inbox {
+#inbox-container.modal #fullscreen-chat {
     position: absolute;
     top: 6px;
     right: 28px;
