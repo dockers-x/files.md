@@ -19,7 +19,12 @@ $ make deploy_systemd host=<YOUR_SSH_HOST>
 4) Redeploy/relaunch the server
 
 Bot's artifacts can be seen in `./storage/<USER_ID>` folder.  
-You can create a symlink to your existing knowledge base for convenience:  
+
+## Hosting the bot on you local computer
+You can host the bot locally, because it doesn't expose any ports to the outside world (if you don't use habits functionality).  
+It communicates with Telegram using pull API.  
+
+Create a symlink to your local folder with `.md` files for convenience:  
 `ln -s <YOUR_EXISTING_DIR_WITH_MD_FILES> storage/<USER_ID>`
 
 ### Additional bot's settings

@@ -115,7 +115,6 @@ Drop them in chat, then sort into matching checklists.
 6) At some point, `brain` and `dev` notes appeared very related
 7) An interconnection between domains produced an insight
 8) I wrote an article based on that insight: [Cognitive Load in Software Development](https://github.com/zakirullin/cognitive-load)
-9) Many considered it a great write-up
 
 All this activity helped me to:
 - **Think deeply** (which is very important in the AI-age)
@@ -124,13 +123,14 @@ All this activity helped me to:
 
 To achieve all that, **you'll have to use your brain**, not advanced templates or AI workflows.
 
-- You can start with no structure at all, 0 folders
+- Start with no structure at all, 0 folders
 - One idea per note
-- A note should be understood without context
-- Related notes should be linked between each other
-- **Notes should be revisited and thought through**
+- Every note should be understood without context
+- Apply new knowledge immediately, don't save it for future self
+- Link related notes
+- **Revisit your notes and think through**
 
-My friends and I have been using this setup for five years, and it works well.
+My friends and I have been using this simple setup for five years, and it works well.
 
 ## Second Brain?
 I'll quote [I Deleted My Second Brain](https://www.joanwestenberg.com/i-deleted-my-second-brain-692aa40d59d5f06dd5131e43/):
@@ -151,7 +151,13 @@ _Second Brain gets better and better._
 
 However, **the first brain never actually gets smarter.**  
 And that's an issue - in the AI age, your first brain is as valuable as ever.  
-Use your brain to think through the notes. Apply and experience the knowledge.  
+Use your brain to think through the notes.  
+
+Think about how new knowledge can sharpen your judgment and expand your taxonomy of some phenomenon.  
+- How can you see the world differently, given this new knowledge?  
+- How you can act differently?  
+
+**If you don't plan to use this new knowledge right now, don't create a note**.  
 
 ## Notes can prevent experience
 - Reading and taking notes can easily fool us into believing that we understand a text
