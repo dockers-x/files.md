@@ -261,27 +261,14 @@
     border-bottom: 3px solid var(--color-neo-orange) !important;
 }
 
-/* Blockquote: soft light-blue gradient strip with a thick neo-blue left
-   bar. Mirrors the `.prose blockquote` style from the brutal reference. */
-.cm-s-hypermd-light pre.HyperMD-quote {
-    font-family: var(--font-mono-brutal) !important;
-    color: var(--col-tx) !important;
-    background: linear-gradient(135deg, #F8FAFC, #F1F5F9) !important;
-}
-
+/* Blockquote: keep the dark-theme behavior verbatim - the only
+   customization is recoloring the `:before` left bar to neo-blue. The
+   `>` marker visibility, padding, text colour, indent and bar
+   thickness all come from hypermd.css + app.css's
+   `pre.HyperMD-quote-1 { text-indent: -10px; padding-inline-start: 24px }`
+   pair, which renders correctly out of the box. */
 .cm-s-hypermd-light pre.HyperMD-quote-1:before {
     background: var(--color-neo-blue) !important;
-    width: 4px !important;
-}
-
-.cm-s-hypermd-light span.cm-quote {
-    color: var(--col-tx) !important;
-}
-
-/* Hide the `>` formatting marker - the blue left bar already conveys
-   "this is a quote", the arrow is redundant noise. */
-.cm-s-hypermd-light span.cm-formatting-quote {
-    display: none !important;
 }
 
 /* Inline code: lime-green chip with bold mono text and a thin dark
