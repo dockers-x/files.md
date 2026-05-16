@@ -303,6 +303,21 @@
     font-family: var(--font-mono-brutal) !important;
 }
 
+/* Images: sharp corners + black border + hard-offset colored shadow.
+   Cycles lime -> orange -> blue across image-bearing lines so inserting
+   plain text lines around an image doesn't reshuffle its color. */
+.cm-s-hypermd-light img.hmd-image {
+    border-radius: 0 !important;
+    border: 2px solid var(--col-border) !important;
+    box-shadow: 4px 4px 0 0 var(--color-neo-lime) !important;
+}
+.cm-s-hypermd-light pre.CodeMirror-line:nth-child(3n+2 of pre.CodeMirror-line:has(img.hmd-image)) img.hmd-image {
+    box-shadow: 4px 4px 0 0 var(--color-neo-orange) !important;
+}
+.cm-s-hypermd-light pre.CodeMirror-line:nth-child(3n of pre.CodeMirror-line:has(img.hmd-image)) img.hmd-image {
+    box-shadow: 4px 4px 0 0 var(--color-neo-blue) !important;
+}
+
 /* Horizontal rule: hard solid bar - core brutalist motif. */
 .cm-s-hypermd-light pre.HyperMD-hr {
     color: var(--col-border) !important;
