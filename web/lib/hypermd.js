@@ -240,6 +240,19 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
                     if (!state.hmdLinkType && (stream.match(urlRE) || stream.match(emailRE))) {
                         return "url";
                     }
+                    // PATCHED: `// ` line-comment marker. Match only when the
+                    // `//` is at start-of-line (or right after whitespace) AND
+                    // followed by a space, so URL schemes like `http://...`
+                    // aren't touched. Consume the rest of the line so the
+                    // whole comment (including wrap rows) is one token, and
+                    // themes can color it via `.cm-hmd-comment`.
+                    if (stream.peek() === '/' &&
+                        stream.string.charAt(stream.pos + 1) === '/' &&
+                        stream.string.charAt(stream.pos + 2) === ' ' &&
+                        (stream.pos === 0 || /\s/.test(stream.string.charAt(stream.pos - 1)))) {
+                        stream.skipToEnd();
+                        return 'hmd-comment';
+                    }
                 }
                 //#endregion
             }

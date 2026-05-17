@@ -317,9 +317,9 @@
 
 .cm-s-hypermd-light span.cm-inline-code:not(.cm-formatting):not(.cm-hmd-indented-code) {
     font-family: var(--font-mono-brutal) !important;
-    background: var(--color-neo-lime) !important;
-    color: #1A1A1A !important;
-    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    background: transparent !important;
+    color: #42A92C !important;
+    border: 1px solid #42A92C !important;
     border-radius: 4px !important;
     padding: 0.2em 0.5em !important;
     font-weight: 600 !important;
@@ -340,6 +340,10 @@
     font-family: var(--font-mono-brutal) !important;
     font-size: 1em !important;
     padding-left: 20px !important;
+}
+
+.cm-hmd-comment {
+    color: var(--color-neo-orange) !important;
 }
 
 /* Images: no border, slightly rounded corners (matching the chat modal). */
