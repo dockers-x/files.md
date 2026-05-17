@@ -356,6 +356,24 @@
     display: none;
 }
 
+/* Sidebar blink: re-skin the highlight animation to the neo-orange accent
+   (matches the rest of the app's "attention" treatment). Same timing as
+   app.css's `sidebar-highlight` keyframes, just colored differently. */
+@keyframes sidebar-highlight-brutal {
+    0%   { color: var(--color-neo-orange); opacity: 1; }
+    20%  { color: var(--color-neo-orange); opacity: 0.7; }
+    25%  { color: var(--color-neo-orange); opacity: 0.5; }
+    30%  { color: var(--color-neo-orange); opacity: 0.7; }
+    45%  { color: var(--color-neo-orange); opacity: 1; }
+    50%  { color: var(--color-neo-orange); opacity: 0.5; }
+    55%  { color: var(--color-neo-orange); opacity: 0.7; }
+    75%  { color: var(--color-neo-orange); opacity: 1; }
+    100% { color: var(--color-neo-orange); opacity: 1; }
+}
+.sidebar-blink {
+    animation-name: sidebar-highlight-brutal !important;
+}
+
 /* Images: no border, slightly rounded corners (matching the chat modal). */
 .cm-s-hypermd-light img.hmd-image {
     border-radius: 7px !important;
