@@ -271,7 +271,11 @@
                                 ev.stopPropagation();
                                 cm.hmdReadLink(cm.hmdResolveURL(url));
                             } else if (typeof read_link_1 === 'undefined') {
-                                var rawUrl = text.match(/\(([^)]+)\)/)[1];
+                                // PATCHED, slice from `](` to the final `)` rather than
+                                // regex-matching `\(([^)]+)\)`, so URLs containing `(` or
+                                // `)` (e.g. `/New%20file(1).md`) aren't truncated at the
+                                // first closing paren.
+                                var rawUrl = text.slice(tmp + 2, -1);
                                 // PATCHED, http takes precedence over .md — github.com/foo.md is a URL,
                                 // not an internal file. Open externally.
                                 if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
