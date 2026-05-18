@@ -53,8 +53,12 @@
        at :root above so most of these duplicate the unconditional rules
        below; kept for parity with theme-light.css.) */
 
+    #toolbar {
+        padding-bottom: 8px !important;
+    }
+
     #toolbar svg {
-        stroke: var(--col-tx) !important;
+        stroke: var(--col-tx-alt) !important;
     }
 
     #toolbar button:hover svg {

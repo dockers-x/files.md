@@ -45,8 +45,12 @@
     filter: brightness(0) saturate(100%) invert(45%) sepia(35%) saturate(1100%) hue-rotate(340deg) brightness(95%) contrast(92%);
 }
 
+#toolbar {
+    padding-bottom: 8px !important;
+}
+
 #toolbar svg {
-    stroke: var(--col-tx) !important;
+    stroke: var(--col-tx-alt) !important;
 }
 
 #toolbar button:hover svg {
