@@ -29,8 +29,9 @@ Maybe. But this time:
 - No need to install anything, all you need is a browser
 - Works offline
 - **Local-first, files don't leave your device**
-- Free and open source, you can tweak it however you want
+- Free and open source
 - Extremely simple code. **One person or an LLM can fit the whole project in head**
+- The codebase is ready for your LLM to extend to your needs
 - Portable, no build systems, just open `web/index.html` 
 - Optional out of the box synchronization 
 - The server is just one binary (or use iCloud/Dropbox/Google Drive for sync)
