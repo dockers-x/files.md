@@ -24,7 +24,7 @@ Maybe. But this time:
 - Only necessary features, **restrictions foster creativity**
 - No need to install anything, all you need is a browser
 - Works offline
-- Local first, you own all your files
+- Local first, files don't leave your device
 - Free and open source, you can tweak it however you want
 - Extremely simple code. **One person or an LLM can fit the whole project in head**
 - Portable, no build systems, just open `web/index.html` 
@@ -47,7 +47,9 @@ You can use chat to quickly dump your thoughts.
 
 <img src="https://github.com/zakirullin/files.md/raw/main/web/img/app.png" alt="Files.md screenshot" title="Files.md"/>
 
-It will be synchronized across all devices. Open the chat and send a message:
+It will be synchronized across all devices.  
+
+Open the chat and send a message:
 <div align="center">
     <img src="https://github.com/zakirullin/files.md/raw/main/web/img/note1.png"  width="350"/>
 </div>
