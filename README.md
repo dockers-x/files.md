@@ -13,12 +13,12 @@ You can store your whole life:
 
 All in plain `.md` files, local-first. LLM-friendly.  
 
-Try it out: [app.files.md](https://app.files.md) (Beta). Main site: [files.md](https://files.md).  
-
 > You should own your files, and **the software that opens them**.  
 > You grow your knowledge with your brain.  
 > You grow software around it with an LLM.  
 > Both can last through the ages.   
+ 
+Try it out: [app.files.md](https://app.files.md) (Beta). Main site: [files.md](https://files.md).
 
 **I have been building this project for 5 years**. **[Sponsor it on GitHub 💚](https://github.com/sponsors/zakirullin)**.
 
