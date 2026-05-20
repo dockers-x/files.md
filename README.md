@@ -15,9 +15,9 @@ All in plain `.md` files, local-first. LLM-friendly. **Private - no data is sent
 
 > Own your data as plain local files.  
 > Own the software that opens those files.  
-> Grow your knowledge with files and your brain.  
+> Grow your knowledge with files and your own brain.  
 > Grow the software around it with an LLM.  
-> **Files and owned software can last through the ages**.  
+> **Plain files and owned software can last through the ages**.  
  
 Try it out: [app.files.md](https://app.files.md) (Beta). Main site: [files.md](https://files.md).
 
@@ -221,23 +221,23 @@ You can copy-paste it into `CLAUDE.md` or `AGENTS.md`, so that your AI agent wou
 
 ## Hotkeys
 
-| Hotkey                     | Action                       |
-|----------------------------|------------------------------|
-| `[`                        | Insert a link to a file      |  
-| `Cmd+P` / `Ctrl+P`         | Open file search modal       |
-| `Cmd+N` / `Ctrl+N`         | New file                     |
-| `Cmd+M` / `Ctrl+M`         | Move file                    |
-| `Cmd+D` / `Ctrl+D`         | Delete file                  |
-| `Cmd+Enter` / `Ctrl+Enter` | Open chat                    |
+| Hotkey                                 | Action                       |
+|----------------------------------------|------------------------------|
+| `[`                                    | Insert a link to a file      |  
+| `Cmd+K` / `Ctrl+K`                     | Open file search modal       |
+| `Cmd+N` / `Ctrl+N`                     | New file                     |
+| `Cmd+M` / `Ctrl+M`                     | Move file                    |
+| `Cmd+D` / `Ctrl+D`                     | Delete file                  |
+| `Cmd+Enter` / `Ctrl+Enter`             | Open chat                    |
 | `Cmd+Shift+Enter` / `Ctrl+Shift+Enter` | Toggle chat dialog           |
-| `Cmd+[` / `Ctrl+[`         | Go to previous file          |
-| `Cmd+]` / `Ctrl+]`         | Go to next file              |
-| `Cmd+~` / `Ctrl+~`         | Toggle sidebar               |
-| `Cmd+B` / `Ctrl+B`         | Toggle **bold**              |
-| `Cmd+I` / `Ctrl+I`         | Toggle *italic*              |
-| `Cmd+Y` / `Ctrl+Y`         | Insert checkbox              |
-| `Cmd/Ctrl` + `Click`       | Copy inline text / open link |
-| `Ctrl+Cmd+Space`           | Insert emoji (macOS)         |
+| `Cmd+[` / `Ctrl+[`                     | Go to previous file          |
+| `Cmd+]` / `Ctrl+]`                     | Go to next file              |
+| `Cmd+~` / `Ctrl+~`                     | Toggle sidebar               |
+| `Cmd+B` / `Ctrl+B`                     | Toggle **bold**              |
+| `Cmd+I` / `Ctrl+I`                     | Toggle *italic*              |
+| `Cmd+Y` / `Ctrl+Y`                     | Insert checkbox              |
+| `Cmd/Ctrl` + `Click`                   | Copy inline text / open link |
+| `Ctrl+Cmd+Space`                       | Insert emoji (macOS)         |
 
 ## Useful scripts for your files
 All scripts are in `cmd` and can be run **inside your files directory**. Install [Go](https://go.dev/doc/install) first.

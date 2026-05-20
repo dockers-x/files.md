@@ -220,7 +220,7 @@ const WELCOME_FILES = {
         "content":
             "To store files in a local folder, [open or create folder](cmd:openDir).\n\n" +
             "Use [chat](cmd:openChat) to dump whatever is on your mind.\n\n" +
-            // "Press `Cmd+K` or `Ctrl+K` to quick switch between notes.\n\n" +
+            "Press `Cmd+K` or `Ctrl+K` to quick switch between files.\n\n" +
             "[Markdown Guide](/Markdown%20Guide.md)\n[Hotkeys](/Hotkeys.md)\n[Links](/Links.md)",
         isFile: true,
     },
@@ -281,7 +281,7 @@ const WELCOME_FILES = {
             "| Hotkey | Action |\n" +
             "| -------- | -------- |\n" +
             "| `[` | Insert a link to a file |\n" +
-            "| `Cmd+P` / `Ctrl+P` | Open file search modal |\n" +
+            "| `Cmd+K` / `Ctrl+K` | Open file search modal |\n" +
             "| `Cmd+N` / `Ctrl+N` | New file |\n" +
             "| `Cmd+M` / `Ctrl+M` | Move file |\n" +
             "| `Cmd+D` / `Ctrl+D` | Delete file |\n" +
