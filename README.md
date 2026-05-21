@@ -53,7 +53,9 @@ Maybe. But this time:
 ## Dump your thoughts
 You can use chat to quickly dump your thoughts.  
 
-<img src="https://github.com/zakirullin/files.md/raw/main/web/img/app.png" alt="Files.md screenshot" title="Files.md" width="600"/>
+<div align="center">
+    <img src="https://github.com/zakirullin/files.md/raw/main/web/img/app.png" alt="Files.md screenshot" title="Files.md" width="700"/>
+</div>
 
 Open the chat and send a message:
 <div align="center">
