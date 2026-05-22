@@ -394,7 +394,10 @@ class SearchModal {
                 messagesToRemove = [message];
             }
 
-            let callback = async text => await addHeaderAndText(path, todayHeader(), text, true, false);
+            // Apply ucfirst here, after the lookup in messagesToRemove has used
+            // the raw text. Capitalising earlier would break the dataset.text
+            // match in the else branch above.
+            let callback = async text => await addHeaderAndText(path, todayHeader(), ucfirst(text), true, false);
             for (const msg of msgs) {
                 await moveFromChat(msg, callback);
                 await renderMessages();

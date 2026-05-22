@@ -580,6 +580,7 @@ function attachEventListeners() {
     // });
 
     chat.querySelectorAll('.complete-btn').forEach(btn => {
+        btn.addEventListener('mousedown', function (e) { e.stopPropagation(); });
         btn.addEventListener('click', async function (e) {
             e.stopPropagation();
             const el = btn.closest('.message');
@@ -602,7 +603,10 @@ function attachEventListeners() {
                 searchModal.close();
             } else {
                 const message = btn.closest('.message');
-                const text = ucfirst(message.querySelector('.message-content').textContent);
+                // Pass the text as-is so it matches el.dataset.text on the
+                // modal side. Capitalisation, if needed, is applied later
+                // when the text is written to a file.
+                const text = message.querySelector('.message-content').textContent;
                 // Keep this message's action row visible while the picker is
                 // open - mouse leaves the bubble as soon as the modal grabs
                 // focus, otherwise the buttons fade out under the user.

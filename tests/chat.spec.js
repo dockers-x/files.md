@@ -263,3 +263,49 @@ test('send to chat and move to recent file', async ({ page }) => {
     expect(fileContent).toContain('# File');
     expect(fileContent).toContain('My message');
 });
+
+// Regression: moving a lowercase-starting chat message via the to-file-btn
+// used to crash because chat.js applied ucfirst() to the text before passing
+// it to the search modal, while the DOM dataset.text stayed in original case.
+// `find(el => el.dataset.text === selectedMsgText)` then returned undefined
+// and modals.js threw "Cannot read properties of undefined (reading 'classList')".
+test('move-to-file works for messages that start with a lowercase letter', async ({page}) => {
+    await page.evaluate(async () => {
+        const root = await navigator.storage.getDirectory();
+        const fh = await root.getFileHandle('Notes.md', {create: true});
+        const w = await fh.createWritable();
+        await w.write('# Notes');
+        await w.close();
+        window.getTemporaryStorageDirHandle = async () => navigator.storage.getDirectory();
+    });
+    await page.evaluate(() => init(document.getElementById('editor')));
+
+    await page.click(`#tree .tree-item:has-text('chat')`);
+    await page.waitForSelector('#chat');
+    // Lowercase starting letter is the trigger for the original bug.
+    await page.keyboard.type('lowercase start');
+    await page.waitForTimeout(300);
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('.message');
+
+    const errors = [];
+    page.on('pageerror', err => errors.push(err.message));
+
+    await page.hover('.message');
+    await page.locator('.to-file-btn').first().click({force: true});
+    await page.waitForSelector('#search', {state: 'visible'});
+
+    await page.locator('#search-results li[data-path="/Notes.md"]').click();
+    await page.waitForSelector('.message', {state: 'detached'});
+
+    // No uncaught exceptions should have been raised during the flow.
+    expect(errors).toEqual([]);
+
+    await page.click(`#tree .tree-item:has-text('Notes')`);
+    await page.waitForTimeout(200);
+    const content = await page.evaluate(() =>
+        document.querySelector('.CodeMirror').CodeMirror.getValue());
+    // The text written to the file is capitalised (ucfirst applied at the
+    // write step, AFTER the DOM lookup, so it doesn't break find()).
+    expect(content).toContain('Lowercase start');
+});
