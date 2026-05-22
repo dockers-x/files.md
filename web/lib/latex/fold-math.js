@@ -197,8 +197,35 @@
             var _this = this;
             this.cm = cm;
             new core_1.FlipFlop(
-            /** CHANGED */ function (expr) { _this.onPreview && _this.onPreview(expr); }, 
+            /** CHANGED */ function (expr) { _this.onPreview && _this.onPreview(expr); },
             /** HIDE    */ function () { _this.onPreviewEnd && _this.onPreviewEnd(); }, null).bind(this, "editingExpr");
+            // PATCHED: math markers persist as DOM widgets even after the
+            // underlying syntax changes - e.g. wrapping rendered math in a
+            // code fence leaves the KaTeX widget pinned over what is now
+            // literal code. On every batched change, walk all math markers
+            // and clear any whose start no longer carries a math-begin token.
+            cm.on("changes", function () {
+                var marks = cm.getAllMarks();
+                for (var i = 0; i < marks.length; i++) {
+                    var m = marks[i];
+                    if (!m["mathRenderer"]) continue;
+                    var pos = m.find();
+                    if (!pos) continue;
+                    var token = cm.getTokenAt({ line: pos.from.line, ch: pos.from.ch + 1 });
+                    if (!token || !/formatting-math-begin\b/.test(token.type || "")) {
+                        m.clear();
+                    }
+                }
+            });
+            // PATCHED: rescan only the viewport on cursor activity. Bounded
+            // work (visible lines only), keeps math re-rendering correctly
+            // after the user removes a ``` fence and clicks/moves cursor.
+            cm.on("cursorActivity", function () {
+                var foldAddon = fold_1.getAddon(cm);
+                var view = cm.getViewport();
+                foldAddon.startFold.stop();
+                foldAddon.startFoldImmediately(view.from, view.to);
+            });
         }
         FoldMath.prototype.createRenderer = function (container, mode) {
             var RendererClass = this.renderer || DumbRenderer;
