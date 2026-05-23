@@ -29,6 +29,10 @@ const urlsToCache = [
     '/lib/fold.js',
     '/lib/fold-image.js',
     '/lib/fold-link.js',
+    '/lib/fold-code.js',
+    '/lib/hypermd-mermaid.js',
+    // mermaid.min.js intentionally NOT pre-cached; lazy-loaded on first use
+    // and the SW's dynamic fetch handler caches it at that point.
     '/lib/autocomplete-link.js',
     '/lib/show-hint.js',
     '/lib/autoscroll.js',

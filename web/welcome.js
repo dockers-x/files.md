@@ -235,16 +235,19 @@ const WELCOME_FILES = {
     },
     "Markdown Guide.md": {
         "content":
-            "Use `#` for headers. More `#` symbols create smaller headers.\n" +
+            "Create headers with `# header`.\nAdd more # symbols for smaller headers: `## smaller header`.\n" +
             "\n" +
-            "#### Text Formatting\n" +
+            "## Text Formatting\n" +
             "- **Bold text** using `**bold**` or `__bold__` **(Cmd/Ctrl + B)**\n" +
             "- *Italic text* using `*italic*` or `_italic_` **(Cmd/Ctrl + I)**\n" +
             "- ***Bold and italic*** using `***text***`\n" +
             "- ~~Strikethrough~~ using `~~text~~`\n" +
             "- `Inline code` using backticks\n" +
             "\n" +
-            "#### Lists\n" +
+            "## Link\n" +
+            "You can insert your own links by typing `[`.\n" +
+            "\n" +
+            "## List\n" +
             "- First item\n" +
             "- Second item\n" +
             "  - Third item\n\n" +
@@ -252,26 +255,34 @@ const WELCOME_FILES = {
             "2. Second item\n" +
             "   1. Third item\n" +
             "\n" +
-            "#### Checklist\n" +
+            "## Checklist\n" +
             "- [x] Completed task\n" +
             "- [ ] Incomplete task\n" +
             "Format:\n`- [ ] Item`\n" +
             "\n" +
-            "#### Blockquotes\n" +
+            "## Image\n" +
+            "![Why taking notes](https://app.files.md/img/tomas_sanchez.jpg)\n" +
+            "\n" +
+            "*You can paste your own images via `Cmd/Ctrl + V`*\n\n" +
+            "## Blockquote\n" +
             ">This is a blockquote. It can span multiple lines and is great for highlighting important information or quotes from other sources.\n" +
             "\nFormat:\n`> This is a blockquote`\n" +
             "\n" +
-            "#### Code Blocks\n" +
+            "## Code Block\n" +
             "```\n" +
             "Here is some code.\n" +
             "```\n" +
             "\n" +
-            "#### Images\n" +
-            "![Why taking notes](https://app.files.md/img/notes.jpg)\n" +
+            "## Diagram\n" +
+            "```mermaid\n" +
+            "pie title Taking notes\n" +
+            "         \"Notes saved for future me\" : 95\n" +
+            "         \"Notes future me ever opens\" : 5\n" +
+            "```\n" +
             "\n" +
-            "*You can paste your own images via `Cmd/Ctrl + V`*\n\n" +
-            "#### Links\n" +
-            "You can insert your own links by typing `[`.\n\n" +
+            "## Math\n" +
+            "LaTeX is fully supported: $E = mc^2$\n" +
+            "\n" +
             "[Links](/Links.md)\n" +
             "[My project](/My%20project.md)",
         isFile: true,
@@ -300,7 +311,18 @@ const WELCOME_FILES = {
         isFile: true,
     },
     "My project.md": {
-        "content": "You can dump project related thoughts here.",
+        "content":
+            "```mermaid\n" +
+            "sequenceDiagram\n" +
+            "    Alice ->> Bob: Hello Bob, how are you?\n" +
+            "    Bob-->>John: How about you John?\n" +
+            "    Bob--x Alice: I am good thanks!\n" +
+            "    Bob-x John: I am good thanks!\n" +
+            "    Note right of John: Bob thinks a long<br/>long time, so long<br/>that the text does<br/>not fit on a row.\n\n" +
+            "    Bob-->Alice: Checking with John...\n" +
+            "    Alice->John: Yes... John, how are you?\n" +
+            "```\n\n" +
+            "You can dump project related thoughts here.",
         isFile: true,
     },
 }
@@ -317,15 +339,14 @@ function getHelpContent() {
     const stripMdFileLinks = s => s
         .replace(/^[ \t]*\[[^\]\n]+\]\([^)\n]*\.md\)[ \t]*\n?/gm, '')
         .replace(/\n{3,}/g, '\n\n');
-    // Drop the "#### Images" chapter - it points at an external image
+    // Drop the "#### Image" chapter - it points at an external image
     // and isn't useful in the merged Help.md. Match runs until the
     // next #### header or end of string.
-    const stripImagesChapter = s => s.replace(/#### Images\n[\s\S]*?(?=#### |$)/g, '');
+    const stripImagesChapter = s => s.replace(/#### Image\n[\s\S]*?(?=#### |$)/g, '');
     return stripImagesChapter(stripMdFileLinks(
-        "### Hotkeys\n\n" +
         WELCOME_FILES["Hotkeys.md"].content +
         "\n\n" +
-        "### Markdown Guide\n\n" +
+        "## Markdown Guide\n\n" +
         WELCOME_FILES["Markdown Guide.md"].content
     ));
 }

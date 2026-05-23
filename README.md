@@ -52,7 +52,7 @@ Maybe. But this time:
 - Open a local folder to persist changes  
 - Occasionally hit force-refresh (`Cmd+Shift+R`) to get new updates.  
 
-P.S. For now Chrome-based browsers are best at [File System API support](https://caniuse.com/native-filesystem-api).  
+P.S. For now, Chrome-based browsers are best at [File System API support](https://caniuse.com/native-filesystem-api).  
 
 ## Dump your thoughts
 You can use chat to quickly dump your thoughts.  
@@ -339,6 +339,7 @@ Read 4K randomly from SSD = 150,000 ns
 ```
 
 ## ADRs (Architecture Decision Records)
+- `22.05.2026` Added Mermaid support. It was decided to lazy-load the script, because mermaid.min.js size is 3MB. It's quite a load to load synchronously for such a small app. 
 - `20.05.2026` Added LaTeX support, even though I wasn't happy about +20 font files. LaTeX is text-based and LLM-friendly. Text + Math will cover pretty much everything. 
 - `06.05.2026` Moved from Today.md to Chat.md. CustDev showed that users have trouble grasping "today" concept. And besides, "open chat" phrase has meaning in both bot and webapp.
 - `02.05.2026` Now hide-token runs synchronously on every change, previously it had 100ms debounce which caused jitter on by word removals in links and formatted texts.
