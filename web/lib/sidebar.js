@@ -1232,7 +1232,10 @@ function isChecklist(filename) {
         return true;
     }
 
-    return filename.endsWith('_.txt') || filename.endsWith('_.md');
+    // Match `name_postfix_.md` style (trailing underscore postfix) but
+    // skip names that ALSO start with `_` (e.g. `_ss_.md`) - those are
+    // tags, not checklists.
+    return /^[^_].*_\.(md)$/.test(filename);
 }
 
 window.handleNodeMove = async function (sourcePath, targetDir) {
