@@ -241,11 +241,7 @@
                     cm.scrollTo(savedLeft, savedTop);
                 });
             }, false);
-            // PATCHED: paint the line-widget body when the folded source
-            // range is part of an active selection. CodeMirror only draws
-            // .CodeMirror-selected behind the line text, so the rendered
-            // mermaid (or any folded widget) was invisible to selection
-            // even though its source text is included.
+            // PATCHED: helps with instant mermaid rendering
             var updateSelected = function () {
                 var range = marker.find();
                 if (!range) return;
