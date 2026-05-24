@@ -1059,9 +1059,10 @@ async function openFile(path, saveToHistory = true, el = 'editor-textarea') {
     }
     let thereIsPreviousEditorToSync = currentEditor.path !== undefined;
     if (thereIsPreviousEditorToSync) {
+        const syncStart = performance.now();
         log('Began syncing previous file');
         await syncCurrentFile(true);
-        log('Finished syncing previous file');
+        log(`Finished syncing previous file in ${(performance.now() - syncStart).toFixed(3)} ms`);
     }
 
     // Lock the current editor during the operation, so we won't interrupt syncCurrentEditor in the middle.
