@@ -277,7 +277,7 @@ go run /abs/path/to/files.md/cmd/shifttime/shifttime.go
 [Deploy on your own server](docs/your-own-server.md)    
 [Chatbot](docs/bot.md)    
 [Sync flow](docs/sync-flow.md)  
-[Integration tests](docs/integration-tests.md)  
+[End-to-end tests](docs/e2e-tests.md)  
 
 ## Repository structure
 - `web` - web app (PWA), `index.html` is an entrypoint
@@ -365,23 +365,23 @@ Read 4K randomly from SSD = 150,000 ns
 - `14.06.2025` I wanted bot-like functionality in browser. I didn't want to re-write well-tested code in TypeScript, so I used wasm~~. And it worked perfectly good.
 - `12.06.2025` We use Telegram bot as distract-free write-only entrance to our knowledge base. The only issue is, it is not as wildly popular in EU/USA. I've come to the idea that we can transform app.files.md to a chat once we decrease the window size! Would be default behaviour on mobiles.
 - `04.06.2025` Introduced append-only log for syncing. Stateless sync is tricky to implement - we would have to send all files in every request. Since we're only renaming on server - we'll only track renames.
-- `04.06.2025` For content-only sync (no renames/deletes) we don't store any state on server, we compare hashes & last ctimes 
+- `04.06.2025` For content-only sync (no renames/deletes) we don't store any state on server, we compare hashes & last ctimes.  
 - `11.11.2024` Removed Wikilinks support. Only plain Markdown links, our knowledge base must be interoperable.
-- `26.10.2024` Updates are now processed sequentially on per-user basis. Because there were some race conditions on concurrent file writings. Also we faced out-of-order forwarded messages processing, and it was impossible to collapse them to one message.
+- `26.10.2024` Updates are now processed sequentially on per-user basis. Because there were some race conditions on concurrent file writings. Also we faced out-of-order forwarded messages processing, and it was impossible to collapse them to one message.  
 - `06.10.2024` **Removed fyne.io**. At first, I wanted a lightweight alternative to Electron, and fyne.io seemed to be an ideal candidate. After a few days working with it 80% of bot functionality was implemented, and I was pretty happy with it. The thing is, to implement the rest of the functionality, we would have to apply A TREMENDOUS amount of effort. I am talking tiny details such as scrolling, emojis rendering, text selecting behaviour, links support, etc. And in future we would have to implement image uploading and markdown/html renderer, which would be also painful in such non-webview based toolkit. As much as I hate using the web stack for the desktop applications, it doesn't seem like we have a choice. Let's try wails.io.
 - `09.09.2024` We use vendoring for dependencies. We want all our few dependencies to be in the repo, so we don't care about blocked/removed dependencies. Our repository is the self-sufficient source of truth.
 - `01.09.2025` We use granular locks (in db, journal, userconfig) instead of one global per user lock so to avoid bottlenecks. Workers might use 3rd party API like ChatGPT, and we don't want to hold user's lock all that time. **PATCHED**, we added sequential per-user updates processing, `bot` can't cause RCs on its own, but `bot` & `worker` can, so we should continue using granular locks.
 - `20.08.2024` We read every userconfig value from the config file on every access. We don't need load/save whole config before/after `bot.Answer()` method. We have to reread it every time we need to change it, so we don't write back any stale data. Let's imagine we load config only once before `bot.Answer()`, next, we may have significant networking delays in `bot.Answer()` (let's say 2 seconds when making external requests), there are good changes that during those 2 seconds `worker.MoveDueTasks()` will modify `userconfig.Schedule`, causing data race (after bot's answer we write back stale data). And we don't want our schedule lost.
-- `08.08.2024` Sanitize Early, we gave up sanitizing in Path method. That's an unexpected behaviour - it breaks paths. We should sanitize everything as soon as we received. Most commands work with md5 hashes, for such cases no sanitize is needed
-- `13.07.2024` `gofumpt` for stricter formatting. `gofumpt` is happy with a subset of the formats that gofmt is happy with. The less we have to choose between different formating options, the better
-- `13.07.2024` FS's structure should have userFS name, to reflect the fact it user user-namespaced
-- `09.07.2024` Note term is way too vague. Let's try to use "file" term, without any high level abstraction (like note) 
+- `08.08.2024` Sanitize Early, we gave up sanitizing in Path method. That's an unexpected behaviour - it breaks paths. We should sanitize everything as soon as we received. Most commands work with md5 hashes, for such cases no sanitize is needed.
+- `13.07.2024` `gofumpt` for stricter formatting. `gofumpt` is happy with a subset of the formats that gofmt is happy with. The less we have to choose between different formating options, the better.
+- `13.07.2024` FS's structure should have userFS name, to reflect the fact it user user-namespaced.
+- `09.07.2024` Note term is way too vague. Let's try to use "file" term, without any high level abstraction (like note).
 - `08.07.2024` Gave up on AST parsing/rendering. We had lots of corner cases via AST and the code was way complex. Markdown isn't that hard to parse, we can do it via good old straigforward code. We have 3x times less code now, and it is far less mentally taxing to understand. We did the same for MD->HTML conversion. Telegram doesn't support whole range of HTML tags, so it was easier to write our own md-to-html converter.
 - `08.07.2024` Adherence to Tolerant Reader principles. If enconunter gibberish during parsing - we skip it, but if we encounter flags of valid data (let's say `###`) but data itself is invalid - we panic. TODO preserve gibberish during read-write cycle.
 - `07.07.2024` Usage of https://github.com/rivo/uniseg. In Go, strings are read-only slices of bytes. They can be turned into Unicode code points using the for loop or by casting: []rune(str). However, multiple code points may be combined into one user-perceived character or what the Unicode specification calls "grapheme cluster". For example, white circle "⚪" has two runes, but one grapheme cluster.
 - `13.06.2024` Markdown to HTML conversion. User can have invalid Markdown in his notes, and TG API would fail to send invalid Markdown directly. So, first we escape HTML, then we convert user's Markdown to HTML and finally send it via Telegram API as HTML.
-- `13.06.2023` File hashing. Everywhere where we have user input - we should use fs.hash, otherwise we get long filenames, and tg returns `INVALID_DATA` error (callbackData max 64 bytes)
-- `13.06.2023` Introduced `db.go`. We had to abstract away Redis anyway (otherwise it's hard to write tests)
-- `13.03.2023` Package db.go doesn't store userID (we often use it separately...) Do we? Maybe we gonna use it without userID (like global bot stats?). Added: moved userID to class. Maybe in later we'll need this class outside of user's scope, but let's stay in the future :)
-- `13.06.2023` We can't ucfist filename in fs.Put - what if that was user-created file (outside the bot), i.e. it comes with lowercase
+- `13.06.2023` File hashing. Everywhere where we have user input - we should use fs.hash, otherwise we get long filenames, and tg returns `INVALID_DATA` error (callbackData max 64 bytes).
+- `13.06.2023` Introduced `db.go`. We had to abstract away Redis anyway (otherwise it's hard to write tests).
+- `13.03.2023` Package db.go doesn't store userID (we often use it separately...) Do we? Maybe we gonna use it without userID (like global bot stats?). Added: moved userID to class. Maybe in later we'll need this class outside of user's scope, but let's stay in the future. :)
+- `13.06.2023` We can't ucfist filename in fs.Put - what if that was user-created file (outside the bot), i.e. it comes with lowercase.
 

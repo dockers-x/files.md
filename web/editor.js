@@ -82,12 +82,8 @@ function initEditor(el) {
         if (/^(?!http|https|\[).+\.md$/.test(path)) {
             const isMobile = window.matchMedia('(max-width: 670px)').matches;
             const target = isMobile ? 'editor-textarea' : 'editor2-textarea';
-            let parts = path.split('/');
-            if (parts.length === 1) {
-                openFile('', path, true, target);
-                return;
-            }
-            openFile(parts[0], parts[1], true, target);
+            const fullPath = path.startsWith('/') ? path : '/' + path;
+            openFile(fullPath, true, target);
             return path;
         }
 

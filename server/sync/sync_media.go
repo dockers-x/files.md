@@ -29,7 +29,7 @@ func SyncMediaFilenames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, MaxMediasSize)
+	r.Body = http.MaxBytesReader(w, r.Body, MaxMediaFilenamesSize)
 
 	if err := json.NewDecoder(r.Body).Decode(&syncMediasRequest); err != nil {
 		http.Error(w, "Invalid syncMediasRequest JSON", http.StatusBadRequest)
@@ -118,7 +118,6 @@ func SyncMediaFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO add size limits!
 	shouldWriteToServer := clientMedia.Data != "" && !exists
 	if shouldWriteToServer {
 		content, err := base64.StdEncoding.DecodeString(clientMedia.Data)

@@ -21,11 +21,11 @@ const (
 	StatusUpdatedOnServer = "updatedOnServer"
 	StatusMerged          = "merged"
 
-	MaxTextSize   = 5 << 20   // 5 MB
-	MaxTextsSize  = 10 << 20  // 10 MB
-	MaxMediaSize  = 20 << 20  // 20 MB
-	MaxMediasSize = 512 << 10 // 512 KB
-	MaxTokenSize  = 4 << 10   // 4 KB
+	MaxTextSize           = 5 << 20   // 5 MB
+	MaxFilenamesSize      = 10 << 20  // 10 MB
+	MaxMediaSize          = 30 << 20  // 30 MB
+	MaxMediaFilenamesSize = 512 << 10 // 512 KB
+	MaxTokenSize          = 4 << 10   // 4 KB
 )
 
 var OnChatUpdate = func(userID int64) {}
@@ -66,7 +66,7 @@ func SyncFilenames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, MaxTextsSize)
+	r.Body = http.MaxBytesReader(w, r.Body, MaxFilenamesSize)
 
 	var request syncRequest
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
