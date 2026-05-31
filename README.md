@@ -55,7 +55,7 @@ Maybe. But this time:
 P.S. For now, Chrome-based browsers are best at [File System API support](https://caniuse.com/native-filesystem-api).  
 
 ## Dump your thoughts
-Open the chat and send a message:
+Open the chat (`Cmd+Enter`) and send a message:
 <div align="center">
     <img src="https://github.com/zakirullin/files.md/raw/main/web/img/note1.png"  width="350"/>
 </div>
