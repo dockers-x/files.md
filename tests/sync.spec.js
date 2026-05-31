@@ -559,6 +559,13 @@ test('files exist on both client and server, serverFiles contains proper server 
                 lastModified: expect.any(Number),
                 lastClientModified: expect.any(Number),
                 path: '/brain/We think that we understand, but in reality we just know.md'
+            },
+            'Zettelkasten.md': {
+                isFile: true,
+                hash: expect.any(Number),
+                lastModified: expect.any(Number),
+                lastClientModified: expect.any(Number),
+                path: '/brain/Zettelkasten.md'
             }
         },
     });
