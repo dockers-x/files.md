@@ -476,6 +476,8 @@ chatInput.addEventListener('paste', async (e) => {
                 const newCursorPos = cursorPos + imageMarkdown.length;
                 chatInput.setSelectionRange(newCursorPos, newCursorPos);
                 chatInput.focus();
+                autoResize();
+                updateChatActionButton();
             }
             break;
         }
