@@ -372,15 +372,12 @@
 #chat-input {
     background: var(--col-bg-alt);
     border: 1px solid transparent;
-    border-radius: 12px;
-    padding: 12px 56px 12px 16px;
+    border-radius: 28px !important;
+    padding: 16px 64px 16px 24px;
     font-size: 16px;
     resize: none;
-    /* Border-box bumps min/max-height by the vertical padding (24px) so the
-       visible textarea height matches the pre-wrap layout (content was 48-250px;
-       total visual is 72-274px). */
-    min-height: 72px;
-    max-height: 274px;
+    min-height: 48px;
+    max-height: 250px;
     width: 100%;
     box-sizing: border-box;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -392,32 +389,68 @@
     border: 1px solid var(--col-border);
 }
 
-/* Send button overlaid on the bottom-right of the chat input, like in
-   Claude/ChatGPT. The wrapping div is position:relative so the button
-   sits inside the textarea's visible box. */
 #send-chat {
     position: absolute;
-    right: 8px;
-    bottom: 8px;
+    right: 14px;
+    bottom: 12px;
     width: 32px;
     height: 32px;
     padding: 0;
-    background: var(--col-tx-alt);
+    background: var(--color-neo-orange);
     color: var(--col-bg);
     border: none;
     border-radius: 50%;
     cursor: pointer;
-    display: flex !important;
+    display: flex;
     align-items: center;
     justify-content: center;
     transition: background 0.15s, opacity 0.15s;
 }
 
 #send-chat:hover {
-    background: var(--color-neo-orange);
+    background: color-mix(in srgb, var(--color-neo-orange), #000 12%);
 }
 
 #send-chat svg {
+    width: 18px;
+    height: 18px;
+}
+
+#mic-chat {
+    position: absolute;
+    right: 14px;
+    bottom: 12px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: transparent;
+    color: var(--col-tx-alt);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+}
+
+#mic-chat:hover {
+    background: color-mix(in srgb, var(--color-neo-orange), transparent 80%);
+    color: var(--color-neo-orange);
+}
+
+#mic-chat.recording {
+    background: var(--color-neo-orange);
+    color: var(--col-bg);
+    animation: mic-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes mic-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-neo-orange), transparent 50%); }
+    50%      { box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-neo-orange), transparent 90%); }
+}
+
+#mic-chat svg {
     width: 18px;
     height: 18px;
 }
@@ -518,7 +551,7 @@
     z-index: 1001;
     width: 30px;
     height: 30px;
-    display: flex !important;
+    display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
@@ -526,7 +559,7 @@
 }
 
 .modal-reversed {
-    display: flex !important;
+    display: flex;
     flex-direction: column-reverse !important;
 }
 

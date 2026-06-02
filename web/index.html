@@ -123,6 +123,14 @@
         <div id="chat" style="display: none;"></div>
         <div id="chat-input-wrap" style="position: relative;">
             <textarea id="chat-input" style="display: none;" class="input-field" placeholder="Dump your thoughts..." rows="1"></textarea>
+            <button id="mic-chat" onclick="toggleMicRecording()" title="Record voice message" aria-label="Record voice message" style="display: none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="8" y="3" width="8" height="13" rx="4"/>
+                    <path d="M5 12a7 7 0 0 0 14 0"/>
+                    <line x1="12" y1="19" x2="12" y2="22"/>
+                    <line x1="8" y1="22" x2="16" y2="22"/>
+                </svg>
+            </button>
             <button id="send-chat" onclick="sendToChat()" title="Send" aria-label="Send" style="display: none">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 32 32">
                     <path stroke="currentColor" stroke-linecap="round" stroke-width="3" d="M16 27V6"/>

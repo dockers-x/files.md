@@ -4,6 +4,7 @@ const chat = document.getElementById('chat');
 const chatInput = document.getElementById('chat-input');
 const chatContainer = document.getElementById('chat-container');
 const sendChatBtn = document.getElementById('send-chat');
+const micChatBtn = document.getElementById('mic-chat');
 
 const MAX_TITLE_LENGTH = 100;
 const RECENT_FILES = 1;
@@ -12,8 +13,20 @@ const RECENT_FILES = 1;
 // work when the file's content hasn't changed.
 let lastChatText = null;
 
-// Add event listener for input changes
-chatInput.addEventListener('input', autoResize);
+function updateChatActionButton() {
+    if (!sendChatBtn || !micChatBtn) return;
+    // Don't swap while a recording is in progress - keep the mic visible so
+    // the user can press it again to stop.
+    if (micChatBtn.classList.contains('recording')) return;
+    const hasText = chatInput.value.trim().length > 0;
+    sendChatBtn.style.display = hasText ? 'flex' : 'none';
+    micChatBtn.style.display = hasText ? 'none' : 'flex';
+}
+
+chatInput.addEventListener('input', () => {
+    autoResize();
+    updateChatActionButton();
+});
 // Initial resize to set proper height
 autoResize();
 
@@ -52,12 +65,105 @@ async function sendToChat() {
 
     chatInput.value = '';
     chatIsClean = false;
+    updateChatActionButton();
     await renderMessages();
     const allMessages = chat.querySelectorAll('.message');
     if (allMessages.length > 0) {
         allMessages[allMessages.length - 1].classList.add('actions-shown');
     }
     scrollToBottom();
+}
+
+// Voice recording. First click starts capture, second click stops, saves to
+// media/, and appends a chat message with the audio markdown so the inline
+// audio player (fold-image.js) picks it up just like a pasted file.
+let chatMediaRecorder = null;
+let chatMediaStream = null;
+let chatMediaChunks = [];
+
+async function toggleMicRecording() {
+    const micBtn = document.getElementById('mic-chat');
+
+    if (chatMediaRecorder && chatMediaRecorder.state === 'recording') {
+        chatMediaRecorder.stop();
+        return;
+    }
+
+    let stream;
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({audio: true});
+    } catch (err) {
+        logError('Microphone access denied:', err);
+        alert('Microphone access denied or unavailable: ' + err.message);
+        return;
+    }
+
+    chatMediaStream = stream;
+    chatMediaChunks = [];
+
+    // Pick a webm-compatible mime if the browser supports it; fall back to
+    // whatever MediaRecorder picks (Safari hands us mp4 here).
+    let mimeType = 'audio/webm';
+    if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = '';
+
+    chatMediaRecorder = new MediaRecorder(stream, mimeType ? {mimeType} : undefined);
+    chatMediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) chatMediaChunks.push(e.data);
+    };
+    chatMediaRecorder.onstop = async () => {
+        micBtn.classList.remove('recording');
+        updateChatActionButton();
+        // Release the mic so the OS indicator clears.
+        if (chatMediaStream) {
+            chatMediaStream.getTracks().forEach(t => t.stop());
+            chatMediaStream = null;
+        }
+
+        if (chatMediaChunks.length === 0) {
+            chatMediaRecorder = null;
+            return;
+        }
+
+        const recordedType = chatMediaRecorder.mimeType || 'audio/webm';
+        const blob = new Blob(chatMediaChunks, {type: recordedType});
+        chatMediaRecorder = null;
+
+        const ext = getImageExtension(recordedType.split(';')[0]);
+        const fileName = `chat-${new Date().toISOString().replace(/[:.]/g, '-')}.${ext}`;
+
+        try {
+            const fileHandle = await writeMediaFile(fileName, blob);
+            if (!fileHandle) {
+                logError('Failed to save voice message.');
+                alert('Failed to save voice message.');
+                return;
+            }
+            if (!files['media/']) files['media/'] = {};
+            files['media/'][fileName] = {
+                isFile: true,
+                handle: fileHandle,
+                lastModified: Date.now(),
+                imageUrl: URL.createObjectURL(blob),
+            };
+
+            const now = new Date();
+            const timestamp = now.toLocaleTimeString('en-US', {
+                hour12: false, hour: '2-digit', minute: '2-digit',
+            });
+            const formattedContent = `\n- [ ] \`${timestamp}\` ![](media/${fileName})\n`;
+            await writeAtEnd(CHAT_PATH, formattedContent);
+
+            chatIsClean = false;
+            await renderMessages();
+            scrollToBottom();
+        } catch (err) {
+            logError('Error saving voice message:', err);
+            alert('Error saving voice message: ' + err.message);
+        }
+    };
+
+    chatMediaRecorder.start();
+    micBtn.classList.add('recording');
 }
 
 async function openChat() {
@@ -75,7 +181,7 @@ async function openChat() {
     codemirror.style.display = 'none';
     chat.style.display = 'flex';
     chatInput.style.display = 'block';
-    if (sendChatBtn) sendChatBtn.style.display = 'flex';
+    updateChatActionButton();
     hideEditor2();
 
     const searchModal = document.getElementById('search');
@@ -92,10 +198,10 @@ async function openChatModal() {
     chatContainer.style.display = 'flex';
     chat.style.display = 'block';
     chatInput.style.display = 'block';
-    if (sendChatBtn) sendChatBtn.style.display = 'flex';
+    updateChatActionButton();
     chat.style.display = 'flex';
     chatInput.style.display = 'block';
-    if (sendChatBtn) sendChatBtn.style.display = 'flex';
+    updateChatActionButton();
 
     chatInput.focus();
     await renderMessages();
@@ -109,6 +215,7 @@ function closeChatModal() {
         chat.style.display = 'none';
         chatInput.style.display = 'none';
         if (sendChatBtn) sendChatBtn.style.display = 'none';
+        if (micChatBtn) micChatBtn.style.display = 'none';
     }
 }
 
