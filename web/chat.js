@@ -3,6 +3,7 @@ let chatIsClean = true; // Are there any unsaved changes?
 const chat = document.getElementById('chat');
 const chatInput = document.getElementById('chat-input');
 const chatContainer = document.getElementById('chat-container');
+const sendChatBtn = document.getElementById('send-chat');
 
 const MAX_TITLE_LENGTH = 100;
 const RECENT_FILES = 1;
@@ -74,6 +75,7 @@ async function openChat() {
     codemirror.style.display = 'none';
     chat.style.display = 'flex';
     chatInput.style.display = 'block';
+    if (sendChatBtn) sendChatBtn.style.display = 'flex';
     hideEditor2();
 
     const searchModal = document.getElementById('search');
@@ -90,8 +92,10 @@ async function openChatModal() {
     chatContainer.style.display = 'flex';
     chat.style.display = 'block';
     chatInput.style.display = 'block';
+    if (sendChatBtn) sendChatBtn.style.display = 'flex';
     chat.style.display = 'flex';
     chatInput.style.display = 'block';
+    if (sendChatBtn) sendChatBtn.style.display = 'flex';
 
     chatInput.focus();
     await renderMessages();
@@ -104,6 +108,7 @@ function closeChatModal() {
         chatContainer.style.display = 'none';
         chat.style.display = 'none';
         chatInput.style.display = 'none';
+        if (sendChatBtn) sendChatBtn.style.display = 'none';
     }
 }
 
